@@ -1,0 +1,489 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.2.4 effective-5.10 (swiftlang-6.2.4.1.4 clang-1700.6.4.2)
+// swift-module-flags: -target x86_64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TmkTranslationSDK
+// swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
+import Foundation
+import Swift
+@_exported import TmkTranslationSDK
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum TmkTranslationChannelState : Swift.String, Swift.Equatable, Swift.Sendable {
+  case idle
+  case starting
+  case running
+  case reconnecting
+  case degraded
+  case stopping
+  case stopped
+  case failed
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum TmkTranslationChannelStateReason : Swift.String, Swift.Equatable, Swift.Sendable {
+  case none
+  case startRequested
+  case started
+  case stopRequested
+  case stopped
+  case networkUnavailable
+  case networkRestored
+  case rtcConnecting
+  case rtcConnected
+  case rtcInterrupted
+  case rtcLost
+  case rtcKeepAliveTimeout
+  case rtcTokenRequested
+  case rtcTokenWillExpire
+  case sessionExpired
+  case invalidConfiguration
+  case permissionDenied
+  case bannedByServer
+  case serviceRejected
+  case messageChannelFailure
+  case engineError
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct TmkTranslationChannelStateSnapshot : Swift.Sendable {
+  public let state: TmkTranslationChannelState
+  public let reason: TmkTranslationChannelStateReason
+  public let code: Swift.Int?
+  public let message: Swift.String
+  public let isRecoverable: Swift.Bool
+  public let updatedAt: Foundation.Date
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(state: TmkTranslationChannelState, reason: TmkTranslationChannelStateReason, code: Swift.Int? = nil, message: Swift.String = "", isRecoverable: Swift.Bool = true, updatedAt: Foundation.Date = Date())
+  #endif
+}
+public protocol TmkTranslationListener : AnyObject {
+  func onRecognized(from engine: AbstractChannelEngine, result: TmkResult<Swift.String>, isFinal: Swift.Bool)
+  func onTranslate(from engine: AbstractChannelEngine, result: TmkResult<Swift.String>, isFinal: Swift.Bool)
+  func onAudioDataReceive(from engine: AbstractChannelEngine, result: TmkResult<Swift.String>, data: Foundation.Data, channelCount: Swift.Int)
+  func onError(_ error: TmkTranslationError)
+  func onError(code: Swift.Int, message: Swift.String)
+  #if compiler(>=5.3) && $NonescapableTypes
+  func onEvent(name: Swift.String, args: Any?)
+  #endif
+  func onStateChanged(from engine: AbstractChannelEngine, snapshot: TmkTranslationChannelStateSnapshot)
+}
+extension TmkTranslationListener {
+  public func onError(_ error: TmkTranslationError)
+  public func onError(code: Swift.Int, message: Swift.String)
+  public func onStateChanged(from engine: AbstractChannelEngine, snapshot: TmkTranslationChannelStateSnapshot)
+}
+public enum TmkTranslationMessageTunnel : Swift.String, Swift.Equatable {
+  case rtm
+  case rtc
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct TmkTranslationRoomDialogResponse : Swift.Equatable, Swift.Sendable {
+  public struct TranslationItem : Swift.Equatable, Swift.Sendable {
+    public let locale: Swift.String
+    public let subscribeUid: Swift.String
+    public static func == (a: TmkTranslationRoomDialogResponse.TranslationItem, b: TmkTranslationRoomDialogResponse.TranslationItem) -> Swift.Bool
+  }
+  public let connectUid: Swift.String
+  public let roomNo: Swift.String
+  public let speakerIdentityNo: Swift.String
+  public let translationList: [TmkTranslationRoomDialogResponse.TranslationItem]
+  public static func == (a: TmkTranslationRoomDialogResponse, b: TmkTranslationRoomDialogResponse) -> Swift.Bool
+}
+@_hasMissingDesignatedInitializers final public class TmkTranslationRoom {
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public var channelDialogResponse: TmkTranslationRoomDialogResponse? {
+    get
+  }
+  #endif
+  final public var roomScenario: TmkRoomScenario {
+    get
+  }
+  final public var messageTunnel: TmkTranslationMessageTunnel {
+    get
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func closeRoom(completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
+  #endif
+  @objc deinit
+}
+public enum TmkRoomScenario {
+  case recognize
+  case toText
+  case toSpeech
+  public static func == (a: TmkRoomScenario, b: TmkRoomScenario) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public typealias AuthCallback = (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void
+public typealias CreateRoomCallback = (Swift.Result<TmkTranslationRoom, TmkTranslationError>) -> Swift.Void
+public typealias CreateChannelCallback = (Swift.Result<TmkTranslationChannel, TmkTranslationError>) -> Swift.Void
+public enum TmkSDKErrorCode : Swift.Int, Swift.CaseIterable, Swift.Sendable {
+  case sdkNotInitialized
+  case authenticationFailed
+  case roomCreationFailed
+  case channelCreationFailed
+  case engineNotSupported
+  case invalidConfiguration
+  case networkUnavailable
+  case audioProcessingError
+  case ttsSynthesisError
+  case translationError
+  case sessionExpired
+  case quotaExceeded
+  case invalidLanguageCode
+  case engineInitializationFailed
+  case bufferOverflow
+  case threadInterrupted
+  case unknownError
+  case networkInvalidURL
+  case networkTransportError
+  case networkHTTPStatusError
+  case networkResponseDecodingError
+  case networkBusinessError
+  case requestCancelled
+  case invalidState
+  case dependencyUnavailable
+  case rtcOperationFailed
+  case messageDecodingFailed
+  case audioChannelCreationFailed
+  case trackEventNotConfigured
+  case trackEventInvalidEventName
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.Int)
+  #endif
+  public typealias AllCases = [TmkSDKErrorCode]
+  public typealias RawValue = Swift.Int
+  nonisolated public static var allCases: [TmkSDKErrorCode] {
+    get
+  }
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+public struct TmkSDKErrorDescriptor : Swift.Equatable, Swift.Sendable {
+  public let code: Swift.Int
+  public let constantName: Swift.String
+  public let chineseDescription: Swift.String
+  public let englishDescription: Swift.String
+  public static func == (a: TmkSDKErrorDescriptor, b: TmkSDKErrorDescriptor) -> Swift.Bool
+}
+extension TmkSDKErrorCode {
+  public var defaultCategory: TmkTranslationErrorCategory {
+    get
+  }
+  public var descriptor: TmkSDKErrorDescriptor {
+    get
+  }
+}
+public enum TmkTranslationErrorCategory : Swift.String {
+  case caller
+  case network
+  case rtcRtm
+  case audio
+  case state
+  case `internal`
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum TmkTranslationError : Swift.Error, Foundation.LocalizedError {
+  case caller(message: Swift.String, underlying: (any Swift.Error)? = nil)
+  case network(message: Swift.String, underlying: (any Swift.Error)? = nil)
+  case rtcRtm(message: Swift.String, underlying: (any Swift.Error)? = nil)
+  case audio(message: Swift.String, underlying: (any Swift.Error)? = nil)
+  case state(message: Swift.String, underlying: (any Swift.Error)? = nil)
+  case internalError(message: Swift.String, underlying: (any Swift.Error)? = nil)
+  public var code: Swift.Int {
+    get
+  }
+  public var constantName: Swift.String {
+    get
+  }
+  public var chineseDescription: Swift.String {
+    get
+  }
+  public var englishDescription: Swift.String {
+    get
+  }
+  public var category: TmkTranslationErrorCategory {
+    get
+  }
+  public var message: Swift.String {
+    get
+  }
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var underlyingError: (any Swift.Error)? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var actualErrorCode: Swift.Int? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var actualErrorMessage: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var actualErrorDomain: Swift.String? {
+    get
+  }
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public var errorDescription: Swift.String? {
+    get
+  }
+  #endif
+}
+@_hasMissingDesignatedInitializers public class AbstractChannelEngine {
+  public func getType() -> EngineType
+  public func currentRuntimeState() -> TmkTranslationChannelStateSnapshot
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers final public class TmkTranslationChannelConfig {
+  final public let pcmSampleRate: Swift.Int
+  final public let pcmChannels: Swift.Int
+  final public class Builder {
+    public init()
+    final public func setRoom(_ room: TmkTranslationRoom) -> TmkTranslationChannelConfig.Builder
+    final public func setMode(_ mode: TranslationMode) -> TmkTranslationChannelConfig.Builder
+    final public func setScenario(_ scenario: Scenario) -> TmkTranslationChannelConfig.Builder
+    final public func setSourceLang(_ langCode: Swift.String) -> TmkTranslationChannelConfig.Builder
+    final public func setTargetLang(_ langCode: Swift.String) -> TmkTranslationChannelConfig.Builder
+    final public func setPCMSampleRate(_ sampleRate: Swift.Int) -> TmkTranslationChannelConfig.Builder
+    final public func setPCMChannels(_ channels: Swift.Int) -> TmkTranslationChannelConfig.Builder
+    final public func setPlaybackAudioDataMode(_ mode: TmkTranslationPlaybackAudioDataMode) -> TmkTranslationChannelConfig.Builder
+    final public func setPlaybackAudioPullConfig(_ config: TmkTranslationPlaybackAudioPullConfig) -> TmkTranslationChannelConfig.Builder
+    final public func setMessageTunnel(_ tunnel: TmkTranslationMessageTunnel) -> TmkTranslationChannelConfig.Builder
+    final public func build() -> TmkTranslationChannelConfig
+    @objc deinit
+  }
+  @objc deinit
+}
+public enum TmkTranslationPlaybackAudioDataMode {
+  case audioFrameDelegate
+  case pullPlaybackAudioFrameRawData
+  public static func == (a: TmkTranslationPlaybackAudioDataMode, b: TmkTranslationPlaybackAudioDataMode) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct TmkTranslationPlaybackAudioPullConfig {
+  public let intervalMs: Swift.Int
+  public let lengthInByte: Swift.Int?
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(intervalMs: Swift.Int = 10, lengthInByte: Swift.Int? = nil)
+  #endif
+}
+public enum TmkTranslationNetworkEnvironment : Swift.String, Swift.Equatable, Swift.Sendable {
+  case dev
+  case test
+  case uat
+  case pre
+  case pre_jp
+  case pre_us
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers final public class TmkTranslationGlobalConfig {
+  final public class Builder {
+    public init()
+    final public func setAuth(appId: Swift.String, secret: Swift.String) -> TmkTranslationGlobalConfig.Builder
+    #if compiler(>=5.3) && $NonescapableTypes
+    final public func setOnlineAuthContext(tenantId: Swift.String? = nil, externalUserId: Swift.String? = nil, installId: Swift.String? = nil) -> TmkTranslationGlobalConfig.Builder
+    #endif
+    final public func setLogEnabled(_ isEnabled: Swift.Bool) -> TmkTranslationGlobalConfig.Builder
+    final public func setDiagnosisEnabled(_ isEnabled: Swift.Bool) -> TmkTranslationGlobalConfig.Builder
+    final public func setNetworkEnvironment(_ environment: TmkTranslationNetworkEnvironment) -> TmkTranslationGlobalConfig.Builder
+    final public func setNetworkBaseURL(_ url: Foundation.URL) -> TmkTranslationGlobalConfig.Builder
+    final public func setNetworkBaseURL(_ urlString: Swift.String) -> TmkTranslationGlobalConfig.Builder
+    final public func build() -> TmkTranslationGlobalConfig
+    @objc deinit
+  }
+  @objc deinit
+}
+public enum EngineType {
+  case offline
+  case online
+  public static func == (a: EngineType, b: EngineType) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum Scenario {
+  case presentation
+  case listen
+  case oneToOne
+  case listenFar
+  public static func == (a: Scenario, b: Scenario) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public enum TranslationMode {
+  case offline
+  case online
+  case auto
+  case mix
+  public static func == (a: TranslationMode, b: TranslationMode) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers final public class TmkTranslationChannel {
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func pushStreamAudioData(_ data: Foundation.Data, channelCount: Swift.Int, extraChunk: Foundation.Data? = nil)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func sendAudioMetadata(vadStatus: Swift.UInt8, channel: Swift.UInt8, baseTraceId: Swift.String? = nil) -> Swift.Result<Swift.String, TmkTranslationError>
+  #endif
+  final public func start()
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func start(completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void)
+  #endif
+  final public func stop()
+  final public func currentRuntimeState() -> TmkTranslationChannelStateSnapshot
+  final public func getTranslationMode() -> TranslationMode
+  final public func getScenario() -> Scenario
+  final public func getChannelEngineType() -> EngineType
+  final public func setTranslationListener(_ listener: any TmkTranslationListener)
+  @objc deinit
+}
+public struct TmkResult<T> {
+  public let sessionId: Swift.Int
+  public let data: T
+  public let srcCode: Swift.String
+  public let dstCode: Swift.String
+  public let isLast: Swift.Bool
+  public let extraData: [Swift.String : Any]
+  public init(sessionId: Swift.Int, data: T, srcCode: Swift.String, dstCode: Swift.String, isLast: Swift.Bool, extraData: [Swift.String : Any] = [:])
+}
+public struct TmkSupportedLanguagesResponse : Swift.Equatable {
+  public let version: Swift.String?
+  public let languages: [TmkSupportedLanguage]
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(version: Swift.String?, languages: [TmkSupportedLanguage])
+  #endif
+  public var localeOptions: [TmkSupportedLocale] {
+    get
+  }
+  public static func == (a: TmkSupportedLanguagesResponse, b: TmkSupportedLanguagesResponse) -> Swift.Bool
+}
+public struct TmkSupportedLanguage : Swift.Equatable {
+  public let code: Swift.String
+  public let locales: [TmkSupportedLocale]
+  public let nativeAccent: Swift.String
+  public let nativeLang: Swift.String
+  public let uiAccent: Swift.String
+  public let uiLang: Swift.String
+  public init(code: Swift.String, locales: [TmkSupportedLocale], nativeAccent: Swift.String, nativeLang: Swift.String, uiAccent: Swift.String, uiLang: Swift.String)
+  public static func == (a: TmkSupportedLanguage, b: TmkSupportedLanguage) -> Swift.Bool
+}
+public struct TmkSupportedLocale : Swift.Equatable {
+  public let code: Swift.String
+  public let nativeAccent: Swift.String
+  public let nativeLang: Swift.String
+  public let uiAccent: Swift.String
+  public let uiLang: Swift.String
+  public init(code: Swift.String, nativeAccent: Swift.String, nativeLang: Swift.String, uiAccent: Swift.String, uiLang: Swift.String)
+  public static func == (a: TmkSupportedLocale, b: TmkSupportedLocale) -> Swift.Bool
+}
+public protocol TmkSDKCancellable {
+  func cancel()
+}
+final public class TmkAnySDKCancellable : TmkSDKCancellable {
+  public init(onCancel: @escaping () -> Swift.Void)
+  final public func cancel()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers final public class TmkTranslationSDK {
+  public static let shared: TmkTranslationSDK
+  final public func sdkInit(_ config: TmkTranslationGlobalConfig)
+  final public func verifyAuth(_ callback: @escaping AuthCallback)
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func createTmkTranslationRoom(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, _ callback: @escaping CreateRoomCallback) -> TmkTranslationRoom
+  #endif
+  final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, callback: @escaping CreateChannelCallback)
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, listener: (any TmkTranslationListener)?, callback: @escaping CreateChannelCallback)
+  #endif
+  final public func destroy()
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func getSupportedLanguages(version: Swift.String? = nil, uiLocales: [Swift.String] = [], _ callback: @escaping (Swift.Result<TmkSupportedLanguagesResponse, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func getDiagnosisDirectoryURL() -> Foundation.URL?
+  #endif
+  @objc deinit
+}
+public enum TmkTranslationPCMTools {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func mixStereo16LE(left: Foundation.Data, right: Foundation.Data) -> Foundation.Data?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func mixMonoToStereo16LE(mono: Foundation.Data, isLeft: Swift.Bool) -> Foundation.Data?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  public static func splitStereoInterleaved16LE(_ stereo: Foundation.Data) -> (left: Foundation.Data, right: Foundation.Data)?
+  #endif
+}
+extension TmkTranslationChannelState : Swift.Hashable {}
+extension TmkTranslationChannelState : Swift.RawRepresentable {}
+extension TmkTranslationChannelStateReason : Swift.Hashable {}
+extension TmkTranslationChannelStateReason : Swift.RawRepresentable {}
+extension TmkTranslationMessageTunnel : Swift.Hashable {}
+extension TmkTranslationMessageTunnel : Swift.RawRepresentable {}
+extension TmkRoomScenario : Swift.Equatable {}
+extension TmkRoomScenario : Swift.Hashable {}
+extension TmkSDKErrorCode : Swift.Equatable {}
+extension TmkSDKErrorCode : Swift.Hashable {}
+extension TmkSDKErrorCode : Swift.RawRepresentable {}
+extension TmkTranslationErrorCategory : Swift.Equatable {}
+extension TmkTranslationErrorCategory : Swift.Hashable {}
+extension TmkTranslationErrorCategory : Swift.RawRepresentable {}
+extension TmkTranslationPlaybackAudioDataMode : Swift.Equatable {}
+extension TmkTranslationPlaybackAudioDataMode : Swift.Hashable {}
+extension TmkTranslationNetworkEnvironment : Swift.Hashable {}
+extension TmkTranslationNetworkEnvironment : Swift.RawRepresentable {}
+extension EngineType : Swift.Equatable {}
+extension EngineType : Swift.Hashable {}
+extension Scenario : Swift.Equatable {}
+extension Scenario : Swift.Hashable {}
+extension TranslationMode : Swift.Equatable {}
+extension TranslationMode : Swift.Hashable {}

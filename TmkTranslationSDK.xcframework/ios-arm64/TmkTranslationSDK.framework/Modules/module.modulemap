@@ -1,0 +1,6 @@
+framework module TmkTranslationSDK {
+  umbrella header "TmkTranslationSDK.h"
+  export *
+
+  module * { export * }
+}
