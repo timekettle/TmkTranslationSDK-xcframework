@@ -4,7 +4,6 @@
 // swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
 import Foundation
 import Swift
-@_exported import TmkTranslationSDK
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
