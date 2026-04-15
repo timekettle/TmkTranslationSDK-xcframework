@@ -7,6 +7,7 @@ import Swift
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
+import zlib
 public enum TmkTranslationChannelState : Swift.String, Swift.Equatable, Swift.Sendable {
   case idle
   case starting
@@ -81,6 +82,117 @@ extension TmkTranslationListener {
   public func onError(code: Swift.Int, message: Swift.String)
   public func onStateChanged(from engine: AbstractChannelEngine, snapshot: TmkTranslationChannelStateSnapshot)
 }
+public enum TmkOfflineModelPackageState : Swift.String, Swift.Equatable, Swift.Sendable {
+  case ready
+  case needsDownload
+  case needsUpdate
+  case resumable
+  case downloading
+  case unzipping
+  case failed
+  case cancelled
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct TmkOfflineModelPackageInfo : Swift.Equatable, Swift.Sendable {
+  public let packageKey: Swift.String
+  public let type: Swift.String
+  public let name: Swift.String
+  public let state: TmkOfflineModelPackageState
+  public let index: Swift.Int
+  public let total: Swift.Int
+  public let downloadedBytes: Swift.Int64
+  public let totalBytes: Swift.Int64
+  public let unzipProgress: Swift.Double
+  public let localDirectory: Swift.String
+  public init(packageKey: Swift.String, type: Swift.String, name: Swift.String, state: TmkOfflineModelPackageState, index: Swift.Int = 0, total: Swift.Int = 0, downloadedBytes: Swift.Int64 = 0, totalBytes: Swift.Int64 = -1, unzipProgress: Swift.Double = 0, localDirectory: Swift.String)
+  public static func == (a: TmkOfflineModelPackageInfo, b: TmkOfflineModelPackageInfo) -> Swift.Bool
+}
+public protocol TmkOfflineModelDownloadListener : AnyObject {
+  #if compiler(>=5.3) && $NonescapableTypes
+  func onOfflineModelEvent(name: Swift.String, args: Any?)
+  #endif
+  func onOfflineModelDownloadProgress(fileName: Swift.String, index: Swift.Int, total: Swift.Int, downloaded: Swift.Int64, fileTotal: Swift.Int64)
+  func onOfflineModelUnzipProgress(fileName: Swift.String, progress: Swift.Double)
+  func onOfflineModelReady()
+  func onOfflineModelPackageInfosChanged(_ packages: [TmkOfflineModelPackageInfo])
+  func onOfflineModelError(_ error: TmkTranslationError)
+}
+extension TmkOfflineModelDownloadListener {
+  #if compiler(>=5.3) && $NonescapableTypes
+  public func onOfflineModelEvent(name: Swift.String, args: Any?)
+  #endif
+  public func onOfflineModelDownloadProgress(fileName: Swift.String, index: Swift.Int, total: Swift.Int, downloaded: Swift.Int64, fileTotal: Swift.Int64)
+  public func onOfflineModelUnzipProgress(fileName: Swift.String, progress: Swift.Double)
+  public func onOfflineModelReady()
+  public func onOfflineModelPackageInfosChanged(_ packages: [TmkOfflineModelPackageInfo])
+  public func onOfflineModelError(_ error: TmkTranslationError)
+}
+public protocol TmkSDKCancellable {
+  func cancel()
+}
+final public class TmkAnySDKCancellable : TmkSDKCancellable {
+  public init(onCancel: @escaping () -> Swift.Void)
+  final public func cancel()
+  @objc deinit
+}
+extension TmkTranslationSDK {
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func createTmkTranslationRoom(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, _ callback: @escaping CreateRoomCallback) -> TmkTranslationRoom
+  #endif
+  final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, callback: @escaping CreateChannelCallback)
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, listener: (any TmkTranslationListener)?, callback: @escaping CreateChannelCallback)
+  #endif
+  final public func releaseChannel()
+  final public func destroy()
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func getSupportedLanguages(source: TmkSupportedLanguagesSource, version: Swift.String? = nil, uiLocales: [Swift.String] = [], _ callback: @escaping (Swift.Result<TmkSupportedLanguagesResponse, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
+  #endif
+}
+extension TmkTranslationSDK {
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func getDiagnosisDirectoryURL() -> Foundation.URL?
+  #endif
+}
+extension TmkTranslationSDK {
+  final public func defaultOfflineModelRootDirectory() -> Swift.String
+  final public func defaultOfflineModelRootDirectoryURL() -> Foundation.URL
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func getOfflineModelPackageInfos(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> [TmkOfflineModelPackageInfo]
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func downloadOfflineModels(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true, listener: (any TmkOfflineModelDownloadListener)?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func downloadChineseEnglishOfflineModels(modelRootDirectory: Swift.String? = nil, listener: (any TmkOfflineModelDownloadListener)?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func downloadChineseEnglish(modelRootDirectory: Swift.String? = nil, listener: (any TmkOfflineModelDownloadListener)?)
+  #endif
+  final public func cancelOfflineModelDownload()
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isOfflineModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isAsrModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isMtModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isTtsModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isTtsDataReady(modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+}
 public enum TmkTranslationMessageTunnel : Swift.String, Swift.Equatable {
   case rtm
   case rtc
@@ -152,6 +264,7 @@ public enum TmkSDKErrorCode : Swift.Int, Swift.CaseIterable, Swift.Sendable {
   case engineInitializationFailed
   case bufferOverflow
   case threadInterrupted
+  case offlineModelNotReady
   case unknownError
   case networkInvalidURL
   case networkTransportError
@@ -279,6 +392,7 @@ public enum TmkTranslationError : Swift.Error, Foundation.LocalizedError {
     final public func setPlaybackAudioDataMode(_ mode: TmkTranslationPlaybackAudioDataMode) -> TmkTranslationChannelConfig.Builder
     final public func setPlaybackAudioPullConfig(_ config: TmkTranslationPlaybackAudioPullConfig) -> TmkTranslationChannelConfig.Builder
     final public func setMessageTunnel(_ tunnel: TmkTranslationMessageTunnel) -> TmkTranslationChannelConfig.Builder
+    final public func setModelRootDirectory(_ directory: Swift.String) -> TmkTranslationChannelConfig.Builder
     final public func build() -> TmkTranslationChannelConfig
     @objc deinit
   }
@@ -376,6 +490,7 @@ public enum TranslationMode {
   final public func start(completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void)
   #endif
   final public func stop()
+  final public func release()
   final public func currentRuntimeState() -> TmkTranslationChannelStateSnapshot
   final public func getTranslationMode() -> TranslationMode
   final public func getScenario() -> Scenario
@@ -392,7 +507,7 @@ public struct TmkResult<T> {
   public let extraData: [Swift.String : Any]
   public init(sessionId: Swift.Int, data: T, srcCode: Swift.String, dstCode: Swift.String, isLast: Swift.Bool, extraData: [Swift.String : Any] = [:])
 }
-public struct TmkSupportedLanguagesResponse : Swift.Equatable {
+public struct TmkSupportedLanguagesResponse : Swift.Equatable, Swift.Codable {
   public let version: Swift.String?
   public let languages: [TmkSupportedLanguage]
   #if compiler(>=5.3) && $NonescapableTypes
@@ -402,8 +517,10 @@ public struct TmkSupportedLanguagesResponse : Swift.Equatable {
     get
   }
   public static func == (a: TmkSupportedLanguagesResponse, b: TmkSupportedLanguagesResponse) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
 }
-public struct TmkSupportedLanguage : Swift.Equatable {
+public struct TmkSupportedLanguage : Swift.Equatable, Swift.Codable {
   public let code: Swift.String
   public let locales: [TmkSupportedLocale]
   public let nativeAccent: Swift.String
@@ -412,8 +529,10 @@ public struct TmkSupportedLanguage : Swift.Equatable {
   public let uiLang: Swift.String
   public init(code: Swift.String, locales: [TmkSupportedLocale], nativeAccent: Swift.String, nativeLang: Swift.String, uiAccent: Swift.String, uiLang: Swift.String)
   public static func == (a: TmkSupportedLanguage, b: TmkSupportedLanguage) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
 }
-public struct TmkSupportedLocale : Swift.Equatable {
+public struct TmkSupportedLocale : Swift.Equatable, Swift.Codable {
   public let code: Swift.String
   public let nativeAccent: Swift.String
   public let nativeLang: Swift.String
@@ -421,34 +540,23 @@ public struct TmkSupportedLocale : Swift.Equatable {
   public let uiLang: Swift.String
   public init(code: Swift.String, nativeAccent: Swift.String, nativeLang: Swift.String, uiAccent: Swift.String, uiLang: Swift.String)
   public static func == (a: TmkSupportedLocale, b: TmkSupportedLocale) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
 }
-public protocol TmkSDKCancellable {
-  func cancel()
-}
-final public class TmkAnySDKCancellable : TmkSDKCancellable {
-  public init(onCancel: @escaping () -> Swift.Void)
-  final public func cancel()
-  @objc deinit
+public enum TmkSupportedLanguagesSource : Swift.Equatable {
+  case online
+  case offline
+  public static func == (a: TmkSupportedLanguagesSource, b: TmkSupportedLanguagesSource) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
 }
 @_hasMissingDesignatedInitializers final public class TmkTranslationSDK {
   public static let shared: TmkTranslationSDK
   final public func sdkInit(_ config: TmkTranslationGlobalConfig)
   final public func verifyAuth(_ callback: @escaping AuthCallback)
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func createTmkTranslationRoom(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, _ callback: @escaping CreateRoomCallback) -> TmkTranslationRoom
-  #endif
-  final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, callback: @escaping CreateChannelCallback)
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, listener: (any TmkTranslationListener)?, callback: @escaping CreateChannelCallback)
-  #endif
-  final public func destroy()
-  #if compiler(>=5.3) && $NonescapableTypes
-  @discardableResult
-  final public func getSupportedLanguages(version: Swift.String? = nil, uiLocales: [Swift.String] = [], _ callback: @escaping (Swift.Result<TmkSupportedLanguagesResponse, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func getDiagnosisDirectoryURL() -> Foundation.URL?
-  #endif
+  final public func isOfflineTranslationSupported() -> Swift.Bool
   @objc deinit
 }
 public enum TmkTranslationPCMTools {
@@ -461,11 +569,46 @@ public enum TmkTranslationPCMTools {
   #if compiler(>=5.3) && $NonescapableTypes
   public static func splitStereoInterleaved16LE(_ stereo: Foundation.Data) -> (left: Foundation.Data, right: Foundation.Data)?
   #endif
+  public static func pcm16LEToFloat(_ data: Foundation.Data) -> [Swift.Float]
+  public static func floatToPCM16LE(_ samples: [Swift.Float]) -> Foundation.Data
+}
+@_hasMissingDesignatedInitializers final public class TmkOfflineModelManager {
+  final public func defaultModelRootDirectory() -> Swift.String
+  final public func defaultModelRootDirectoryURL() -> Foundation.URL
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isLanguagePairReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> Swift.Bool
+  #endif
+  final public func isOfflineModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String, scenario: Scenario = .oneToOne, needMt: Swift.Bool, needTts: Swift.Bool) -> Swift.Bool
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isAsrModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isMtModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isTtsModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func isTtsDataReady(modelRootDirectory: Swift.String? = nil) -> Swift.Bool
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func getLanguagePairModelPackageInfos(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> [TmkOfflineModelPackageInfo]
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func downloadLanguagePair(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true, delegate: (any TmkOfflineModelDownloadListener)?)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func downloadChineseEnglish(modelRootDirectory: Swift.String? = nil, delegate: (any TmkOfflineModelDownloadListener)?)
+  #endif
+  final public func cancelDownload()
+  @objc deinit
 }
 extension TmkTranslationChannelState : Swift.Hashable {}
 extension TmkTranslationChannelState : Swift.RawRepresentable {}
 extension TmkTranslationChannelStateReason : Swift.Hashable {}
 extension TmkTranslationChannelStateReason : Swift.RawRepresentable {}
+extension TmkOfflineModelPackageState : Swift.Hashable {}
+extension TmkOfflineModelPackageState : Swift.RawRepresentable {}
 extension TmkTranslationMessageTunnel : Swift.Hashable {}
 extension TmkTranslationMessageTunnel : Swift.RawRepresentable {}
 extension TmkRoomScenario : Swift.Equatable {}
@@ -486,3 +629,4 @@ extension Scenario : Swift.Equatable {}
 extension Scenario : Swift.Hashable {}
 extension TranslationMode : Swift.Equatable {}
 extension TranslationMode : Swift.Hashable {}
+extension TmkSupportedLanguagesSource : Swift.Hashable {}
