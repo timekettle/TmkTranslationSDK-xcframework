@@ -12099,6 +12099,16 @@
         "name": "Foundation",
         "printedName": "Foundation",
         "declKind": "Import",
+        "moduleName": "TmkTranslationSDK",
+        "declAttributes": [
+          "RawDocComment"
+        ]
+      },
+      {
+        "kind": "Import",
+        "name": "Foundation",
+        "printedName": "Foundation",
+        "declKind": "Import",
         "moduleName": "TmkTranslationSDK"
       },
       {
@@ -17282,22 +17292,29 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
-      "kind": "StringLiteral",
-      "offset": 1873,
-      "length": 11,
-      "value": "\"offline_0\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 2113,
+      "offset": 1756,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "StringLiteral",
-      "offset": 6288,
+      "offset": 1949,
+      "length": 11,
+      "value": "\"offline_0\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
+      "kind": "BooleanLiteral",
+      "offset": 2189,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
+      "kind": "StringLiteral",
+      "offset": 6840,
       "length": 2,
       "value": "\"\""
     },
@@ -18066,31 +18083,59 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
-      "kind": "StringLiteral",
-      "offset": 1968,
-      "length": 11,
-      "value": "\"offline_0\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
-      "kind": "StringLiteral",
-      "offset": 2106,
-      "length": 11,
-      "value": "\"offline_0\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "BooleanLiteral",
-      "offset": 2547,
+      "offset": 1800,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "StringLiteral",
-      "offset": 8451,
+      "offset": 2044,
+      "length": 11,
+      "value": "\"offline_0\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "StringLiteral",
+      "offset": 2182,
+      "length": 11,
+      "value": "\"offline_0\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "BooleanLiteral",
+      "offset": 2623,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "StringLiteral",
+      "offset": 9172,
       "length": 2,
       "value": "\"\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/TmkOfflineVoiceIDResolver.swift",
+      "kind": "IntegerLiteral",
+      "offset": 347,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/TmkOfflineVoiceIDResolver.swift",
+      "kind": "IntegerLiteral",
+      "offset": 380,
+      "length": 1,
+      "value": "1"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/TmkOfflineVoiceIDResolver.swift",
+      "kind": "Dictionary",
+      "offset": 459,
+      "length": 930,
+      "value": "[(\"zh\", (0, 4)), (\"en\", (4, 1)), (\"ar\", (2, 3)), (\"fr\", (3, 8)), (\"de\", (9, 8)), (\"it\", (7, 6)), (\"ru\", (2, 1)), (\"es\", (0, 4)), (\"th\", (2, 1)), (\"ja\", (4, 1)), (\"ko\", (4, 0)), (\"nb\", (2, 0)), (\"sv\", (0, 1)), (\"ur\", (3, 2)), (\"ms\", (1, 0)), (\"id\", (1, 0)), (\"hi\", (2, 3)), (\"pt\", (1, 4)), (\"nl\", (3, 0)), (\"vi\", (0, 1)), (\"fi\", (1, 0)), (\"ta\", (7, 2)), (\"te\", (1, 0)), (\"da\", (0, 1)), (\"ca\", (2, 1)), (\"he\", (1, 0)), (\"el\", (0, 1)), (\"hu\", (0, 1)), (\"pl\", (2, 1)), (\"cs\", (1, 0)), (\"sk\", (1, 0)), (\"ro\", (0, 1)), (\"sl\", (0, 1)), (\"hr\", (0, 1)), (\"bg\", (1, 0)), (\"tr\", (1, 0)), (\"uk\", (1, 0)), (\"is\", (0, 1)), (\"sw\", (3, 2)), (\"fa\", (0, 1)), (\"kk\", (0, 1)), (\"uz\", (0, 1))]"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Diagnosis\/TmkWorkflowDiagnosticsAspect.swift",
