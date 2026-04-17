@@ -15191,6 +15191,102 @@
           },
           {
             "kind": "Function",
+            "name": "checkOfflineModelReadyAsync",
+            "printedName": "checkOfflineModelReadyAsync(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:callbackQueue:completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Scenario",
+                "printedName": "TmkTranslationSDK.Scenario",
+                "hasDefaultArg": true,
+                "usr": "s:17TmkTranslationSDK8ScenarioO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "hasDefaultArg": true,
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "hasDefaultArg": true,
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "DispatchQueue",
+                "printedName": "Dispatch.DispatchQueue",
+                "hasDefaultArg": true,
+                "usr": "c:objc(cs)OS_dispatch_queue"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Bool) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:17TmkTranslationSDKAAC27checkOfflineModelReadyAsync7srcLang03dstJ018modelRootDirectory8scenario6needMt0P3Tts13callbackQueue10completionySS_S2SSgAA8ScenarioOS2bSo17OS_dispatch_queueCySbctF",
+            "mangledName": "$s17TmkTranslationSDKAAC27checkOfflineModelReadyAsync7srcLang03dstJ018modelRootDirectory8scenario6needMt0P3Tts13callbackQueue10completionySS_S2SSgAA8ScenarioOS2bSo17OS_dispatch_queueCySbctF",
+            "moduleName": "TmkTranslationSDK",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "isFromExtension": true,
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
             "name": "isAsrModelReady",
             "printedName": "isAsrModelReady(langCode:modelRootDirectory:)",
             "children": [
@@ -15900,6 +15996,123 @@
             "declKind": "Func",
             "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC19isLanguagePairReady7srcLang03dstL018modelRootDirectory8scenario6needMt0R3TtsSbSS_S2SSgAA8ScenarioOS2btF",
             "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC19isLanguagePairReady7srcLang03dstL018modelRootDirectory8scenario6needMt0R3TtsSbSS_S2SSgAA8ScenarioOS2btF",
+            "moduleName": "TmkTranslationSDK",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "checkLanguagePairReadyAsync",
+            "printedName": "checkLanguagePairReadyAsync(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:callbackQueue:completion:)",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "String",
+                "printedName": "Swift.String",
+                "usr": "s:SS"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Optional",
+                "printedName": "Swift.String?",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "String",
+                    "printedName": "Swift.String",
+                    "usr": "s:SS"
+                  }
+                ],
+                "hasDefaultArg": true,
+                "usr": "s:Sq"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Scenario",
+                "printedName": "TmkTranslationSDK.Scenario",
+                "hasDefaultArg": true,
+                "usr": "s:17TmkTranslationSDK8ScenarioO"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "hasDefaultArg": true,
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "Bool",
+                "printedName": "Swift.Bool",
+                "hasDefaultArg": true,
+                "usr": "s:Sb"
+              },
+              {
+                "kind": "TypeNominal",
+                "name": "DispatchQueue",
+                "printedName": "Dispatch.DispatchQueue",
+                "hasDefaultArg": true,
+                "usr": "c:objc(cs)OS_dispatch_queue"
+              },
+              {
+                "kind": "TypeFunc",
+                "name": "Function",
+                "printedName": "(Swift.Bool) -> ()",
+                "children": [
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Void",
+                    "printedName": "()"
+                  },
+                  {
+                    "kind": "TypeNominal",
+                    "name": "Bool",
+                    "printedName": "Swift.Bool",
+                    "usr": "s:Sb"
+                  }
+                ]
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC27checkLanguagePairReadyAsync7srcLang03dstM018modelRootDirectory8scenario6needMt0S3Tts13callbackQueue10completionySS_S2SSgAA8ScenarioOS2bSo17OS_dispatch_queueCySbctF",
+            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC27checkLanguagePairReadyAsync7srcLang03dstM018modelRootDirectory8scenario6needMt0S3Tts13callbackQueue10completionySS_S2SSgAA8ScenarioOS2bSo17OS_dispatch_queueCySbctF",
+            "moduleName": "TmkTranslationSDK",
+            "declAttributes": [
+              "Final",
+              "AccessControl",
+              "RawDocComment"
+            ],
+            "funcSelfKind": "NonMutating"
+          },
+          {
+            "kind": "Function",
+            "name": "invalidateReadinessCache",
+            "printedName": "invalidateReadinessCache()",
+            "children": [
+              {
+                "kind": "TypeNominal",
+                "name": "Void",
+                "printedName": "()"
+              }
+            ],
+            "declKind": "Func",
+            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC24invalidateReadinessCacheyyF",
+            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC24invalidateReadinessCacheyyF",
             "moduleName": "TmkTranslationSDK",
             "declAttributes": [
               "Final",
@@ -16824,7 +17037,7 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+RoomChannel.swift",
       "kind": "Array",
-      "offset": 15359,
+      "offset": 15544,
       "length": 2,
       "value": "[]"
     },
@@ -16859,16 +17072,37 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "BooleanLiteral",
-      "offset": 5514,
+      "offset": 6115,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "BooleanLiteral",
-      "offset": 5544,
+      "offset": 6145,
       "length": 4,
       "value": "true"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
+      "kind": "BooleanLiteral",
+      "offset": 6850,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
+      "kind": "BooleanLiteral",
+      "offset": 6880,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
+      "kind": "Array",
+      "offset": 9837,
+      "length": 2,
+      "value": "[]"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Room\/TmkTranslationRoom.swift",
@@ -16992,231 +17226,231 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 1470,
+      "offset": 1675,
       "length": 7,
       "value": "2001101"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 1577,
+      "offset": 1782,
       "length": 7,
       "value": "2001102"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 1697,
+      "offset": 1902,
       "length": 7,
       "value": "2001103"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 1807,
+      "offset": 2012,
       "length": 7,
       "value": "2001104"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 1896,
+      "offset": 2101,
       "length": 7,
       "value": "2001105"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2011,
+      "offset": 2216,
       "length": 7,
       "value": "2001106"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2106,
+      "offset": 2311,
       "length": 7,
       "value": "2001107"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2230,
+      "offset": 2435,
       "length": 7,
       "value": "2001108"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2331,
+      "offset": 2536,
       "length": 7,
       "value": "2001109"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2451,
+      "offset": 2656,
       "length": 7,
       "value": "2001110"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2561,
+      "offset": 2766,
       "length": 7,
       "value": "2001111"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2642,
+      "offset": 2847,
       "length": 7,
       "value": "2001112"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2726,
+      "offset": 2931,
       "length": 7,
       "value": "2001113"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2838,
+      "offset": 3043,
       "length": 7,
       "value": "2001114"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 2947,
+      "offset": 3152,
       "length": 7,
       "value": "2001115"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3050,
+      "offset": 3255,
       "length": 7,
       "value": "2001116"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3156,
+      "offset": 3361,
       "length": 7,
       "value": "2001117"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3263,
+      "offset": 3468,
       "length": 7,
       "value": "2001999"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3387,
+      "offset": 3592,
       "length": 7,
       "value": "2002001"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3512,
+      "offset": 3717,
       "length": 7,
       "value": "2002002"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3608,
+      "offset": 3813,
       "length": 7,
       "value": "2002003"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3728,
+      "offset": 3933,
       "length": 7,
       "value": "2002004"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3813,
+      "offset": 4018,
       "length": 7,
       "value": "2002005"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3888,
+      "offset": 4093,
       "length": 7,
       "value": "2002006"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 3969,
+      "offset": 4174,
       "length": 7,
       "value": "2003002"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 4064,
+      "offset": 4269,
       "length": 7,
       "value": "2003003"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 4178,
+      "offset": 4383,
       "length": 7,
       "value": "2003004"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 4286,
+      "offset": 4491,
       "length": 7,
       "value": "2003005"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 4404,
+      "offset": 4609,
       "length": 7,
       "value": "2003006"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 4483,
+      "offset": 4688,
       "length": 7,
       "value": "2003007"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "IntegerLiteral",
-      "offset": 4571,
+      "offset": 4776,
       "length": 7,
       "value": "2003008"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "StringLiteral",
-      "offset": 35203,
+      "offset": 35408,
       "length": 43,
       "value": "\"SDK 未初始化，请先调用 sdkInit()\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Core\/Callbacks.swift",
       "kind": "StringLiteral",
-      "offset": 35415,
+      "offset": 35620,
       "length": 14,
       "value": "\"认证失败\""
     },
@@ -17250,71 +17484,78 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
+      "kind": "Dictionary",
+      "offset": 1131,
+      "length": 3,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1208,
+      "offset": 1279,
       "length": 5,
       "value": "16000"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1225,
+      "offset": 1296,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1246,
+      "offset": 1317,
       "length": 2,
       "value": "80"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "StringLiteral",
-      "offset": 1306,
+      "offset": 1377,
       "length": 40,
       "value": "\"co.timekettle.sdk.offline.listen.start\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "StringLiteral",
-      "offset": 1475,
+      "offset": 1546,
       "length": 48,
       "value": "\"co.timekettle.sdk.offline.listen.playback.emit\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1684,
+      "offset": 1755,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 1756,
+      "offset": 1827,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
-      "kind": "StringLiteral",
-      "offset": 1949,
-      "length": 11,
-      "value": "\"offline_0\""
+      "kind": "IntegerLiteral",
+      "offset": 1974,
+      "length": 1,
+      "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 2189,
+      "offset": 2204,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "StringLiteral",
-      "offset": 6840,
+      "offset": 6935,
       "length": 2,
       "value": "\"\""
     },
@@ -18041,78 +18282,113 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "Dictionary",
+      "offset": 1239,
+      "length": 3,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1250,
+      "offset": 1333,
       "length": 5,
       "value": "16000"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1267,
+      "offset": 1350,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1288,
+      "offset": 1371,
+      "length": 2,
+      "value": "80"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1466,
+      "length": 5,
+      "value": "16000"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1483,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1504,
       "length": 2,
       "value": "80"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "StringLiteral",
-      "offset": 1348,
+      "offset": 1564,
       "length": 41,
       "value": "\"co.timekettle.sdk.offline.one2one.start\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "StringLiteral",
-      "offset": 1518,
-      "length": 49,
-      "value": "\"co.timekettle.sdk.offline.one2one.playback.emit\""
+      "offset": 1738,
+      "length": 54,
+      "value": "\"co.timekettle.sdk.offline.one2one.playback.emit.left\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "StringLiteral",
+      "offset": 1931,
+      "length": 55,
+      "value": "\"co.timekettle.sdk.offline.one2one.playback.emit.right\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1728,
+      "offset": 2156,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2207,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "BooleanLiteral",
-      "offset": 1800,
+      "offset": 2279,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
-      "kind": "StringLiteral",
-      "offset": 2044,
-      "length": 11,
-      "value": "\"offline_0\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
-      "kind": "StringLiteral",
-      "offset": 2182,
-      "length": 11,
-      "value": "\"offline_0\""
+      "kind": "IntegerLiteral",
+      "offset": 2426,
+      "length": 1,
+      "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "BooleanLiteral",
-      "offset": 2623,
+      "offset": 2857,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "StringLiteral",
-      "offset": 9172,
+      "offset": 9770,
       "length": 2,
       "value": "\"\""
     },
@@ -18315,7 +18591,7 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Diagnosis\/TmkSDKLifecycleDiagnosticsAspect.swift",
       "kind": "BooleanLiteral",
-      "offset": 10518,
+      "offset": 11672,
       "length": 4,
       "value": "true"
     },
@@ -18332,6 +18608,13 @@
       "offset": 549,
       "length": 43,
       "value": "\"co.timekettle.sdk.offline.channel.startup\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK.swift",
+      "kind": "Dictionary",
+      "offset": 1623,
+      "length": 3,
+      "value": "[]"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkSDKVersion.swift",
@@ -18504,119 +18787,140 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "StringLiteral",
-      "offset": 1090,
+      "offset": 1018,
       "length": 17,
       "value": "\"tmkOfflineModel\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 1221,
+      "offset": 1149,
       "length": 3,
       "value": "120"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
+      "kind": "Dictionary",
+      "offset": 4197,
+      "length": 3,
+      "value": "[]"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 3920,
+      "offset": 4268,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 4099,
+      "offset": 4447,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 6257,
+      "offset": 6755,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 6287,
+      "offset": 6785,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 9543,
+      "offset": 7859,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 9573,
+      "offset": 7889,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 11833,
+      "offset": 13026,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 11863,
+      "offset": 13056,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
+      "kind": "BooleanLiteral",
+      "offset": 15316,
+      "length": 4,
+      "value": "true"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
+      "kind": "BooleanLiteral",
+      "offset": 15346,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 21854,
+      "offset": 25503,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 22495,
+      "offset": 26144,
       "length": 2,
       "value": "-1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 33092,
+      "offset": 36741,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 33116,
+      "offset": 36765,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 33152,
+      "offset": 36801,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 33183,
+      "offset": 36832,
       "length": 2,
       "value": "-1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 33219,
+      "offset": 36868,
       "length": 1,
       "value": "0"
     },

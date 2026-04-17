@@ -181,6 +181,9 @@ extension TmkTranslationSDK {
   final public func isOfflineModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> Swift.Bool
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
+  final public func checkOfflineModelReadyAsync(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true, callbackQueue: Dispatch.DispatchQueue = .main, completion: @escaping OfflineModelReadyCallback)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
   final public func isAsrModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
@@ -247,6 +250,7 @@ public enum TmkRoomScenario {
 public typealias AuthCallback = (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void
 public typealias CreateRoomCallback = (Swift.Result<TmkTranslationRoom, TmkTranslationError>) -> Swift.Void
 public typealias CreateChannelCallback = (Swift.Result<TmkTranslationChannel, TmkTranslationError>) -> Swift.Void
+public typealias OfflineModelReadyCallback = (Swift.Bool) -> Swift.Void
 public enum TmkSDKErrorCode : Swift.Int, Swift.CaseIterable, Swift.Sendable {
   case sdkNotInitialized
   case authenticationFailed
@@ -578,6 +582,10 @@ public enum TmkTranslationPCMTools {
   #if compiler(>=5.3) && $NonescapableTypes
   final public func isLanguagePairReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> Swift.Bool
   #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  final public func checkLanguagePairReadyAsync(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true, callbackQueue: Dispatch.DispatchQueue = .main, completion: @escaping (Swift.Bool) -> Swift.Void)
+  #endif
+  final public func invalidateReadinessCache()
   final public func isOfflineModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String, scenario: Scenario = .oneToOne, needMt: Swift.Bool, needTts: Swift.Bool) -> Swift.Bool
   #if compiler(>=5.3) && $NonescapableTypes
   final public func isAsrModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
