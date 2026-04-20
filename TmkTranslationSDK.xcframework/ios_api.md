@@ -2,7 +2,7 @@
 
 <!-- AUTO_VERSION_BLOCK_START -->
 > 当前文档适配版本：`v1.0.0`  
-> 最近更新日期：`2026-04-14`  
+> 最近更新日期：`2026-04-18`  
 > 版本说明：见 [ios_release_notes.md](./ios_release_notes.md)
 <!-- AUTO_VERSION_BLOCK_END -->
 
@@ -206,6 +206,8 @@ public func verifyAuth(_ callback: @escaping AuthCallback)
 
 - 首次调用时会懒初始化网络监听、诊断和鉴权基础设施。
 - 在线翻译必须先鉴权成功。
+- `verifyAuth(_:)` 内部会先执行在线鉴权；在线鉴权成功后，SDK 会继续尝试离线鉴权，用于更新离线能力状态。
+- `verifyAuth(_:)` 的回调成功/失败只由在线鉴权结果决定；离线鉴权失败不会导致本次 `verifyAuth(_:)` 回调失败。
 - 离线翻译建议先鉴权，再通过 `isOfflineTranslationSupported()` 判断当前账号是否支持离线能力。
 - 离线翻译并不是完全零前置条件可直接使用：至少需要先成功鉴权一次、离线能力开关已开启、且相关离线模型曾下载成功。
 
@@ -238,6 +240,7 @@ public func isOfflineTranslationSupported() -> Bool
 注意：
 
 - 建议在 `verifyAuth(_:)` 成功后再调用。
+- `verifyAuth(_:)` 成功仅表示在线鉴权成功；如果离线鉴权未成功，当前接口仍可能返回 `false`。
 
 ---
 
@@ -379,7 +382,8 @@ public func getSupportedLanguages(
 
 #### 在线语言列表
 
-- 依赖 `verifyAuth(_:)` 成功后获取到的业务 token。
+- 不依赖鉴权；完成 `sdkInit(_:)` 后即可请求。
+- 依赖网络可用；若当前无网络，在线语言列表请求会失败。
 - SDK 会根据 `version` 尝试返回最新语言列表；当本次没有新的语言列表时，会优先返回本地已保存的列表。
 - 如果本次获取失败，但本地已有可用语言列表，SDK 会优先返回本地列表；没有可用列表时才回调错误。
 
@@ -1016,10 +1020,26 @@ public func isTtsModelReady(langCode: String, modelRootDirectory: String? = nil)
 public func isTtsDataReady(modelRootDirectory: String? = nil) -> Bool
 ```
 
+```swift
+public func checkOfflineModelReadyAsync(
+    srcLang: String,
+    dstLang: String,
+    modelRootDirectory: String? = nil,
+    scenario: Scenario = .oneToOne,
+    needMt: Bool = true,
+    needTts: Bool = true,
+    callbackQueue: DispatchQueue = .main,
+    completion: @escaping OfflineModelReadyCallback
+)
+```
+
 说明：
 
 - `isOfflineModelReady(...)`
   - 校验当前语言对在指定场景下所需资源是否都已就绪。
+- `checkOfflineModelReadyAsync(...)`
+  - 异步执行离线模型就绪检查。
+  - 推荐在页面初始化或 UI 交互链路中优先使用，避免同步目录扫描导致主线程卡顿。
 - 其余接口用于单项模型检查。
 
 ### 9.6 离线场景所需模型说明
@@ -1974,11 +1994,11 @@ TmkTranslationSDK.shared.verifyAuth { result in
 
 ### 19.1 为什么在线能力需要先调用 `verifyAuth(_:)`？
 
-在线翻译、在线语言列表、在线建房与建通道都依赖鉴权成功后得到的业务 token。未完成 `verifyAuth(_:)` 时，这些能力会直接失败。
+在线翻译、在线建房与在线建通道都依赖鉴权成功后得到的业务 token。在线语言列表是例外：完成 `sdkInit(_:)` 后即可请求，不依赖 `verifyAuth(_:)`。
 
 ### 19.2 为什么离线翻译也建议先调用 `verifyAuth(_:)`？
 
-离线翻译并不是零前置条件直接可用。至少需要先成功鉴权一次，用于确认当前账号是否开通离线翻译能力，并获取离线能力所需的鉴权信息。
+离线翻译并不是零前置条件直接可用。SDK 在 `verifyAuth(_:)` 中会先完成在线鉴权，并在在线鉴权成功后继续尝试离线鉴权，用于确认当前账号是否开通离线翻译能力，并获取离线能力所需的鉴权信息。
 
 ### 19.3 为什么离线模型下载成功过，之后又可能不能使用？
 
@@ -2032,7 +2052,7 @@ TmkTranslationSDK.shared.verifyAuth { result in
 
 ### 19.11 `isOfflineTranslationSupported()` 返回 `false` 怎么办？
 
-说明当前账号或当前鉴权上下文不支持离线翻译。此时不能创建可用的离线翻译通道。请先确认：
+说明当前账号或当前鉴权上下文不支持离线翻译。即使 `verifyAuth(_:)` 已成功，只要离线鉴权未成功，当前接口仍可能返回 `false`。此时不能创建可用的离线翻译通道。请先确认：
 
 - 已成功调用 `verifyAuth(_:)`
 - 当前环境配置正确
