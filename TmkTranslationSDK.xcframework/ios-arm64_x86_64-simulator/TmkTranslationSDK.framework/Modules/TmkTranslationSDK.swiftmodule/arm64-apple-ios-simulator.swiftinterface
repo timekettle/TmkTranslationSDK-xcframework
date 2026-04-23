@@ -576,41 +576,6 @@ public enum TmkTranslationPCMTools {
   public static func pcm16LEToFloat(_ data: Foundation.Data) -> [Swift.Float]
   public static func floatToPCM16LE(_ samples: [Swift.Float]) -> Foundation.Data
 }
-@_hasMissingDesignatedInitializers final public class TmkOfflineModelManager {
-  final public func defaultModelRootDirectory() -> Swift.String
-  final public func defaultModelRootDirectoryURL() -> Foundation.URL
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func isLanguagePairReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> Swift.Bool
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func checkLanguagePairReadyAsync(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true, callbackQueue: Dispatch.DispatchQueue = .main, completion: @escaping (Swift.Bool) -> Swift.Void)
-  #endif
-  final public func invalidateReadinessCache()
-  final public func isOfflineModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String, scenario: Scenario = .oneToOne, needMt: Swift.Bool, needTts: Swift.Bool) -> Swift.Bool
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func isAsrModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func isMtModelReady(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func isTtsModelReady(langCode: Swift.String, modelRootDirectory: Swift.String? = nil) -> Swift.Bool
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func isTtsDataReady(modelRootDirectory: Swift.String? = nil) -> Swift.Bool
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func getLanguagePairModelPackageInfos(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true) -> [TmkOfflineModelPackageInfo]
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func downloadLanguagePair(srcLang: Swift.String, dstLang: Swift.String, modelRootDirectory: Swift.String? = nil, scenario: Scenario = .oneToOne, needMt: Swift.Bool = true, needTts: Swift.Bool = true, delegate: (any TmkOfflineModelDownloadListener)?)
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func downloadChineseEnglish(modelRootDirectory: Swift.String? = nil, delegate: (any TmkOfflineModelDownloadListener)?)
-  #endif
-  final public func cancelDownload()
-  @objc deinit
-}
 extension TmkTranslationChannelState : Swift.Hashable {}
 extension TmkTranslationChannelState : Swift.RawRepresentable {}
 extension TmkTranslationChannelStateReason : Swift.Hashable {}

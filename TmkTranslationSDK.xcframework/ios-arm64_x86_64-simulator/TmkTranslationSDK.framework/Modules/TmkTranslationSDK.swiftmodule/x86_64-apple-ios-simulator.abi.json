@@ -15883,745 +15883,6 @@
         ]
       },
       {
-        "kind": "TypeDecl",
-        "name": "TmkOfflineModelManager",
-        "printedName": "TmkOfflineModelManager",
-        "children": [
-          {
-            "kind": "Function",
-            "name": "defaultModelRootDirectory",
-            "printedName": "defaultModelRootDirectory()",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC07defaultE13RootDirectorySSyF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC07defaultE13RootDirectorySSyF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "defaultModelRootDirectoryURL",
-            "printedName": "defaultModelRootDirectoryURL()",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "URL",
-                "printedName": "Foundation.URL",
-                "usr": "s:10Foundation3URLV"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC07defaultE16RootDirectoryURL10Foundation0J0VyF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC07defaultE16RootDirectoryURL10Foundation0J0VyF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "isLanguagePairReady",
-            "printedName": "isLanguagePairReady(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Scenario",
-                "printedName": "TmkTranslationSDK.Scenario",
-                "hasDefaultArg": true,
-                "usr": "s:17TmkTranslationSDK8ScenarioO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC19isLanguagePairReady7srcLang03dstL018modelRootDirectory8scenario6needMt0R3TtsSbSS_S2SSgAA8ScenarioOS2btF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC19isLanguagePairReady7srcLang03dstL018modelRootDirectory8scenario6needMt0R3TtsSbSS_S2SSgAA8ScenarioOS2btF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "checkLanguagePairReadyAsync",
-            "printedName": "checkLanguagePairReadyAsync(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:callbackQueue:completion:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Scenario",
-                "printedName": "TmkTranslationSDK.Scenario",
-                "hasDefaultArg": true,
-                "usr": "s:17TmkTranslationSDK8ScenarioO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "DispatchQueue",
-                "printedName": "Dispatch.DispatchQueue",
-                "hasDefaultArg": true,
-                "usr": "c:objc(cs)OS_dispatch_queue"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(Swift.Bool) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Bool",
-                    "printedName": "Swift.Bool",
-                    "usr": "s:Sb"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC27checkLanguagePairReadyAsync7srcLang03dstM018modelRootDirectory8scenario6needMt0S3Tts13callbackQueue10completionySS_S2SSgAA8ScenarioOS2bSo17OS_dispatch_queueCySbctF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC27checkLanguagePairReadyAsync7srcLang03dstM018modelRootDirectory8scenario6needMt0S3Tts13callbackQueue10completionySS_S2SSgAA8ScenarioOS2bSo17OS_dispatch_queueCySbctF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "invalidateReadinessCache",
-            "printedName": "invalidateReadinessCache()",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC24invalidateReadinessCacheyyF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC24invalidateReadinessCacheyyF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "isOfflineModelReady",
-            "printedName": "isOfflineModelReady(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Scenario",
-                "printedName": "TmkTranslationSDK.Scenario",
-                "hasDefaultArg": true,
-                "usr": "s:17TmkTranslationSDK8ScenarioO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC02isdE5Ready7srcLang03dstJ018modelRootDirectory8scenario6needMt0P3TtsSbSS_S2SAA8ScenarioOS2btF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC02isdE5Ready7srcLang03dstJ018modelRootDirectory8scenario6needMt0P3TtsSbSS_S2SAA8ScenarioOS2btF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "isAsrModelReady",
-            "printedName": "isAsrModelReady(langCode:modelRootDirectory:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC05isAsrE5Ready8langCode18modelRootDirectorySbSS_SSSgtF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC05isAsrE5Ready8langCode18modelRootDirectorySbSS_SSSgtF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "isMtModelReady",
-            "printedName": "isMtModelReady(srcLang:dstLang:modelRootDirectory:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC04isMtE5Ready7srcLang03dstK018modelRootDirectorySbSS_S2SSgtF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC04isMtE5Ready7srcLang03dstK018modelRootDirectorySbSS_S2SSgtF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "isTtsModelReady",
-            "printedName": "isTtsModelReady(langCode:modelRootDirectory:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC05isTtsE5Ready8langCode18modelRootDirectorySbSS_SSSgtF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC05isTtsE5Ready8langCode18modelRootDirectorySbSS_SSSgtF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "isTtsDataReady",
-            "printedName": "isTtsDataReady(modelRootDirectory:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC14isTtsDataReady18modelRootDirectorySbSSSg_tF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC14isTtsDataReady18modelRootDirectorySbSSSg_tF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "getLanguagePairModelPackageInfos",
-            "printedName": "getLanguagePairModelPackageInfos(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Array",
-                "printedName": "[TmkTranslationSDK.TmkOfflineModelPackageInfo]",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineModelPackageInfo",
-                    "printedName": "TmkTranslationSDK.TmkOfflineModelPackageInfo",
-                    "usr": "s:17TmkTranslationSDK0A23OfflineModelPackageInfoV"
-                  }
-                ],
-                "usr": "s:Sa"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Scenario",
-                "printedName": "TmkTranslationSDK.Scenario",
-                "hasDefaultArg": true,
-                "usr": "s:17TmkTranslationSDK8ScenarioO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC015getLanguagePairE12PackageInfos7srcLang03dstM018modelRootDirectory8scenario6needMt0S3TtsSayAA0adeJ4InfoVGSS_S2SSgAA8ScenarioOS2btF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC015getLanguagePairE12PackageInfos7srcLang03dstM018modelRootDirectory8scenario6needMt0S3TtsSayAA0adeJ4InfoVGSS_S2SSgAA8ScenarioOS2btF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "downloadLanguagePair",
-            "printedName": "downloadLanguagePair(srcLang:dstLang:modelRootDirectory:scenario:needMt:needTts:delegate:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Scenario",
-                "printedName": "TmkTranslationSDK.Scenario",
-                "hasDefaultArg": true,
-                "usr": "s:17TmkTranslationSDK8ScenarioO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "hasDefaultArg": true,
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "(any TmkTranslationSDK.TmkOfflineModelDownloadListener)?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineModelDownloadListener",
-                    "printedName": "any TmkTranslationSDK.TmkOfflineModelDownloadListener",
-                    "usr": "s:17TmkTranslationSDK0A28OfflineModelDownloadListenerP"
-                  }
-                ],
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC20downloadLanguagePair7srcLang03dstK018modelRootDirectory8scenario6needMt0Q3Tts8delegateySS_S2SSgAA8ScenarioOS2bAA0adE16DownloadListener_pSgtF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC20downloadLanguagePair7srcLang03dstK018modelRootDirectory8scenario6needMt0Q3Tts8delegateySS_S2SSgAA8ScenarioOS2bAA0adE16DownloadListener_pSgtF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "downloadChineseEnglish",
-            "printedName": "downloadChineseEnglish(modelRootDirectory:delegate:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "(any TmkTranslationSDK.TmkOfflineModelDownloadListener)?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineModelDownloadListener",
-                    "printedName": "any TmkTranslationSDK.TmkOfflineModelDownloadListener",
-                    "usr": "s:17TmkTranslationSDK0A28OfflineModelDownloadListenerP"
-                  }
-                ],
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC22downloadChineseEnglish18modelRootDirectory8delegateySSSg_AA0adE16DownloadListener_pSgtF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC22downloadChineseEnglish18modelRootDirectory8delegateySSSg_AA0adE16DownloadListener_pSgtF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "cancelDownload",
-            "printedName": "cancelDownload()",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC14cancelDownloadyyF",
-            "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC14cancelDownloadyyF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
-          }
-        ],
-        "declKind": "Class",
-        "usr": "s:17TmkTranslationSDK0A19OfflineModelManagerC",
-        "mangledName": "$s17TmkTranslationSDK0A19OfflineModelManagerC",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "Final",
-          "AccessControl",
-          "RawDocComment"
-        ],
-        "hasMissingDesignatedInitializers": true,
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          }
-        ]
-      },
-      {
         "kind": "Import",
         "name": "Foundation",
         "printedName": "Foundation",
@@ -18621,7 +17882,7 @@
       "kind": "StringLiteral",
       "offset": 256,
       "length": 7,
-      "value": "\"1.0.0\""
+      "value": "\"1.1.0\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkSDKVersion.swift",
@@ -18771,6 +18032,13 @@
       "value": "\"failed\""
     },
     {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
+      "kind": "StringLiteral",
+      "offset": 1682,
+      "length": 5,
+      "value": "\"***\""
+    },
+    {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "StringLiteral",
       "offset": 256,
@@ -18801,126 +18069,126 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "Dictionary",
-      "offset": 4197,
+      "offset": 4190,
       "length": 3,
       "value": "[]"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 4268,
+      "offset": 4261,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 4447,
+      "offset": 4440,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 6755,
+      "offset": 6727,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 6785,
+      "offset": 6757,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 7859,
+      "offset": 7824,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 7889,
+      "offset": 7854,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 13026,
+      "offset": 12942,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 13056,
+      "offset": 12972,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 15316,
+      "offset": 15225,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "BooleanLiteral",
-      "offset": 15346,
+      "offset": 15255,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 25503,
+      "offset": 25398,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 26144,
+      "offset": 26039,
       "length": 2,
       "value": "-1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 36741,
+      "offset": 36636,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 36765,
+      "offset": 36660,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 36801,
+      "offset": 36696,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 36832,
+      "offset": 36727,
       "length": 2,
       "value": "-1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
       "kind": "IntegerLiteral",
-      "offset": 36868,
+      "offset": 36763,
       "length": 1,
       "value": "0"
     },
