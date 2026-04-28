@@ -7,7 +7,6 @@ import Swift
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
-import zlib
 public enum TmkTranslationChannelState : Swift.String, Swift.Equatable, Swift.Sendable {
   case idle
   case starting
@@ -231,6 +230,10 @@ public struct TmkTranslationRoomDialogResponse : Swift.Equatable, Swift.Sendable
   final public var messageTunnel: TmkTranslationMessageTunnel {
     get
   }
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func updateRoomLocale(sourceLocales: [Swift.String], targetLocales: [Swift.String], completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
+  #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @discardableResult
   final public func closeRoom(completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
@@ -500,6 +503,7 @@ public enum TranslationMode {
   final public func getScenario() -> Scenario
   final public func getChannelEngineType() -> EngineType
   final public func setTranslationListener(_ listener: any TmkTranslationListener)
+  final public func updateLanguages(sourceLang: Swift.String, targetLang: Swift.String)
   @objc deinit
 }
 public struct TmkResult<T> {
