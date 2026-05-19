@@ -1599,11 +1599,29 @@ func onError(_ error: TmkTranslationError) {
 - 当底层错误已经是明确错误（如 `INVALID_CONFIGURATION`、`INVALID_STATE`、`ENGINE_INITIALIZATION_FAILED`）时，不会被阶段规则覆盖。
 - `error.actualErrorCode` / `error.actualErrorMessage` 会继续保留底层离线组件的原始错误信息，便于排障。
 
+### 12.3.1 离线鉴权错误码契约
+
+离线 License 鉴权失败时，对外 `error.code` 统一映射为 `2001102 / AUTHENTICATION_FAILED`；底层 offlineLib 组件码写入 `error.actualErrorCode`，native LicenseCore 返回码写入 `error.actualErrorMessage`，用于诊断。
+
+offlineLib 离线鉴权组件码统一使用 `2004` 前缀：
+
+| offlineLib 组件码 | 常量 | native 返回码 | 说明 |
+| --- | --- | --- | --- |
+| `2004101` | `OFFLINE_AUTH_EMPTY_CONTENT` | `1001` | License 内容为空 |
+| `2004102` | `OFFLINE_AUTH_DECRYPT_OR_PARSE_FAILED` | `1002` | License 解密或解析失败 |
+| `2004103` | `OFFLINE_AUTH_SIGNATURE_INVALID` | `1003` | License 签名无效 |
+| `2004104` | `OFFLINE_AUTH_CLIENT_PACKAGE_OR_DEVICE_MISMATCH` | `1004` | client、包名或设备绑定不匹配 |
+| `2004105` | `OFFLINE_AUTH_MODEL_KEY_EMPTY` | `1005` | 模型密钥为空 |
+| `2004106` | `OFFLINE_AUTH_EXPIRED_OR_NOT_YET_VALID` | `1006` | License 已过期或尚未生效 |
+| `2004107` | `OFFLINE_AUTH_UNSUPPORTED` | `1007` | License 版本或算法不支持 |
+| `2004108` | `OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL` | `1008` | 当前 scope 或模型未授权 |
+| `2004199` | `OFFLINE_AUTH_INTERNAL_ERROR` | `1099` / unknown | 内部错误或未知 native 返回码 |
+
 ### 12.4 统一错误码对齐说明
 
 - SDK 统一错误码表请见文档末尾一级目录：`20. SDK 统一错误码表（与 iOS 代码同步）`。
 - `error.code` 对应统一错误码表。
-- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`），用于排障。
+- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`、离线鉴权 `200410x`），用于排障。
 
 ---
 
@@ -2105,7 +2123,28 @@ TmkTranslationSDK.shared.verifyAuth { result in
 补充说明：
 
 - `error.code` 对应上表统一错误码。
-- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`），用于排障。
+- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`、离线鉴权 `200410x`），用于排障。
+
+### 20.1 offlineLib 组件错误码
+
+offlineLib 组件错误码不作为 `TmkTranslationError.code` 直接对外抛出；当 SDK 需要包装为统一错误时，会写入 `error.actualErrorCode`。
+
+| code | constantName | 说明 |
+| --- | --- | --- |
+| `2004001` | `OFFLINE_INVALID_ARGUMENT` | 离线翻译组件参数无效 |
+| `2004002` | `OFFLINE_CREATION_FAILED` | 离线引擎创建失败 |
+| `2004003` | `OFFLINE_OPERATION_FAILED` | 离线引擎操作失败 |
+| `2004004` | `OFFLINE_ENGINE_RELEASED` | 离线引擎已释放 |
+| `2004005` | `OFFLINE_LOAD_TIMEOUT` | 离线模型加载超时 |
+| `2004101` | `OFFLINE_AUTH_EMPTY_CONTENT` | 离线 License 内容为空 |
+| `2004102` | `OFFLINE_AUTH_DECRYPT_OR_PARSE_FAILED` | 离线 License 解密或解析失败 |
+| `2004103` | `OFFLINE_AUTH_SIGNATURE_INVALID` | 离线 License 签名无效 |
+| `2004104` | `OFFLINE_AUTH_CLIENT_PACKAGE_OR_DEVICE_MISMATCH` | 离线 License 的 client、包名或设备绑定不匹配 |
+| `2004105` | `OFFLINE_AUTH_MODEL_KEY_EMPTY` | 离线 License 模型密钥为空 |
+| `2004106` | `OFFLINE_AUTH_EXPIRED_OR_NOT_YET_VALID` | 离线 License 已过期或尚未生效 |
+| `2004107` | `OFFLINE_AUTH_UNSUPPORTED` | 离线 License 版本或算法不支持 |
+| `2004108` | `OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL` | 离线 License 未授权当前 scope 或模型 |
+| `2004199` | `OFFLINE_AUTH_INTERNAL_ERROR` | 离线 License 鉴权内部错误或未知错误 |
 
 ---
 
