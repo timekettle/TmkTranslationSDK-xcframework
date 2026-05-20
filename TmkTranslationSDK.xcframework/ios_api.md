@@ -1,10 +1,20 @@
 # TmkTranslationSDK iOS API 文档
 
 <!-- AUTO_VERSION_BLOCK_START -->
-> 当前文档适配版本：`v1.0.0`  
-> 最近更新日期：`2026-04-18`  
-> 版本说明：见 [ios_release_notes.md](./ios_release_notes.md)
+> 当前文档适配版本：`v1.1.0`
+> 最近更新日期：`2026-05-19`
 <!-- AUTO_VERSION_BLOCK_END -->
+
+## 本次更新
+
+当前版本更新内容：
+
+- 新增离线 License 鉴权能力，离线能力可在 `verifyAuth(_:)` 后通过 `isOfflineTranslationSupported()` 判断。
+- 新增离线模型包管理能力，可查询模型包状态、下载语言对模型、取消下载并异步检查模型是否就绪。
+- 新增在线/离线音色设置能力，可在创建通道时配置，也可在通道运行中按声道更新男声或女声。
+- 新增离线一对一 TTS 输出声道模式，可选择单声道或立体声输出。
+- 新增通道状态、错误和事件处理契约，便于业务侧统一处理启动、运行、重连、失败和释放状态。
+- 新增 SDK 诊断与自动化测试配套能力，用于交付前验证在线/离线、收听/一对一等核心链路。
 
 ## 1. 简介
 
@@ -71,7 +81,7 @@
 source 'https://cdn.cocoapods.org/'
 source 'https://github.com/timekettle/TmkTranslationSDK-iOS.git'
 
-pod 'TmkTranslationSDK', '1.0.0'
+pod 'TmkTranslationSDK', '1.1.0'
 ```
 
 如具体发布版本与本文不一致，请以发布说明为准。
@@ -769,6 +779,8 @@ public final class Builder {
     public func setPlaybackAudioPullConfig(_ config: TmkTranslationPlaybackAudioPullConfig) -> Builder
     public func setMessageTunnel(_ tunnel: TmkTranslationMessageTunnel) -> Builder
     public func setModelRootDirectory(_ directory: String) -> Builder
+    public func setSpeakers(_ speakers: [TmkSpeaker]) -> Builder
+    public func setOfflineAudioChannelMode(_ mode: TmkOfflineAudioChannelMode) -> Builder
     public func build() -> TmkTranslationChannelConfig
 }
 ```
@@ -828,9 +840,60 @@ public final class Builder {
 - 仅离线翻译需要设置。
 - 传模型根目录绝对路径。
 
+#### `setSpeakers(_:)`
+
+- 设置在线/离线 TTS 音色。
+- 不调用时使用 SDK 默认音色。
+- 收听模式通常只设置 `.left` 声道。
+- 一对一模式可分别设置 `.left` 和 `.right` 声道。
+
+```swift
+let speakers = [
+    TmkSpeaker(channel: .left, gender: .female),
+    TmkSpeaker(channel: .right, gender: .male)
+]
+```
+
+#### `setOfflineAudioChannelMode(_:)`
+
+- 仅离线一对一 TTS 输出使用。
+- `.stereo`：默认值，左右声道混成立体声输出。
+- `.mono`：按单声道输出，适合业务侧自行管理播放声道的场景。
+- 离线收听模式固定按单声道输出。
+
 #### `build()`
 
 - 构建不可变的 `TmkTranslationChannelConfig`。
+
+### 8.6.1 音色与离线输出通道模型
+
+#### `TmkSpeaker`
+
+```swift
+public enum TmkSpeakerChannel: String {
+    case left
+    case right
+}
+
+public enum TmkSpeakerGender: String {
+    case male
+    case female
+}
+
+public struct TmkSpeaker {
+    public let channel: TmkSpeakerChannel
+    public let gender: TmkSpeakerGender
+}
+```
+
+#### `TmkOfflineAudioChannelMode`
+
+```swift
+public enum TmkOfflineAudioChannelMode {
+    case mono
+    case stereo
+}
+```
 
 ### 8.7 创建通道接口（在线/离线统一入口）
 
@@ -903,6 +966,10 @@ let config = TmkTranslationChannelConfig.Builder()
     .setMode(.online)
     .setSourceLang("zh-CN")
     .setTargetLang("en-US")
+    .setSpeakers([
+        TmkSpeaker(channel: .left, gender: .female),
+        TmkSpeaker(channel: .right, gender: .male)
+    ])
     .setPCMSampleRate(16_000)
     .setPCMChannels(2)
     .build()
@@ -1098,6 +1165,11 @@ let config = TmkTranslationChannelConfig.Builder()
     .setScenario(.oneToOne)
     .setSourceLang("zh")
     .setTargetLang("en")
+    .setSpeakers([
+        TmkSpeaker(channel: .left, gender: .female),
+        TmkSpeaker(channel: .right, gender: .male)
+    ])
+    .setOfflineAudioChannelMode(.stereo)
     .setPCMSampleRate(16_000)
     .setPCMChannels(2)
     .setModelRootDirectory(modelRootDirectory)
@@ -1112,6 +1184,12 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
     }
 }
 ```
+
+说明：
+
+- `.setSpeakers(...)` 只覆盖传入声道的音色；不传时使用 SDK 默认音色。
+- `.setOfflineAudioChannelMode(.stereo)` 是离线一对一默认行为，适合直接播放立体声 TTS。
+- 如业务侧希望自行合成播放声道，可设置 `.setOfflineAudioChannelMode(.mono)` 后按 `Result.extraData["channel"]` 管理音频来源。
 
 ---
 
@@ -1179,6 +1257,29 @@ public func setTranslationListener(_ listener: TmkTranslationListener)
   - 获取当前通道实际使用的引擎类型。
 - `setTranslationListener(_:)`
   - 动态设置监听器。
+
+### 10.4 运行中更新能力
+
+```swift
+public func updateLanguages(sourceLang: String, targetLang: String)
+
+@discardableResult
+public func updateSpeaker(
+    speakers: [TmkSpeaker],
+    callback: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+```
+
+说明：
+
+- `updateLanguages(sourceLang:targetLang:)`
+  - 在当前通道实例不变的情况下更新语言上下文。
+  - 主要用于在线通道的语言切换。离线通道切换语言前，建议先确认目标语言对模型已就绪；如业务需要严格隔离旧状态，优先 `stop()` / `release()` 后重建通道。
+- `updateSpeaker(speakers:callback:)`
+  - 更新当前通道 TTS 音色。
+  - 在线通道会同步更新房间 TTS 配置；离线通道会更新本地引擎音色。
+  - `speakers` 的声道规则与 `TmkTranslationChannelConfig.Builder.setSpeakers(_:)` 一致。
+  - `callback` 会返回设置结果；返回的 `TmkSDKCancellable?` 仅能取消尚未执行的设置任务，已生效的音色不会回滚。
 
 ---
 
@@ -1527,6 +1628,50 @@ public struct TmkTranslationChannelStateSnapshot {
 - `updatedAt`
   - 更新时间。
 
+### 11.4 运行状态处理契约
+
+App 应以 `onStateChanged` 作为通道 UI 状态的单一来源，不要自行把 `starting` 伪造为 `running`，也不要因单次弱网事件主动销毁通道。
+
+| state | 常见 reason | App 推荐处理 |
+| --- | --- | --- |
+| `idle` | `none` | 显示待启动或初始化状态，不推流。 |
+| `starting` | `startRequested` / `rtcConnecting` / `rtcConnected` | 显示“通道连接中/正在加载”，禁止重复创建。`rtcConnected` 只表示媒体链路已连接，不代表完整业务链路已 ready。 |
+| `running` | `started` / `rtcConnected` / `networkRestored` | 显示通道可用，允许采集，清除弱网或重连提示。 |
+| `degraded` | `networkUnavailable` / `messageChannelFailure` / `rtcTokenRequested` / `rtcTokenWillExpire` | 显示非阻塞弱网或能力受损提示，不停止录音/播放，不弹 fatal 错误框。 |
+| `reconnecting` | `networkUnavailable` / `rtcInterrupted` / `rtcLost` / `messageChannelFailure` | 显示连接恢复中，禁止重复创建，等待 SDK 恢复或升级为失败。 |
+| `stopping` | `stopRequested` | 禁用操作按钮，等待停止完成。 |
+| `stopped` | `stopped` | 清理 UI 状态或离开页面。 |
+| `failed` | `sessionExpired` / `invalidConfiguration` / `permissionDenied` / `bannedByServer` / `serviceRejected` / `rtcKeepAliveTimeout` / `engineError` | 停止录音/播放，按错误码提示用户重新创建、重新初始化、下载模型、重新鉴权或离开。 |
+
+离线通道不产生 `rtcConnecting`、`rtcConnected`、`rtcInterrupted`、`rtcLost`、`rtcKeepAliveTimeout`、`messageChannelFailure` 等 RTC/RTM 原因；离线 UI 仍消费同一套 `state`，但原因主要来自模型、pipeline 和离线鉴权状态。
+
+### 11.5 事件处理契约
+
+`onEvent` 用于诊断、弱提示和补充状态，不应替代 `onRecognized`、`onTranslate`、`onAudioDataReceive` 和 `onStateChanged`。
+
+| 事件类型 | 常见事件 | App 推荐处理 |
+| --- | --- | --- |
+| 在线运行事件 | `online_started`、`online_stopped`、`online_runtime_state_changed` | 日志和 UI 辅助；UI 状态以 `onStateChanged` 为准。 |
+| 在线消息事件 | `online_stream_message_raw`、`online_stream_message_parsed`、`online_notification`、`notification` | 诊断为主；`close_room` 类通知需要停止当前会话引用，并提示用户重新创建或离开。 |
+| 在线弱网事件 | `online_network_quality`、`online_rtc_stats`、`online_remote_audio_stats`、`online_local_audio_stats` | 连续采样后显示弱网提示，不直接释放通道。真正需要用户决策时等待 `failed` 状态或 `onError`。 |
+| 在线远端离线事件 | `online_remote_user_offline` | 当 `is_expected_service_uid=true` 时，说明服务端音频/翻译订阅 uid 离线，对话不可继续，应提示重新创建或离开。 |
+| 离线 pipeline 事件 | `offline_pipeline_state`、`offline_stream_message_parsed`、`offline_audio_metadata` | 诊断和日志为主；UI 仍以 `onStateChanged` 和业务结果回调为准。 |
+| 离线结果辅助事件 | `offline_asr_partial`、`offline_asr_final`、`offline_mt_partial`、`offline_mt_final`、`offline_tts_output`、`offline_tts_state`、`offline_recognition_failure` | 可用于诊断或弱提示；正式文本和音频展示以识别、翻译、音频回调为准。 |
+| 模型下载事件 | `offline_model_cancelled`、`offline_model_update_required`、下载进度、解压进度、模型包状态变化 | 更新模型列表和进度；取消不弹错误框，需更新时禁止直接启动离线通道。 |
+
+### 11.6 离线模型包状态处理契约
+
+| package state | App 推荐处理 |
+| --- | --- |
+| `ready` | 显示已就绪；所有必需包 ready 后可创建离线通道。 |
+| `needsDownload` | 显示待下载，禁止启动离线通道。 |
+| `needsUpdate` | 显示需更新，引导重新下载。 |
+| `resumable` | 显示可续传，点击下载继续。 |
+| `downloading` | 显示下载进度，允许取消。 |
+| `unzipping` | 显示解压进度，避免重复触发下载。 |
+| `failed` | 显示失败，允许重试。 |
+| `cancelled` | 显示已取消，允许重新下载，不弹错误框。 |
+
 ---
 
 ## 12. 错误模型
@@ -1599,11 +1744,43 @@ func onError(_ error: TmkTranslationError) {
 - 当底层错误已经是明确错误（如 `INVALID_CONFIGURATION`、`INVALID_STATE`、`ENGINE_INITIALIZATION_FAILED`）时，不会被阶段规则覆盖。
 - `error.actualErrorCode` / `error.actualErrorMessage` 会继续保留底层离线组件的原始错误信息，便于排障。
 
+### 12.3.1 离线鉴权错误码契约
+
+离线 License 鉴权失败时，对外 `error.code` 统一映射为 `2001102 / AUTHENTICATION_FAILED`；底层 offlineLib 组件码写入 `error.actualErrorCode`，native LicenseCore 返回码写入 `error.actualErrorMessage`，用于诊断。
+
+offlineLib 离线鉴权组件码统一使用 `2004` 前缀：
+
+| offlineLib 组件码 | 常量 | native 返回码 | 说明 |
+| --- | --- | --- | --- |
+| `2004101` | `OFFLINE_AUTH_EMPTY_CONTENT` | `1001` | License 内容为空 |
+| `2004102` | `OFFLINE_AUTH_DECRYPT_OR_PARSE_FAILED` | `1002` | License 解密或解析失败 |
+| `2004103` | `OFFLINE_AUTH_SIGNATURE_INVALID` | `1003` | License 签名无效 |
+| `2004104` | `OFFLINE_AUTH_CLIENT_PACKAGE_OR_DEVICE_MISMATCH` | `1004` | client、包名或设备绑定不匹配 |
+| `2004105` | `OFFLINE_AUTH_MODEL_KEY_EMPTY` | `1005` | 模型密钥为空 |
+| `2004106` | `OFFLINE_AUTH_EXPIRED_OR_NOT_YET_VALID` | `1006` | License 已过期或尚未生效 |
+| `2004107` | `OFFLINE_AUTH_UNSUPPORTED` | `1007` | License 版本或算法不支持 |
+| `2004108` | `OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL` | `1008` | 当前 scope 或模型未授权 |
+| `2004199` | `OFFLINE_AUTH_INTERNAL_ERROR` | `1099` / unknown | 内部错误或未知 native 返回码 |
+
+License 签发响应可能返回 `license_id` 或 `licenseId`。SDK 会将 `licenseId` 写入诊断日志，用于和后台签发记录关联；不会在日志中输出原始 License、`clientSecret` 或设备私钥。
+
 ### 12.4 统一错误码对齐说明
 
 - SDK 统一错误码表请见文档末尾一级目录：`20. SDK 统一错误码表（与 iOS 代码同步）`。
 - `error.code` 对应统一错误码表。
-- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`），用于排障。
+- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`、离线鉴权 `200410x`），用于排障。
+
+### 12.5 错误处理契约
+
+| 错误类型 | 典型错误码 | App 推荐处理 |
+| --- | --- | --- |
+| 初始化/配置错误 | `2001101`、`2001106`、`2001113` | 提示配置错误或初始化失败，修正配置后再重试，不要用旧配置重复创建。 |
+| 鉴权/会话错误 | `2001102`、`2001111`、`2001112` | 重新鉴权、重新创建会话或提示配额/权限问题。 |
+| 网络/服务错误 | `2001103`、`2001107`、`2002002`、`2002003`、`2002005` | 在线场景允许重新创建；模型下载场景允许重试或续传；401/403 优先重新鉴权。 |
+| 引擎/音频错误 | `2001104`、`2001108`、`2001109`、`2001110`、`2001114`、`2003004`、`2003006` | 停止采集和播放，在线重新创建对话，离线重新初始化通道或检查模型资源。 |
+| 离线模型错误 | `2001117`、`2004001` ~ `2004008` | 引导下载、更新模型或重新鉴权，不直接启动离线通道。 |
+| 取消类错误 | `2002006` | 用户主动停止、页面退出、取消下载等场景不弹错误框，仅恢复 UI。 |
+| 埋点类错误 | `2003007`、`2003008` | 不影响翻译主流程，可忽略或记录日志。 |
 
 ---
 
@@ -1747,6 +1924,8 @@ public func getDiagnosisDirectoryURL() -> URL?
 - 只有在 `setDiagnosisEnabled(true)` 后，SDK 才会产生诊断文件。
 - 目录中可能包含日志、诊断音频等排障信息。
 - 分享或上传前，建议由业务方确认数据合规。
+- 诊断日志可能包含 `licenseId`、错误码、模型版本、包名和耗时等排障字段；不应包含原始 License、`clientSecret`、设备私钥或完整用户隐私数据。
+- 如需上传诊断目录，建议业务侧先完成用户授权、脱敏和访问控制。
 
 示例：
 
@@ -1756,6 +1935,12 @@ guard let diagnosisURL = TmkTranslationSDK.shared.getDiagnosisDirectoryURL() els
 }
 print(diagnosisURL)
 ```
+
+### 14.2 数据安全与凭据管理
+
+- `appId` / `clientSecret` 是业务鉴权凭据，建议通过独立配置或 CI 注入，避免写入公开仓库。
+- `clientSecret` 会参与本地 License 加密/解密，变更后旧 License 可能无法继续解密。SDK 会尝试重新请求 License；如果设备处于离线状态，业务侧应提示用户联网后重新调用 `verifyAuth(_:)`。
+- 设备密钥由 `tmk-offline` 组件维护，密钥 tag 通过组件接口获取。业务侧不应硬编码 tag，也不应在 Release 版本调用调试清理能力。
 
 ---
 
@@ -2062,6 +2247,14 @@ TmkTranslationSDK.shared.verifyAuth { result in
 
 当前 SDK 使用时建议遵循单房间、单通道模型。创建新的翻译会话前，建议先关闭旧房间并释放旧通道资源，避免旧资源仍占用网络、音频或状态机上下文。
 
+### 19.13 离线 License 解密或解析失败怎么办？
+
+如果本地 License 因密钥变更、历史版本兼容、设备绑定变化等原因解密或解析失败，SDK 会清理本地离线授权状态并尝试重新请求 License。若当前无网络或后台签发失败，`verifyAuth(_:)` 会返回鉴权错误，业务侧应提示用户联网后重试。不要删除 Keychain 中的设备密钥，也不要在 Release 版本调用调试清理接口。
+
+### 19.14 `clientSecret` 变更后离线 License 还能用吗？
+
+旧 License 可能无法继续解密。SDK 会自动走重新签发流程，联网成功后即可恢复；离线无网络时无法重新签发，业务侧应提示用户联网重新鉴权。`clientSecret` 不应写入日志、诊断附件或用户可见错误信息。
+
 ---
 
 ## 20. SDK 统一错误码表（与 iOS 代码同步）
@@ -2105,10 +2298,31 @@ TmkTranslationSDK.shared.verifyAuth { result in
 补充说明：
 
 - `error.code` 对应上表统一错误码。
-- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`），用于排障。
+- `error.actualErrorCode` 可能是底层组件错误码（例如离线组件 `2004xxx`、离线鉴权 `200410x`），用于排障。
+
+### 20.1 offlineLib 组件错误码
+
+offlineLib 组件错误码不作为 `TmkTranslationError.code` 直接对外抛出；当 SDK 需要包装为统一错误时，会写入 `error.actualErrorCode`。
+
+| code | constantName | 说明 |
+| --- | --- | --- |
+| `2004001` | `OFFLINE_INVALID_ARGUMENT` | 离线翻译组件参数无效 |
+| `2004002` | `OFFLINE_CREATION_FAILED` | 离线引擎创建失败 |
+| `2004003` | `OFFLINE_OPERATION_FAILED` | 离线引擎操作失败 |
+| `2004004` | `OFFLINE_ENGINE_RELEASED` | 离线引擎已释放 |
+| `2004005` | `OFFLINE_LOAD_TIMEOUT` | 离线模型加载超时 |
+| `2004101` | `OFFLINE_AUTH_EMPTY_CONTENT` | 离线 License 内容为空 |
+| `2004102` | `OFFLINE_AUTH_DECRYPT_OR_PARSE_FAILED` | 离线 License 解密或解析失败 |
+| `2004103` | `OFFLINE_AUTH_SIGNATURE_INVALID` | 离线 License 签名无效 |
+| `2004104` | `OFFLINE_AUTH_CLIENT_PACKAGE_OR_DEVICE_MISMATCH` | 离线 License 的 client、包名或设备绑定不匹配 |
+| `2004105` | `OFFLINE_AUTH_MODEL_KEY_EMPTY` | 离线 License 模型密钥为空 |
+| `2004106` | `OFFLINE_AUTH_EXPIRED_OR_NOT_YET_VALID` | 离线 License 已过期或尚未生效 |
+| `2004107` | `OFFLINE_AUTH_UNSUPPORTED` | 离线 License 版本或算法不支持 |
+| `2004108` | `OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL` | 离线 License 未授权当前 scope 或模型 |
+| `2004199` | `OFFLINE_AUTH_INTERNAL_ERROR` | 离线 License 鉴权内部错误或未知错误 |
 
 ---
 
 ## 21. 版本信息
 
-当前 SDK 代码版本：`TmkTranslationSDK v1.0.0`
+当前 SDK 代码版本：`TmkTranslationSDK v1.1.0`
