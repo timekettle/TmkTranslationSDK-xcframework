@@ -15,6 +15,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'git@github.com:timekettle/TmkTranslationSDK-xcframework.git', :tag => tag }
   s.vendored_frameworks = 'TmkTranslationSDK.xcframework'
   s.frameworks       = 'AVFoundation', 'AudioToolbox', 'UIKit', 'Foundation'
+  s.libraries        = 'z'
 
   s.dependency       'AgoraAudio_Special_iOS', '~> 4.5.2.4'
   s.dependency       'AgoraRtm/RtmKit', '2.2.6'
