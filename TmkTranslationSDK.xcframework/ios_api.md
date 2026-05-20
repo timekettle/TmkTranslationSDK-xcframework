@@ -11,7 +11,7 @@
 
 - 新增离线 License 鉴权能力，离线能力可在 `verifyAuth(_:)` 后通过 `isOfflineTranslationSupported()` 判断。
 - 新增离线模型包管理能力，可查询模型包状态、下载语言对模型、取消下载并异步检查模型是否就绪。
-- 新增在线/离线音色设置能力，可按声道设置男声或女声。
+- 新增在线/离线音色设置能力，可在创建通道时配置，也可在通道运行中按声道更新男声或女声。
 - 新增离线一对一 TTS 输出声道模式，可选择单声道或立体声输出。
 - 新增通道状态、错误和事件处理契约，便于业务侧统一处理启动、运行、重连、失败和释放状态。
 - 新增 SDK 诊断与自动化测试配套能力，用于交付前验证在线/离线、收听/一对一等核心链路。
@@ -1257,6 +1257,29 @@ public func setTranslationListener(_ listener: TmkTranslationListener)
   - 获取当前通道实际使用的引擎类型。
 - `setTranslationListener(_:)`
   - 动态设置监听器。
+
+### 10.4 运行中更新能力
+
+```swift
+public func updateLanguages(sourceLang: String, targetLang: String)
+
+@discardableResult
+public func updateSpeaker(
+    speakers: [TmkSpeaker],
+    callback: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+```
+
+说明：
+
+- `updateLanguages(sourceLang:targetLang:)`
+  - 在当前通道实例不变的情况下更新语言上下文。
+  - 主要用于在线通道的语言切换。离线通道切换语言前，建议先确认目标语言对模型已就绪；如业务需要严格隔离旧状态，优先 `stop()` / `release()` 后重建通道。
+- `updateSpeaker(speakers:callback:)`
+  - 更新当前通道 TTS 音色。
+  - 在线通道会同步更新房间 TTS 配置；离线通道会更新本地引擎音色。
+  - `speakers` 的声道规则与 `TmkTranslationChannelConfig.Builder.setSpeakers(_:)` 一致。
+  - `callback` 会返回设置结果；返回的 `TmkSDKCancellable?` 仅能取消尚未执行的设置任务，已生效的音色不会回滚。
 
 ---
 
