@@ -4155,75 +4155,6 @@
         "name": "Foundation",
         "printedName": "Foundation",
         "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "TmkTrackEvent",
-        "printedName": "TmkTrackEvent",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "TmkTrackEvent",
-        "printedName": "TmkTrackEvent",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
         "moduleName": "TmkTranslationSDK",
         "declAttributes": [
           "RawDocComment"
@@ -8985,221 +8916,6 @@
       },
       {
         "kind": "TypeDecl",
-        "name": "TmkOfflineAudioChannelMode",
-        "printedName": "TmkOfflineAudioChannelMode",
-        "children": [
-          {
-            "kind": "Var",
-            "name": "mono",
-            "printedName": "mono",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TmkTranslationSDK.TmkOfflineAudioChannelMode.Type) -> TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineAudioChannelMode",
-                    "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                    "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkOfflineAudioChannelMode",
-                        "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                        "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO4monoyA2CmF",
-            "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO4monoyA2CmF",
-            "moduleName": "TmkTranslationSDK"
-          },
-          {
-            "kind": "Var",
-            "name": "stereo",
-            "printedName": "stereo",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TmkTranslationSDK.TmkOfflineAudioChannelMode.Type) -> TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineAudioChannelMode",
-                    "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                    "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkOfflineAudioChannelMode",
-                        "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                        "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO6stereoyA2CmF",
-            "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO6stereoyA2CmF",
-            "moduleName": "TmkTranslationSDK"
-          },
-          {
-            "kind": "Var",
-            "name": "hashValue",
-            "printedName": "hashValue",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Int",
-                "printedName": "Swift.Int",
-                "usr": "s:Si"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO9hashValueSivp",
-            "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO9hashValueSivp",
-            "moduleName": "TmkTranslationSDK",
-            "implicit": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Int",
-                    "printedName": "Swift.Int",
-                    "usr": "s:Si"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO9hashValueSivg",
-                "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO9hashValueSivg",
-                "moduleName": "TmkTranslationSDK",
-                "implicit": true,
-                "accessorKind": "get"
-              }
-            ]
-          },
-          {
-            "kind": "Function",
-            "name": "hash",
-            "printedName": "hash(into:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Hasher",
-                "printedName": "Swift.Hasher",
-                "paramValueOwnership": "InOut",
-                "usr": "s:s6HasherV"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO4hash4intoys6HasherVz_tF",
-            "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO4hash4intoys6HasherVz_tF",
-            "moduleName": "TmkTranslationSDK",
-            "implicit": true,
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "==",
-            "printedName": "==(_:_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "TmkOfflineAudioChannelMode",
-                "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "TmkOfflineAudioChannelMode",
-                "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO2eeoiySbAC_ACtFZ",
-            "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO2eeoiySbAC_ACtFZ",
-            "moduleName": "TmkTranslationSDK",
-            "static": true,
-            "implicit": true,
-            "funcSelfKind": "NonMutating"
-          }
-        ],
-        "declKind": "Enum",
-        "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO",
-        "mangledName": "$s17TmkTranslationSDK0A23OfflineAudioChannelModeO",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "AccessControl",
-          "RawDocComment"
-        ],
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Hashable",
-            "printedName": "Hashable",
-            "usr": "s:SH",
-            "mangledName": "$sSH"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Equatable",
-            "printedName": "Equatable",
-            "usr": "s:SQ",
-            "mangledName": "$sSQ"
-          }
-        ]
-      },
-      {
-        "kind": "TypeDecl",
         "name": "TmkTranslationChannelConfig",
         "printedName": "TmkTranslationChannelConfig",
         "children": [
@@ -9292,55 +9008,6 @@
                 "declKind": "Accessor",
                 "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC11pcmChannelsSivg",
                 "mangledName": "$s17TmkTranslationSDK0aB13ChannelConfigC11pcmChannelsSivg",
-                "moduleName": "TmkTranslationSDK",
-                "implicit": true,
-                "declAttributes": [
-                  "Final"
-                ],
-                "accessorKind": "get"
-              }
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "offlineAudioChannelMode",
-            "printedName": "offlineAudioChannelMode",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "TmkOfflineAudioChannelMode",
-                "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC012offlineAudioD4ModeAA0a7OfflinegdH0Ovp",
-            "mangledName": "$s17TmkTranslationSDK0aB13ChannelConfigC012offlineAudioD4ModeAA0a7OfflinegdH0Ovp",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "HasStorage",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "isLet": true,
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineAudioChannelMode",
-                    "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                    "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC012offlineAudioD4ModeAA0a7OfflinegdH0Ovg",
-                "mangledName": "$s17TmkTranslationSDK0aB13ChannelConfigC012offlineAudioD4ModeAA0a7OfflinegdH0Ovg",
                 "moduleName": "TmkTranslationSDK",
                 "implicit": true,
                 "declAttributes": [
@@ -9688,72 +9355,6 @@
                 "declKind": "Func",
                 "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC7BuilderC21setModelRootDirectoryyAESSF",
                 "mangledName": "$s17TmkTranslationSDK0aB13ChannelConfigC7BuilderC21setModelRootDirectoryyAESSF",
-                "moduleName": "TmkTranslationSDK",
-                "declAttributes": [
-                  "Final",
-                  "AccessControl",
-                  "RawDocComment"
-                ],
-                "funcSelfKind": "NonMutating"
-              },
-              {
-                "kind": "Function",
-                "name": "setSpeakers",
-                "printedName": "setSpeakers(_:)",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Builder",
-                    "printedName": "TmkTranslationSDK.TmkTranslationChannelConfig.Builder",
-                    "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC7BuilderC"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[TmkTranslationSDK.TmkSpeaker]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkSpeaker",
-                        "printedName": "TmkTranslationSDK.TmkSpeaker",
-                        "usr": "s:17TmkTranslationSDK0A7SpeakerV"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ],
-                "declKind": "Func",
-                "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC7BuilderC11setSpeakersyAESayAA0A7SpeakerVGF",
-                "mangledName": "$s17TmkTranslationSDK0aB13ChannelConfigC7BuilderC11setSpeakersyAESayAA0A7SpeakerVGF",
-                "moduleName": "TmkTranslationSDK",
-                "declAttributes": [
-                  "Final",
-                  "AccessControl",
-                  "RawDocComment"
-                ],
-                "funcSelfKind": "NonMutating"
-              },
-              {
-                "kind": "Function",
-                "name": "setOfflineAudioChannelMode",
-                "printedName": "setOfflineAudioChannelMode(_:)",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Builder",
-                    "printedName": "TmkTranslationSDK.TmkTranslationChannelConfig.Builder",
-                    "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC7BuilderC"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkOfflineAudioChannelMode",
-                    "printedName": "TmkTranslationSDK.TmkOfflineAudioChannelMode",
-                    "usr": "s:17TmkTranslationSDK0A23OfflineAudioChannelModeO"
-                  }
-                ],
-                "declKind": "Func",
-                "usr": "s:17TmkTranslationSDK0aB13ChannelConfigC7BuilderC015setOfflineAudioD4ModeyAeA0ahidJ0OF",
-                "mangledName": "$s17TmkTranslationSDK0aB13ChannelConfigC7BuilderC015setOfflineAudioD4ModeyAeA0ahidJ0OF",
                 "moduleName": "TmkTranslationSDK",
                 "declAttributes": [
                   "Final",
@@ -11888,691 +11489,6 @@
       },
       {
         "kind": "TypeDecl",
-        "name": "TmkSpeakerChannel",
-        "printedName": "TmkSpeakerChannel",
-        "children": [
-          {
-            "kind": "Var",
-            "name": "left",
-            "printedName": "left",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TmkTranslationSDK.TmkSpeakerChannel.Type) -> TmkTranslationSDK.TmkSpeakerChannel",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerChannel",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                    "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerChannel.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkSpeakerChannel",
-                        "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                        "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO4leftyA2CmF",
-            "mangledName": "$s17TmkTranslationSDK0A14SpeakerChannelO4leftyA2CmF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "RawDocComment"
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "right",
-            "printedName": "right",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TmkTranslationSDK.TmkSpeakerChannel.Type) -> TmkTranslationSDK.TmkSpeakerChannel",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerChannel",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                    "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerChannel.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkSpeakerChannel",
-                        "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                        "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO5rightyA2CmF",
-            "mangledName": "$s17TmkTranslationSDK0A14SpeakerChannelO5rightyA2CmF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "RawDocComment"
-            ]
-          },
-          {
-            "kind": "Constructor",
-            "name": "init",
-            "printedName": "init(rawValue:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "TmkTranslationSDK.TmkSpeakerChannel?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerChannel",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                    "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-                  }
-                ],
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              }
-            ],
-            "declKind": "Constructor",
-            "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO8rawValueACSgSS_tcfc",
-            "mangledName": "$s17TmkTranslationSDK0A14SpeakerChannelO8rawValueACSgSS_tcfc",
-            "moduleName": "TmkTranslationSDK",
-            "implicit": true,
-            "init_kind": "Designated"
-          },
-          {
-            "kind": "Var",
-            "name": "rawValue",
-            "printedName": "rawValue",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO8rawValueSSvp",
-            "mangledName": "$s17TmkTranslationSDK0A14SpeakerChannelO8rawValueSSvp",
-            "moduleName": "TmkTranslationSDK",
-            "implicit": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO8rawValueSSvg",
-                "mangledName": "$s17TmkTranslationSDK0A14SpeakerChannelO8rawValueSSvg",
-                "moduleName": "TmkTranslationSDK",
-                "implicit": true,
-                "accessorKind": "get"
-              }
-            ]
-          }
-        ],
-        "declKind": "Enum",
-        "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO",
-        "mangledName": "$s17TmkTranslationSDK0A14SpeakerChannelO",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "AccessControl",
-          "RawDocComment"
-        ],
-        "enumRawTypeName": "String",
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Equatable",
-            "printedName": "Equatable",
-            "usr": "s:SQ",
-            "mangledName": "$sSQ"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Hashable",
-            "printedName": "Hashable",
-            "usr": "s:SH",
-            "mangledName": "$sSH"
-          },
-          {
-            "kind": "Conformance",
-            "name": "RawRepresentable",
-            "printedName": "RawRepresentable",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "RawValue",
-                "printedName": "RawValue",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:SY",
-            "mangledName": "$sSY"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Sendable",
-            "printedName": "Sendable",
-            "usr": "s:s8SendableP",
-            "mangledName": "$ss8SendableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "SendableMetatype",
-            "printedName": "SendableMetatype",
-            "usr": "s:s16SendableMetatypeP",
-            "mangledName": "$ss16SendableMetatypeP"
-          }
-        ]
-      },
-      {
-        "kind": "TypeDecl",
-        "name": "TmkSpeakerGender",
-        "printedName": "TmkSpeakerGender",
-        "children": [
-          {
-            "kind": "Var",
-            "name": "male",
-            "printedName": "male",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TmkTranslationSDK.TmkSpeakerGender.Type) -> TmkTranslationSDK.TmkSpeakerGender",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerGender",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                    "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerGender.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkSpeakerGender",
-                        "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                        "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO4maleyA2CmF",
-            "mangledName": "$s17TmkTranslationSDK0A13SpeakerGenderO4maleyA2CmF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "RawDocComment"
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "female",
-            "printedName": "female",
-            "children": [
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(TmkTranslationSDK.TmkSpeakerGender.Type) -> TmkTranslationSDK.TmkSpeakerGender",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerGender",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                    "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Metatype",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerGender.Type",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkSpeakerGender",
-                        "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                        "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ],
-            "declKind": "EnumElement",
-            "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO6femaleyA2CmF",
-            "mangledName": "$s17TmkTranslationSDK0A13SpeakerGenderO6femaleyA2CmF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "RawDocComment"
-            ]
-          },
-          {
-            "kind": "Constructor",
-            "name": "init",
-            "printedName": "init(rawValue:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "TmkTranslationSDK.TmkSpeakerGender?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerGender",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                    "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-                  }
-                ],
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              }
-            ],
-            "declKind": "Constructor",
-            "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO8rawValueACSgSS_tcfc",
-            "mangledName": "$s17TmkTranslationSDK0A13SpeakerGenderO8rawValueACSgSS_tcfc",
-            "moduleName": "TmkTranslationSDK",
-            "implicit": true,
-            "init_kind": "Designated"
-          },
-          {
-            "kind": "Var",
-            "name": "rawValue",
-            "printedName": "rawValue",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "String",
-                "printedName": "Swift.String",
-                "usr": "s:SS"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO8rawValueSSvp",
-            "mangledName": "$s17TmkTranslationSDK0A13SpeakerGenderO8rawValueSSvp",
-            "moduleName": "TmkTranslationSDK",
-            "implicit": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO8rawValueSSvg",
-                "mangledName": "$s17TmkTranslationSDK0A13SpeakerGenderO8rawValueSSvg",
-                "moduleName": "TmkTranslationSDK",
-                "implicit": true,
-                "accessorKind": "get"
-              }
-            ]
-          }
-        ],
-        "declKind": "Enum",
-        "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO",
-        "mangledName": "$s17TmkTranslationSDK0A13SpeakerGenderO",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "AccessControl",
-          "RawDocComment"
-        ],
-        "enumRawTypeName": "String",
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Equatable",
-            "printedName": "Equatable",
-            "usr": "s:SQ",
-            "mangledName": "$sSQ"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Hashable",
-            "printedName": "Hashable",
-            "usr": "s:SH",
-            "mangledName": "$sSH"
-          },
-          {
-            "kind": "Conformance",
-            "name": "RawRepresentable",
-            "printedName": "RawRepresentable",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "RawValue",
-                "printedName": "RawValue",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:SY",
-            "mangledName": "$sSY"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Sendable",
-            "printedName": "Sendable",
-            "usr": "s:s8SendableP",
-            "mangledName": "$ss8SendableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "SendableMetatype",
-            "printedName": "SendableMetatype",
-            "usr": "s:s16SendableMetatypeP",
-            "mangledName": "$ss16SendableMetatypeP"
-          }
-        ]
-      },
-      {
-        "kind": "TypeDecl",
-        "name": "TmkSpeaker",
-        "printedName": "TmkSpeaker",
-        "children": [
-          {
-            "kind": "Var",
-            "name": "channel",
-            "printedName": "channel",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeakerChannel",
-                "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:17TmkTranslationSDK0A7SpeakerV7channelAA0aD7ChannelOvp",
-            "mangledName": "$s17TmkTranslationSDK0A7SpeakerV7channelAA0aD7ChannelOvp",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "HasStorage",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "isLet": true,
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerChannel",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                    "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:17TmkTranslationSDK0A7SpeakerV7channelAA0aD7ChannelOvg",
-                "mangledName": "$s17TmkTranslationSDK0A7SpeakerV7channelAA0aD7ChannelOvg",
-                "moduleName": "TmkTranslationSDK",
-                "implicit": true,
-                "accessorKind": "get"
-              }
-            ]
-          },
-          {
-            "kind": "Var",
-            "name": "gender",
-            "printedName": "gender",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeakerGender",
-                "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-              }
-            ],
-            "declKind": "Var",
-            "usr": "s:17TmkTranslationSDK0A7SpeakerV6genderAA0aD6GenderOvp",
-            "mangledName": "$s17TmkTranslationSDK0A7SpeakerV6genderAA0aD6GenderOvp",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "HasStorage",
-              "AccessControl",
-              "RawDocComment"
-            ],
-            "isLet": true,
-            "hasStorage": true,
-            "accessors": [
-              {
-                "kind": "Accessor",
-                "name": "Get",
-                "printedName": "Get()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeakerGender",
-                    "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                    "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-                  }
-                ],
-                "declKind": "Accessor",
-                "usr": "s:17TmkTranslationSDK0A7SpeakerV6genderAA0aD6GenderOvg",
-                "mangledName": "$s17TmkTranslationSDK0A7SpeakerV6genderAA0aD6GenderOvg",
-                "moduleName": "TmkTranslationSDK",
-                "implicit": true,
-                "accessorKind": "get"
-              }
-            ]
-          },
-          {
-            "kind": "Constructor",
-            "name": "init",
-            "printedName": "init(channel:gender:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeaker",
-                "printedName": "TmkTranslationSDK.TmkSpeaker",
-                "usr": "s:17TmkTranslationSDK0A7SpeakerV"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeakerChannel",
-                "printedName": "TmkTranslationSDK.TmkSpeakerChannel",
-                "usr": "s:17TmkTranslationSDK0A14SpeakerChannelO"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeakerGender",
-                "printedName": "TmkTranslationSDK.TmkSpeakerGender",
-                "usr": "s:17TmkTranslationSDK0A13SpeakerGenderO"
-              }
-            ],
-            "declKind": "Constructor",
-            "usr": "s:17TmkTranslationSDK0A7SpeakerV7channel6genderAcA0aD7ChannelO_AA0aD6GenderOtcfc",
-            "mangledName": "$s17TmkTranslationSDK0A7SpeakerV7channel6genderAcA0aD7ChannelO_AA0aD6GenderOtcfc",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "AccessControl"
-            ],
-            "init_kind": "Designated"
-          },
-          {
-            "kind": "Function",
-            "name": "==",
-            "printedName": "==(_:_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeaker",
-                "printedName": "TmkTranslationSDK.TmkSpeaker",
-                "usr": "s:17TmkTranslationSDK0A7SpeakerV"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "TmkSpeaker",
-                "printedName": "TmkTranslationSDK.TmkSpeaker",
-                "usr": "s:17TmkTranslationSDK0A7SpeakerV"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0A7SpeakerV2eeoiySbAC_ACtFZ",
-            "mangledName": "$s17TmkTranslationSDK0A7SpeakerV2eeoiySbAC_ACtFZ",
-            "moduleName": "TmkTranslationSDK",
-            "static": true,
-            "implicit": true,
-            "funcSelfKind": "NonMutating"
-          }
-        ],
-        "declKind": "Struct",
-        "usr": "s:17TmkTranslationSDK0A7SpeakerV",
-        "mangledName": "$s17TmkTranslationSDK0A7SpeakerV",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "AccessControl",
-          "RawDocComment"
-        ],
-        "conformances": [
-          {
-            "kind": "Conformance",
-            "name": "Copyable",
-            "printedName": "Copyable",
-            "usr": "s:s8CopyableP",
-            "mangledName": "$ss8CopyableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Escapable",
-            "printedName": "Escapable",
-            "usr": "s:s9EscapableP",
-            "mangledName": "$ss9EscapableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Equatable",
-            "printedName": "Equatable",
-            "usr": "s:SQ",
-            "mangledName": "$sSQ"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Sendable",
-            "printedName": "Sendable",
-            "usr": "s:s8SendableP",
-            "mangledName": "$ss8SendableP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "SendableMetatype",
-            "printedName": "SendableMetatype",
-            "usr": "s:s16SendableMetatypeP",
-            "mangledName": "$ss16SendableMetatypeP"
-          }
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "RawDocComment"
-        ]
-      },
-      {
-        "kind": "TypeDecl",
         "name": "TmkTranslationChannel",
         "printedName": "TmkTranslationChannel",
         "children": [
@@ -12962,83 +11878,6 @@
               "RawDocComment"
             ],
             "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "updateSpeaker",
-            "printedName": "updateSpeaker(speakers:callback:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "(any TmkTranslationSDK.TmkSDKCancellable)?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSDKCancellable",
-                    "printedName": "any TmkTranslationSDK.TmkSDKCancellable",
-                    "usr": "s:17TmkTranslationSDK0A14SDKCancellableP"
-                  }
-                ],
-                "usr": "s:Sq"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Array",
-                "printedName": "[TmkTranslationSDK.TmkSpeaker]",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "TmkSpeaker",
-                    "printedName": "TmkTranslationSDK.TmkSpeaker",
-                    "usr": "s:17TmkTranslationSDK0A7SpeakerV"
-                  }
-                ],
-                "usr": "s:Sa"
-              },
-              {
-                "kind": "TypeFunc",
-                "name": "Function",
-                "printedName": "(Swift.Result<(), TmkTranslationSDK.TmkTranslationError>) -> ()",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Void",
-                    "printedName": "()"
-                  },
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Result",
-                    "printedName": "Swift.Result<(), TmkTranslationSDK.TmkTranslationError>",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "Void",
-                        "printedName": "()"
-                      },
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkTranslationError",
-                        "printedName": "TmkTranslationSDK.TmkTranslationError",
-                        "usr": "s:17TmkTranslationSDK0aB5ErrorO"
-                      }
-                    ],
-                    "usr": "s:s6ResultO"
-                  }
-                ]
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDK0aB7ChannelC13updateSpeaker8speakers8callbackAA0A14SDKCancellable_pSgSayAA0aF0VG_ys6ResultOyytAA0aB5ErrorOGctF",
-            "mangledName": "$s17TmkTranslationSDK0aB7ChannelC13updateSpeaker8speakers8callbackAA0A14SDKCancellable_pSgSayAA0aF0VG_ys6ResultOyytAA0aB5ErrorOGctF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final",
-              "AccessControl",
-              "DiscardableResult",
-              "RawDocComment"
-            ],
-            "funcSelfKind": "NonMutating"
           }
         ],
         "declKind": "Class",
@@ -13353,26 +12192,6 @@
         "kind": "Import",
         "name": "TmkLogging",
         "printedName": "TmkLogging",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "RawDocComment"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "TmkOfflineTranslationLib",
-        "printedName": "TmkOfflineTranslationLib",
         "declKind": "Import",
         "moduleName": "TmkTranslationSDK",
         "declAttributes": [
@@ -15665,7 +14484,7 @@
           {
             "kind": "Function",
             "name": "createTmkTranslationRoom",
-            "printedName": "createTmkTranslationRoom(sourceLang:targetLang:scenario:roomId:channelScenario:messageTunnel:speakers:_:)",
+            "printedName": "createTmkTranslationRoom(sourceLang:targetLang:scenario:roomId:channelScenario:messageTunnel:_:)",
             "children": [
               {
                 "kind": "TypeNominal",
@@ -15724,29 +14543,6 @@
                 "usr": "s:17TmkTranslationSDK0aB13MessageTunnelO"
               },
               {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "[TmkTranslationSDK.TmkSpeaker]?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[TmkTranslationSDK.TmkSpeaker]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "TmkSpeaker",
-                        "printedName": "TmkTranslationSDK.TmkSpeaker",
-                        "usr": "s:17TmkTranslationSDK0A7SpeakerV"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ],
-                "hasDefaultArg": true,
-                "usr": "s:Sq"
-              },
-              {
                 "kind": "TypeFunc",
                 "name": "Function",
                 "printedName": "(Swift.Result<TmkTranslationSDK.TmkTranslationRoom, TmkTranslationSDK.TmkTranslationError>) -> ()",
@@ -15780,8 +14576,8 @@
               }
             ],
             "declKind": "Func",
-            "usr": "s:17TmkTranslationSDKAAC06createaB4Room10sourceLang06targetG08scenario6roomId15channelScenario13messageTunnel8speakers_AA0abE0CSS_SSAA0aeM0OSSSgAA0M0OAA0ab7MessageO0OSayAA0A7SpeakerVGSgys6ResultOyAlA0aB5ErrorOGctF",
-            "mangledName": "$s17TmkTranslationSDKAAC06createaB4Room10sourceLang06targetG08scenario6roomId15channelScenario13messageTunnel8speakers_AA0abE0CSS_SSAA0aeM0OSSSgAA0M0OAA0ab7MessageO0OSayAA0A7SpeakerVGSgys6ResultOyAlA0aB5ErrorOGctF",
+            "usr": "s:17TmkTranslationSDKAAC06createaB4Room10sourceLang06targetG08scenario6roomId15channelScenario13messageTunnel_AA0abE0CSS_SSAA0aeM0OSSSgAA0M0OAA0ab7MessageO0Oys6ResultOyAkA0aB5ErrorOGctF",
+            "mangledName": "$s17TmkTranslationSDKAAC06createaB4Room10sourceLang06targetG08scenario6roomId15channelScenario13messageTunnel_AA0abE0CSS_SSAA0aeM0OSSSgAA0M0OAA0ab7MessageO0Oys6ResultOyAkA0aB5ErrorOGctF",
             "moduleName": "TmkTranslationSDK",
             "declAttributes": [
               "Final",
@@ -16792,74 +15588,6 @@
             ],
             "isFromExtension": true,
             "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "lingCastTelemetrySetTraceReportingEnabled",
-            "printedName": "lingCastTelemetrySetTraceReportingEnabled(_:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Bool",
-                "printedName": "Swift.Bool",
-                "usr": "s:Sb"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDKAAC41lingCastTelemetrySetTraceReportingEnabledyySbF",
-            "mangledName": "$s17TmkTranslationSDKAAC41lingCastTelemetrySetTraceReportingEnabledyySbF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final"
-            ],
-            "isFromExtension": true,
-            "spi_group_names": [
-              "TmkTelemetry"
-            ],
-            "funcSelfKind": "NonMutating"
-          },
-          {
-            "kind": "Function",
-            "name": "lingCastTelemetryStartTrace",
-            "printedName": "lingCastTelemetryStartTrace(traceId:)",
-            "children": [
-              {
-                "kind": "TypeNominal",
-                "name": "Void",
-                "printedName": "()"
-              },
-              {
-                "kind": "TypeNominal",
-                "name": "Optional",
-                "printedName": "Swift.String?",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "String",
-                    "printedName": "Swift.String",
-                    "usr": "s:SS"
-                  }
-                ],
-                "usr": "s:Sq"
-              }
-            ],
-            "declKind": "Func",
-            "usr": "s:17TmkTranslationSDKAAC27lingCastTelemetryStartTrace7traceIdySSSg_tF",
-            "mangledName": "$s17TmkTranslationSDKAAC27lingCastTelemetryStartTrace7traceIdySSSg_tF",
-            "moduleName": "TmkTranslationSDK",
-            "declAttributes": [
-              "Final"
-            ],
-            "isFromExtension": true,
-            "spi_group_names": [
-              "TmkTelemetry"
-            ],
-            "funcSelfKind": "NonMutating"
           }
         ],
         "declKind": "Class",
@@ -17186,20 +15914,6 @@
       },
       {
         "kind": "Import",
-        "name": "CryptoKit",
-        "printedName": "CryptoKit",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Security",
-        "printedName": "Security",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
         "name": "TmkNetworking",
         "printedName": "TmkNetworking",
         "declKind": "Import",
@@ -17247,8 +15961,8 @@
       },
       {
         "kind": "Import",
-        "name": "TmkLogging",
-        "printedName": "TmkLogging",
+        "name": "TmkOfflineTranslationLib",
+        "printedName": "TmkOfflineTranslationLib",
         "declKind": "Import",
         "moduleName": "TmkTranslationSDK",
         "declAttributes": [
@@ -17257,8 +15971,8 @@
       },
       {
         "kind": "Import",
-        "name": "TmkOfflineTranslationLib",
-        "printedName": "TmkOfflineTranslationLib",
+        "name": "TmkLogging",
+        "printedName": "TmkLogging",
         "declKind": "Import",
         "moduleName": "TmkTranslationSDK",
         "declAttributes": [
@@ -17346,157 +16060,6 @@
         "declAttributes": [
           "ImplementationOnly",
           "RawDocComment"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "CryptoKit",
-        "printedName": "CryptoKit",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Security",
-        "printedName": "Security",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "TmkOfflineTranslationLib",
-        "printedName": "TmkOfflineTranslationLib",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "CryptoKit",
-        "printedName": "CryptoKit",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "UIKit",
-        "printedName": "UIKit",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "TmkOfflineTranslationLib",
-        "printedName": "TmkOfflineTranslationLib",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "CryptoKit",
-        "printedName": "CryptoKit",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "TmkNetworking",
-        "printedName": "TmkNetworking",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "TmkLogging",
-        "printedName": "TmkLogging",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "TmkOfflineTranslationLib",
-        "printedName": "TmkOfflineTranslationLib",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
-        ]
-      },
-      {
-        "kind": "Import",
-        "name": "Foundation",
-        "printedName": "Foundation",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK"
-      },
-      {
-        "kind": "Import",
-        "name": "TmkOfflineTranslationLib",
-        "printedName": "TmkOfflineTranslationLib",
-        "declKind": "Import",
-        "moduleName": "TmkTranslationSDK",
-        "declAttributes": [
-          "ImplementationOnly"
         ]
       },
       {
@@ -17787,247 +16350,6 @@
             ],
             "usr": "s:7SwiftUI4ViewP",
             "mangledName": "$s7SwiftUI4ViewP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "TableColumnContent",
-            "printedName": "TableColumnContent",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "TableRowValue",
-                "printedName": "TableRowValue",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "DependentMember",
-                    "printedName": "τ_0_0.TableRowValue"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeWitness",
-                "name": "TableColumnSortComparator",
-                "printedName": "TableColumnSortComparator",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "DependentMember",
-                    "printedName": "τ_0_0.TableColumnSortComparator"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeWitness",
-                "name": "TableColumnBody",
-                "printedName": "TableColumnBody",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Never",
-                    "printedName": "Swift.Never",
-                    "usr": "s:s5NeverO"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:7SwiftUI18TableColumnContentP",
-            "mangledName": "$s7SwiftUI18TableColumnContentP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "TabContent",
-            "printedName": "TabContent",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "TabValue",
-                "printedName": "TabValue",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "DependentMember",
-                    "printedName": "τ_0_0.TabValue"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeWitness",
-                "name": "_IdentifiedView",
-                "printedName": "_IdentifiedView",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Optional",
-                    "printedName": "τ_0_0._IdentifiedView?",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "DependentMember",
-                        "printedName": "τ_0_0._IdentifiedView"
-                      }
-                    ],
-                    "usr": "s:Sq"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeWitness",
-                "name": "Body",
-                "printedName": "Body",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Optional",
-                    "printedName": "τ_0_0?",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "GenericTypeParam",
-                        "printedName": "τ_0_0"
-                      }
-                    ],
-                    "usr": "s:Sq"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:7SwiftUI10TabContentP",
-            "mangledName": "$s7SwiftUI10TabContentP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "TableRowContent",
-            "printedName": "TableRowContent",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "TableRowValue",
-                "printedName": "TableRowValue",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "DependentMember",
-                    "printedName": "τ_0_0.TableRowValue"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeWitness",
-                "name": "TableRowBody",
-                "printedName": "TableRowBody",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Never",
-                    "printedName": "Swift.Never",
-                    "usr": "s:s5NeverO"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:7SwiftUI15TableRowContentP",
-            "mangledName": "$s7SwiftUI15TableRowContentP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "SliderTickContent",
-            "printedName": "SliderTickContent",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "Value",
-                "printedName": "Value",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "DependentMember",
-                    "printedName": "τ_0_0.Value"
-                  }
-                ]
-              },
-              {
-                "kind": "TypeWitness",
-                "name": "Body",
-                "printedName": "Body",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Array",
-                    "printedName": "[SwiftUI.SliderTick<τ_0_0.Value>]",
-                    "children": [
-                      {
-                        "kind": "TypeNominal",
-                        "name": "SliderTick",
-                        "printedName": "SwiftUI.SliderTick<τ_0_0.Value>",
-                        "children": [
-                          {
-                            "kind": "TypeNominal",
-                            "name": "DependentMember",
-                            "printedName": "τ_0_0.Value"
-                          }
-                        ],
-                        "usr": "s:7SwiftUI10SliderTickV"
-                      }
-                    ],
-                    "usr": "s:Sa"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:7SwiftUI17SliderTickContentP",
-            "mangledName": "$s7SwiftUI17SliderTickContentP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "Commands",
-            "printedName": "Commands",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "Body",
-                "printedName": "Body",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Never",
-                    "printedName": "Swift.Never",
-                    "usr": "s:s5NeverO"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:7SwiftUI8CommandsP",
-            "mangledName": "$s7SwiftUI8CommandsP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "ToolbarContent",
-            "printedName": "ToolbarContent",
-            "children": [
-              {
-                "kind": "TypeWitness",
-                "name": "Body",
-                "printedName": "Body",
-                "children": [
-                  {
-                    "kind": "TypeNominal",
-                    "name": "Never",
-                    "printedName": "Swift.Never",
-                    "usr": "s:s5NeverO"
-                  }
-                ]
-              }
-            ],
-            "usr": "s:7SwiftUI14ToolbarContentP",
-            "mangledName": "$s7SwiftUI14ToolbarContentP"
-          },
-          {
-            "kind": "Conformance",
-            "name": "CustomizableToolbarContent",
-            "printedName": "CustomizableToolbarContent",
-            "usr": "s:7SwiftUI26CustomizableToolbarContentP",
-            "mangledName": "$s7SwiftUI26CustomizableToolbarContentP"
           }
         ]
       }
@@ -18087,21 +16409,21 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+RoomChannel.swift",
       "kind": "StringLiteral",
-      "offset": 813,
+      "offset": 707,
       "length": 7,
       "value": "\"en-US\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+RoomChannel.swift",
       "kind": "StringLiteral",
-      "offset": 884,
+      "offset": 778,
       "length": 7,
       "value": "\"zh-CN\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+RoomChannel.swift",
       "kind": "Array",
-      "offset": 22620,
+      "offset": 15529,
       "length": 2,
       "value": "[]"
     },
@@ -18136,114 +16458,37 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "BooleanLiteral",
-      "offset": 6667,
+      "offset": 6115,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "BooleanLiteral",
-      "offset": 6697,
+      "offset": 6145,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "BooleanLiteral",
-      "offset": 7402,
+      "offset": 6850,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "BooleanLiteral",
-      "offset": 7432,
+      "offset": 6880,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK+OfflineModel.swift",
       "kind": "Array",
-      "offset": 11962,
+      "offset": 9837,
       "length": 2,
       "value": "[]"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetryContext.swift",
-      "kind": "StringLiteral",
-      "offset": 227,
-      "length": 5,
-      "value": "\"999\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetryContext.swift",
-      "kind": "StringLiteral",
-      "offset": 304,
-      "length": 7,
-      "value": "\"zh-CN\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetryContext.swift",
-      "kind": "StringLiteral",
-      "offset": 384,
-      "length": 7,
-      "value": "\"en-US\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetryContext.swift",
-      "kind": "StringLiteral",
-      "offset": 458,
-      "length": 8,
-      "value": "\"listen\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetryContext.swift",
-      "kind": "StringLiteral",
-      "offset": 540,
-      "length": 8,
-      "value": "\"online\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetryBootstrapper.swift",
-      "kind": "BooleanLiteral",
-      "offset": 297,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetry.swift",
-      "kind": "StringLiteral",
-      "offset": 342,
-      "length": 38,
-      "value": "\"co.timekettle.sdk.lingcast.telemetry\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetry.swift",
-      "kind": "BooleanLiteral",
-      "offset": 485,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetry.swift",
-      "kind": "BooleanLiteral",
-      "offset": 527,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetry.swift",
-      "kind": "BooleanLiteral",
-      "offset": 573,
-      "length": 4,
-      "value": "true"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Infrastructure\/Telemetry\/TmkLingCastTelemetry.swift",
-      "kind": "BooleanLiteral",
-      "offset": 604,
-      "length": 5,
-      "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Room\/TmkTranslationRoom.swift",
@@ -18262,28 +16507,28 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Room\/TmkTranslationRoom.swift",
       "kind": "StringLiteral",
-      "offset": 11644,
+      "offset": 9329,
       "length": 7,
       "value": "\"en-US\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Room\/TmkTranslationRoom.swift",
       "kind": "StringLiteral",
-      "offset": 11682,
+      "offset": 9367,
       "length": 7,
       "value": "\"zh-CN\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Room\/TmkTranslationRoom.swift",
       "kind": "StringLiteral",
-      "offset": 13145,
+      "offset": 10830,
       "length": 7,
       "value": "\"en-US\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Room\/TmkTranslationRoom.swift",
       "kind": "StringLiteral",
-      "offset": 13183,
+      "offset": 10868,
       "length": 7,
       "value": "\"zh-CN\""
     },
@@ -18597,45 +16842,17 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOIDCSessionPersistence.swift",
-      "kind": "StringLiteral",
-      "offset": 985,
-      "length": 2,
-      "value": "\"\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOIDCSessionPersistence.swift",
       "kind": "IntegerLiteral",
-      "offset": 1246,
+      "offset": 788,
       "length": 2,
       "value": "30"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOIDCSessionPersistence.swift",
       "kind": "StringLiteral",
-      "offset": 1725,
-      "length": 35,
-      "value": "\"co.timekettle.sdk.oidc.session.v2\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOIDCSessionPersistence.swift",
-      "kind": "StringLiteral",
-      "offset": 1808,
+      "offset": 1267,
       "length": 32,
       "value": "\"co.timekettle.sdk.oidc.session\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOIDCSessionPersistence.swift",
-      "kind": "StringLiteral",
-      "offset": 2099,
-      "length": 2,
-      "value": "\"\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOIDCSessionPersistence.swift",
-      "kind": "StringLiteral",
-      "offset": 3140,
-      "length": 2,
-      "value": "\"\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
@@ -18724,63 +16941,63 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineListenEngine.swift",
       "kind": "StringLiteral",
-      "offset": 8632,
+      "offset": 6935,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "StringLiteral",
-      "offset": 4535,
+      "offset": 3766,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "StringLiteral",
-      "offset": 4719,
+      "offset": 3950,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "StringLiteral",
-      "offset": 4763,
+      "offset": 3994,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "IntegerLiteral",
-      "offset": 4807,
+      "offset": 4038,
       "length": 6,
       "value": "16000"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "IntegerLiteral",
-      "offset": 4853,
+      "offset": 4084,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "BooleanLiteral",
-      "offset": 5209,
+      "offset": 4440,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "StringLiteral",
-      "offset": 5264,
+      "offset": 4495,
       "length": 2,
       "value": "\"\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/Contracts\/Config\/TmkTranslationChannelConfig.swift",
       "kind": "StringLiteral",
-      "offset": 5314,
+      "offset": 4545,
       "length": 29,
       "value": "\"TMK_OFFLINE_KEY_PLACEHOLDER\""
     },
@@ -18836,182 +17053,175 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Channel\/TmkTranslationChannel.swift",
       "kind": "BooleanLiteral",
-      "offset": 291,
+      "offset": 637,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Channel\/TmkTranslationChannel.swift",
       "kind": "BooleanLiteral",
-      "offset": 1019,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Channel\/TmkTranslationChannel.swift",
-      "kind": "BooleanLiteral",
-      "offset": 1055,
+      "offset": 673,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10344,
+      "offset": 9425,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10379,
+      "offset": 9460,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10414,
+      "offset": 9495,
       "length": 1,
       "value": "2"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10452,
+      "offset": 9533,
       "length": 1,
       "value": "3"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10486,
+      "offset": 9567,
       "length": 1,
       "value": "4"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10522,
+      "offset": 9603,
       "length": 1,
       "value": "5"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10558,
+      "offset": 9639,
       "length": 1,
       "value": "6"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10600,
+      "offset": 9681,
       "length": 1,
       "value": "7"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10636,
+      "offset": 9717,
       "length": 1,
       "value": "8"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10672,
+      "offset": 9753,
       "length": 1,
       "value": "9"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10712,
+      "offset": 9793,
       "length": 2,
       "value": "10"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10747,
+      "offset": 9828,
       "length": 2,
       "value": "12"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10788,
+      "offset": 9869,
       "length": 2,
       "value": "14"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10826,
+      "offset": 9907,
       "length": 2,
       "value": "15"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 10855,
+      "offset": 9936,
       "length": 2,
       "value": "16"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 11065,
+      "offset": 10146,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 11324,
+      "offset": 10405,
       "length": 5,
       "value": "16000"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 11341,
+      "offset": 10422,
       "length": 1,
       "value": "1"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "IntegerLiteral",
-      "offset": 11362,
+      "offset": 10443,
       "length": 2,
       "value": "20"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "StringLiteral",
-      "offset": 11668,
+      "offset": 10749,
       "length": 13,
       "value": "\"engine idle\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 11794,
+      "offset": 10875,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 42753,
+      "offset": 38704,
       "length": 4,
       "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OnlineEngine.swift",
       "kind": "BooleanLiteral",
-      "offset": 42805,
+      "offset": 38756,
       "length": 4,
       "value": "true"
     },
@@ -19465,94 +17675,108 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1333,
+      "length": 5,
+      "value": "16000"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1350,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1371,
+      "length": 2,
+      "value": "80"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1466,
+      "length": 5,
+      "value": "16000"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1483,
+      "length": 1,
+      "value": "2"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 1504,
+      "length": 2,
+      "value": "80"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "StringLiteral",
-      "offset": 1299,
+      "offset": 1564,
       "length": 41,
       "value": "\"co.timekettle.sdk.offline.one2one.start\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
-      "kind": "IntegerLiteral",
-      "offset": 1485,
-      "length": 2,
-      "value": "70"
+      "kind": "StringLiteral",
+      "offset": 1738,
+      "length": 54,
+      "value": "\"co.timekettle.sdk.offline.one2one.playback.emit.left\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
-      "kind": "BooleanLiteral",
-      "offset": 1627,
-      "length": 5,
-      "value": "false"
+      "kind": "StringLiteral",
+      "offset": 1931,
+      "length": 55,
+      "value": "\"co.timekettle.sdk.offline.one2one.playback.emit.right\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "IntegerLiteral",
-      "offset": 1774,
+      "offset": 2156,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2207,
       "length": 1,
       "value": "0"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "BooleanLiteral",
-      "offset": 2205,
+      "offset": 2279,
+      "length": 5,
+      "value": "false"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "IntegerLiteral",
+      "offset": 2426,
+      "length": 1,
+      "value": "0"
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
+      "kind": "BooleanLiteral",
+      "offset": 2857,
       "length": 5,
       "value": "false"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/Offline1V1Engine.swift",
       "kind": "StringLiteral",
-      "offset": 11114,
+      "offset": 9770,
       "length": 2,
       "value": "\"\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "IntegerLiteral",
-      "offset": 1326,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "StringLiteral",
-      "offset": 1605,
-      "length": 45,
-      "value": "\"co.timekettle.sdk.offline.one2one.tts.mixer\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "Array",
-      "offset": 1855,
-      "length": 2,
-      "value": "[]"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "Array",
-      "offset": 1901,
-      "length": 2,
-      "value": "[]"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "IntegerLiteral",
-      "offset": 1982,
-      "length": 1,
-      "value": "0"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "IntegerLiteral",
-      "offset": 2020,
-      "length": 6,
-      "value": "16000"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/OfflineOneToOneTTSMixer.swift",
-      "kind": "IntegerLiteral",
-      "offset": 2060,
-      "length": 2,
-      "value": "70"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Translation\/Engines\/TmkOfflineVoiceIDResolver.swift",
@@ -19766,38 +17990,17 @@
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK.swift",
-      "kind": "IntegerLiteral",
-      "offset": 469,
-      "length": 2,
-      "value": "60"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK.swift",
-      "kind": "BooleanLiteral",
-      "offset": 1230,
-      "length": 5,
-      "value": "false"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK.swift",
       "kind": "StringLiteral",
-      "offset": 1843,
+      "offset": 549,
       "length": 43,
       "value": "\"co.timekettle.sdk.offline.channel.startup\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK.swift",
       "kind": "Dictionary",
-      "offset": 2917,
+      "offset": 1623,
       "length": 3,
       "value": "[]"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkTranslationSDK.swift",
-      "kind": "BooleanLiteral",
-      "offset": 3104,
-      "length": 4,
-      "value": "true"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/PublicAPI\/API\/TmkSDKVersion.swift",
@@ -19823,42 +18026,42 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OnlineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 373,
+      "offset": 340,
       "length": 16,
       "value": "\"forced_refresh\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OnlineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 663,
+      "offset": 630,
       "length": 23,
       "value": "\"configuration_changed\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OnlineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 844,
+      "offset": 811,
       "length": 18,
       "value": "\"external_user_id\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OnlineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 917,
+      "offset": 884,
       "length": 12,
       "value": "\"install_id\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OnlineAuthService.swift",
       "kind": "Array",
-      "offset": 5524,
+      "offset": 5426,
       "length": 2,
       "value": "[]"
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OnlineAuthService.swift",
       "kind": "BooleanLiteral",
-      "offset": 10233,
+      "offset": 9841,
       "length": 5,
       "value": "false"
     },
@@ -19914,44 +18117,51 @@
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 296,
+      "offset": 339,
       "length": 28,
       "value": "\"skipped_no_online_response\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 358,
+      "offset": 401,
       "length": 25,
       "value": "\"skipped_missing_payload\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 404,
+      "offset": 447,
       "length": 11,
       "value": "\"cache_hit\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 438,
+      "offset": 481,
       "length": 13,
       "value": "\"needs_apply\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 471,
+      "offset": 514,
       "length": 9,
       "value": "\"applied\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
       "kind": "StringLiteral",
-      "offset": 499,
+      "offset": 542,
       "length": 8,
       "value": "\"failed\""
+    },
+    {
+      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/TmkOfflineAuthService.swift",
+      "kind": "StringLiteral",
+      "offset": 1682,
+      "length": 5,
+      "value": "\"***\""
     },
     {
       "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/OfflineModel\/TmkOfflineModelManager.swift",
@@ -20204,48 +18414,6 @@
       "offset": 6246,
       "length": 2,
       "value": "[]"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/License\/TmkOfflineLicenseCrypto.swift",
-      "kind": "IntegerLiteral",
-      "offset": 422,
-      "length": 1,
-      "value": "1"
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/License\/TmkOfflineLicenseCrypto.swift",
-      "kind": "StringLiteral",
-      "offset": 459,
-      "length": 13,
-      "value": "\"AES-256-GCM\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/License\/TmkOfflineLicenseLocalDataSource.swift",
-      "kind": "StringLiteral",
-      "offset": 105,
-      "length": 11,
-      "value": "\".tmk\/auth\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/License\/TmkOfflineLicenseLocalDataSource.swift",
-      "kind": "StringLiteral",
-      "offset": 151,
-      "length": 21,
-      "value": "\"offline_license.dat\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/License\/TmkOfflineLicenseRepository.swift",
-      "kind": "StringLiteral",
-      "offset": 809,
-      "length": 21,
-      "value": "\"offline-pack-260520\""
-    },
-    {
-      "filePath": "\/Users\/runner\/work\/tmk-translation-sdk\/tmk-translation-sdk\/iOS\/TmkTranslationSDK\/TmkTranslationSDK\/Features\/Auth\/License\/TmkOfflineLicenseRepository.swift",
-      "kind": "StringLiteral",
-      "offset": 1575,
-      "length": 46,
-      "value": "\"co.timekettle.sdk.offline.license.repository\""
     }
   ]
 }
