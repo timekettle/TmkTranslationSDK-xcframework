@@ -145,8 +145,10 @@ final public class TmkAnySDKCancellable : TmkSDKCancellable {
 }
 extension TmkTranslationSDK {
   #if compiler(>=5.3) && $NonescapableTypes
-  final public func createTmkTranslationRoom(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, _ callback: @escaping CreateRoomCallback) -> TmkTranslationRoom
+  @available(*, deprecated, message: "Use createTmkTranslationRoom(config:_:) instead.")
+  final public func createTmkTranslationRoom(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, translateEngine: TmkOnlineTranslateEngine = .automatic, _ callback: @escaping CreateRoomCallback)
   #endif
+  final public func createTmkTranslationRoom(config: TmkTranslationRoomConfig, _ callback: @escaping CreateRoomCallback)
   final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, callback: @escaping CreateChannelCallback)
   #if compiler(>=5.3) && $NonescapableTypes
   final public func createTranslationChannel(_ config: TmkTranslationChannelConfig, listener: (any TmkTranslationListener)?, callback: @escaping CreateChannelCallback)
@@ -215,10 +217,19 @@ public struct TmkTranslationRoomDialogResponse : Swift.Equatable, Swift.Sendable
     public let subscribeUid: Swift.String
     public static func == (a: TmkTranslationRoomDialogResponse.TranslationItem, b: TmkTranslationRoomDialogResponse.TranslationItem) -> Swift.Bool
   }
+  public struct SpeakerItem : Swift.Equatable, Swift.Sendable {
+    public let channel: Swift.String
+    public let locale: Swift.String
+    public let connectUid: Swift.String
+    public let subscribeUid: Swift.String
+    public let speakerIdentityNo: Swift.String
+    public static func == (a: TmkTranslationRoomDialogResponse.SpeakerItem, b: TmkTranslationRoomDialogResponse.SpeakerItem) -> Swift.Bool
+  }
   public let connectUid: Swift.String
   public let roomNo: Swift.String
   public let speakerIdentityNo: Swift.String
   public let translationList: [TmkTranslationRoomDialogResponse.TranslationItem]
+  public let speakers: [TmkTranslationRoomDialogResponse.SpeakerItem]
   public static func == (a: TmkTranslationRoomDialogResponse, b: TmkTranslationRoomDialogResponse) -> Swift.Bool
 }
 @_hasMissingDesignatedInitializers final public class TmkTranslationRoom {
@@ -236,6 +247,10 @@ public struct TmkTranslationRoomDialogResponse : Swift.Equatable, Swift.Sendable
   #if compiler(>=5.3) && $NonescapableTypes
   @discardableResult
   final public func updateRoomLocale(sourceLocales: [Swift.String], targetLocales: [Swift.String], completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
+  final public func updateTranslateEngine(_ translateEngine: TmkOnlineTranslateEngine = .automatic, completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @discardableResult
@@ -387,6 +402,7 @@ public enum TmkTranslationError : Swift.Error, Foundation.LocalizedError {
   public func currentRuntimeState() -> TmkTranslationChannelStateSnapshot
   @objc deinit
 }
+@available(*, deprecated, message: "Use TmkChannelAudioMode instead.")
 public enum TmkOfflineAudioChannelMode : Swift.Equatable {
   case mono
   case stereo
@@ -399,7 +415,13 @@ public enum TmkOfflineAudioChannelMode : Swift.Equatable {
 @_hasMissingDesignatedInitializers final public class TmkTranslationChannelConfig {
   final public let pcmSampleRate: Swift.Int
   final public let pcmChannels: Swift.Int
-  final public let offlineAudioChannelMode: TmkOfflineAudioChannelMode
+  final public var channelAudioMode: TmkChannelAudioMode {
+    get
+  }
+  @available(*, deprecated, message: "Use channelAudioMode instead.")
+  final public var offlineAudioChannelMode: TmkOfflineAudioChannelMode {
+    get
+  }
   final public class Builder {
     public init()
     final public func setRoom(_ room: TmkTranslationRoom) -> TmkTranslationChannelConfig.Builder
@@ -414,6 +436,8 @@ public enum TmkOfflineAudioChannelMode : Swift.Equatable {
     final public func setMessageTunnel(_ tunnel: TmkTranslationMessageTunnel) -> TmkTranslationChannelConfig.Builder
     final public func setModelRootDirectory(_ directory: Swift.String) -> TmkTranslationChannelConfig.Builder
     final public func setSpeakers(_ speakers: [TmkSpeaker]) -> TmkTranslationChannelConfig.Builder
+    final public func setChannelAudioMode(_ mode: TmkChannelAudioMode) -> TmkTranslationChannelConfig.Builder
+    @available(*, deprecated, message: "Use setChannelAudioMode(_:) instead.")
     final public func setOfflineAudioChannelMode(_ mode: TmkOfflineAudioChannelMode) -> TmkTranslationChannelConfig.Builder
     final public func build() -> TmkTranslationChannelConfig
     @objc deinit
@@ -499,6 +523,22 @@ public enum TranslationMode {
     get
   }
 }
+public enum TmkOnlineTranslateEngine : Swift.String, Swift.Equatable, Swift.Sendable, Swift.CaseIterable {
+  case automatic
+  case fast
+  case accurate
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias AllCases = [TmkOnlineTranslateEngine]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [TmkOnlineTranslateEngine] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum TmkSpeakerChannel : Swift.String, Swift.Sendable {
   case left
   case right
@@ -532,6 +572,9 @@ public struct TmkSpeaker : Swift.Equatable, Swift.Sendable {
   final public func pushStreamAudioData(_ data: Foundation.Data, channelCount: Swift.Int, extraChunk: Foundation.Data? = nil)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
+  final public func pushStreamAudioData(_ data: Foundation.Data, speakerChannel: TmkSpeakerChannel, extraChunk: Foundation.Data? = nil)
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
   @discardableResult
   final public func sendAudioMetadata(vadStatus: Swift.UInt8, channel: Swift.UInt8, baseTraceId: Swift.String? = nil) -> Swift.Result<Swift.String, TmkTranslationError>
   #endif
@@ -553,14 +596,29 @@ public struct TmkSpeaker : Swift.Equatable, Swift.Sendable {
   #endif
   @objc deinit
 }
+public enum TmkTranslatedAudioRoute : Swift.String, Swift.Sendable {
+  case stereo
+  case left
+  case right
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public struct TmkResult<T> {
   public let sessionId: Swift.Int
+  public let bubbleId: Swift.String
   public let data: T
   public let srcCode: Swift.String
   public let dstCode: Swift.String
   public let isLast: Swift.Bool
   public let extraData: [Swift.String : Any]
-  public init(sessionId: Swift.Int, data: T, srcCode: Swift.String, dstCode: Swift.String, isLast: Swift.Bool, extraData: [Swift.String : Any] = [:])
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(sessionId: Swift.Int, data: T, srcCode: Swift.String, dstCode: Swift.String, isLast: Swift.Bool, extraData: [Swift.String : Any] = [:], bubbleId: Swift.String? = nil)
+  #endif
 }
 public struct TmkSupportedLanguagesResponse : Swift.Equatable, Swift.Codable {
   public let version: Swift.String?
@@ -627,6 +685,32 @@ public enum TmkTranslationPCMTools {
   public static func pcm16LEToFloat(_ data: Foundation.Data) -> [Swift.Float]
   public static func floatToPCM16LE(_ samples: [Swift.Float]) -> Foundation.Data
 }
+public enum TmkDialogConversationAudioMode : Swift.String, Swift.Equatable, Swift.Sendable {
+  case standard
+  case lowLatency
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public typealias TmkChannelAudioMode = TmkDialogConversationAudioMode
+public struct TmkTranslationRoomConfig {
+  public var sourceLang: Swift.String
+  public var targetLang: Swift.String
+  public var scenario: TmkRoomScenario
+  public var roomId: Swift.String?
+  public var channelScenario: Scenario
+  public var messageTunnel: TmkTranslationMessageTunnel
+  public var speakers: [TmkSpeaker]?
+  public var translateEngine: TmkOnlineTranslateEngine
+  public var dialogConversationAudioMode: TmkDialogConversationAudioMode
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, translateEngine: TmkOnlineTranslateEngine = .automatic, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard)
+  #endif
+}
 extension TmkTranslationChannelState : Swift.Hashable {}
 extension TmkTranslationChannelState : Swift.RawRepresentable {}
 extension TmkTranslationChannelStateReason : Swift.Hashable {}
@@ -643,6 +727,7 @@ extension TmkSDKErrorCode : Swift.RawRepresentable {}
 extension TmkTranslationErrorCategory : Swift.Equatable {}
 extension TmkTranslationErrorCategory : Swift.Hashable {}
 extension TmkTranslationErrorCategory : Swift.RawRepresentable {}
+@available(*, deprecated, message: "Use TmkChannelAudioMode instead.")
 extension TmkOfflineAudioChannelMode : Swift.Hashable {}
 extension TmkTranslationPlaybackAudioDataMode : Swift.Equatable {}
 extension TmkTranslationPlaybackAudioDataMode : Swift.Hashable {}
@@ -654,10 +739,17 @@ extension Scenario : Swift.Equatable {}
 extension Scenario : Swift.Hashable {}
 extension TranslationMode : Swift.Equatable {}
 extension TranslationMode : Swift.Hashable {}
+extension TmkOnlineTranslateEngine : Swift.Hashable {}
+extension TmkOnlineTranslateEngine : Swift.RawRepresentable {}
 extension TmkSpeakerChannel : Swift.Equatable {}
 extension TmkSpeakerChannel : Swift.Hashable {}
 extension TmkSpeakerChannel : Swift.RawRepresentable {}
 extension TmkSpeakerGender : Swift.Equatable {}
 extension TmkSpeakerGender : Swift.Hashable {}
 extension TmkSpeakerGender : Swift.RawRepresentable {}
+extension TmkTranslatedAudioRoute : Swift.Equatable {}
+extension TmkTranslatedAudioRoute : Swift.Hashable {}
+extension TmkTranslatedAudioRoute : Swift.RawRepresentable {}
 extension TmkSupportedLanguagesSource : Swift.Hashable {}
+extension TmkDialogConversationAudioMode : Swift.Hashable {}
+extension TmkDialogConversationAudioMode : Swift.RawRepresentable {}
