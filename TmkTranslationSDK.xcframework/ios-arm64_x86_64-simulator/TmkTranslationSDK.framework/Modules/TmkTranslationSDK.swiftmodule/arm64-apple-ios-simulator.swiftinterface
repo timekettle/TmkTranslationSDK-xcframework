@@ -254,6 +254,10 @@ public struct TmkTranslationRoomDialogResponse : Swift.Equatable, Swift.Sendable
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @discardableResult
+  final public func updateScenario(_ scenario: TmkRoomScenario, completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
+  #endif
+  #if compiler(>=5.3) && $NonescapableTypes
+  @discardableResult
   final public func closeRoom(completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
   #endif
   @objc deinit
@@ -463,10 +467,7 @@ public struct TmkTranslationPlaybackAudioPullConfig {
 public enum TmkTranslationNetworkEnvironment : Swift.String, Swift.Equatable, Swift.Sendable {
   case dev
   case test
-  case uat
   case pre
-  case pre_jp
-  case pre_us
   #if compiler(>=5.3) && $NonescapableTypes
   public init?(rawValue: Swift.String)
   #endif
