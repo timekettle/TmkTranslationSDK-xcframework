@@ -12,6 +12,7 @@
 
 当前版本更新内容：
 
+- 新增 `TmkTranslationSDK.sdkVersion` 接口，可获取当前 SDK 版本号。
 - 新增离线 License 鉴权能力，离线能力可在 `verifyAuth(_:)` 后通过 `isOfflineTranslationSupported()` 判断。
 - 新增离线模型包管理能力，可查询模型包状态、下载语言对模型、取消下载并异步检查模型是否就绪。
 - 新增在线/离线音色设置能力，可在创建通道时配置，也可在通道运行中按声道更新男声或女声。
@@ -160,6 +161,20 @@ TmkTranslationSDK.shared
 ```
 
 类型：`TmkTranslationSDK`
+
+#### `sdkVersion`
+
+获取当前 SDK 版本号，返回不带前缀的语义化版本字符串（如 `1.2.0`）。该属性为类型级静态常量，无需 `shared` 实例即可读取。
+
+```swift
+public static let sdkVersion: String
+```
+
+示例：
+
+```swift
+let version = TmkTranslationSDK.sdkVersion // "1.2.0"
+```
 
 ### 4.2 `sdkInit(_:)`
 

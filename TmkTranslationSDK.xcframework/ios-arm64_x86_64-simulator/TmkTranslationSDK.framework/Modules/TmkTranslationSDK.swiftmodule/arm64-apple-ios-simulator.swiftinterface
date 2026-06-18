@@ -668,6 +668,7 @@ public enum TmkSupportedLanguagesSource : Swift.Equatable {
 }
 @_hasMissingDesignatedInitializers final public class TmkTranslationSDK {
   public static let shared: TmkTranslationSDK
+  public static let sdkVersion: Swift.String
   final public func sdkInit(_ config: TmkTranslationGlobalConfig)
   final public func verifyAuth(_ callback: @escaping AuthCallback)
   final public func isOfflineTranslationSupported() -> Swift.Bool
