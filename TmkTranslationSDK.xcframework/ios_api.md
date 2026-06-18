@@ -13,18 +13,12 @@
 当前版本更新内容：
 
 - 新增 `TmkTranslationSDK.sdkVersion` 接口，可获取当前 SDK 版本号。
-- 新增离线 License 鉴权能力，离线能力可在 `verifyAuth(_:)` 后通过 `isOfflineTranslationSupported()` 判断。
-- 新增离线模型包管理能力，可查询模型包状态、下载语言对模型、取消下载并异步检查模型是否就绪。
-- 新增在线/离线音色设置能力，可在创建通道时配置，也可在通道运行中按声道更新男声或女声。
-- 新增离线一对一 TTS 输出声道模式，可选择单声道或立体声输出。
-- 新增通道状态、错误和事件处理契约，便于业务侧统一处理启动、运行、重连、失败和释放状态。
 - 新增在线 `bubble_end` 事件与 TTS 高亮事件说明，业务侧可按 `bubble_id` 标记气泡结束，并按 `session_id` / `chunk_id` 更新播放高亮。
 - 新增在线翻译引擎策略设置与运行中切换说明，支持 `.automatic`、`.fast`、`.accurate`。
 - 新增在线房间能力设置与运行中切换说明，支持单 ASR、ASR+MT 文本输出、ASR+MT+TTS 语音输出。
-- 通道对象公开 `start()`、`start(completion:)`、`stop()` 生命周期接口；通过 SDK 创建通道时仍会自动启动，业务侧一般不需要重复调用。
+- 新增`updateScenario` 用于运行中切换在线房间能力。
 - `releaseChannel()` 释放当前通道时会取消未完成建房请求，并异步关闭当前在线房间；调用方无需再为同一会话重复调用 `closeRoom(...)`。
 - 网络环境枚举收敛为 `dev`、`test`、`pre`，历史区域环境不再作为公开接入枚举。
-- 新增 SDK 诊断与自动化测试配套能力，用于交付前验证在线/离线、收听/一对一等核心链路。
 
 ## 1. 简介
 
@@ -88,11 +82,9 @@
 推荐使用 CocoaPods：
 
 ```ruby
-source 'https://cdn.cocoapods.org/'
-source 'https://github.com/timekettle/TmkTranslationSDK-iOS.git'
-
 pod 'TmkTranslationSDK', '1.2.0'
 ```
+使用`pod install --repo-update`安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
 
 如具体发布版本与本文不一致，请以发布说明为准。
 
@@ -110,7 +102,8 @@ pod 'TmkTranslationSDK', '1.2.0'
 4. `createTmkTranslationRoom`
 5. `createTranslationChannel`
 6. `pushStreamAudioData`
-7. `stop / closeRoom / releaseChannel / destroy`
+7. `room.closeRoom、channel.release 或者 releaseChannel `
+8. `destroy`
 
 ### 3.2 离线翻译
 
@@ -123,7 +116,8 @@ pod 'TmkTranslationSDK', '1.2.0'
 5. `isOfflineModelReady` 或 `downloadOfflineModels`
 6. `createTranslationChannel`（`config.mode = .offline`）
 7. `pushStreamAudioData`
-8. `stop / releaseChannel / destroy`
+8. `releaseChannel`
+9. `destroy`
 
 ### 3.3 回调线程说明
 
