@@ -5,13 +5,17 @@
 | 项目 | 说明 |
 | --- | --- |
 | 当前文档适配版本 | `v1.2.0` |
-| 最近更新日期 | `2026-06-17` |
+| 最近更新日期 | `2026-06-24` |
 
 
 ## 本次更新
 
 当前版本更新内容：
 
+- 新增频道语言列表接口 `getOnlineSupportedLanguages(version:_:)` 与 `getOfflineSupportedLanguages(version:_:)`，返回精简的 `TmkLocaleListResponse`（含按 code 去重的 `localeOptions`），用于驱动语言选择 UI；接口不依赖鉴权，内置磁盘快照缓存，网络失败或无增量时回退缓存。
+- 原 `getSupportedLanguages(source:version:uiLocales:_:)` 已标记废弃，请改用上述按在线/离线拆分的新接口。
+- 建房接口推荐改用配置对象：`createTmkTranslationRoom(config:_:)` 接收 `TmkTranslationRoomConfig`，建房成功回调返回的房间已含创建通道所需的 dialog 数据；原多参数重载 `createTmkTranslationRoom(sourceLang:targetLang:...)` 已标记废弃。
+- 新增在线翻译运行中语言切换能力：通过 `TmkTranslationRoom.updateRoomLocale(sourceLocales:targetLocales:completion:)` 在不重建房间的前提下更新语言；切换只影响之后新建的气泡，正在进行的旧气泡保留其原始源/目标语言，一对一场景下左右两侧气泡的源/目标语言方向各自正确。
 - 新增 `TmkTranslationSDK.sdkVersion` 接口，可获取当前 SDK 版本号。
 - 新增在线 `bubble_end` 事件与 TTS 高亮事件说明，业务侧可按 `bubble_id` 标记气泡结束，并按 `session_id` / `chunk_id` 更新播放高亮。
 - 新增在线翻译引擎策略设置与运行中切换说明，支持 `.automatic`、`.fast`、`.accurate`。
@@ -97,12 +101,12 @@ pod 'TmkTranslationSDK', '1.2.0'
 在线模式典型流程：
 
 1. `sdkInit`
-2. `verifyAuth`
-3. `getSupportedLanguages(source: .online)`
+2. `getOnlineSupportedLanguages(version:_:)`
+3. `verifyAuth`
 4. `createTmkTranslationRoom`
 5. `createTranslationChannel`
 6. `pushStreamAudioData`
-7. `room.closeRoom、channel.release 或者 releaseChannel `
+7. `releaseChannel `
 8. `destroy`
 
 ### 3.2 离线翻译
@@ -110,9 +114,9 @@ pod 'TmkTranslationSDK', '1.2.0'
 离线模式典型流程：
 
 1. `sdkInit`
-2. `verifyAuth`
-3. `isOfflineTranslationSupported`
-4. `getSupportedLanguages(source: .offline)`
+2. `getOfflineSupportedLanguages(version:_:)`
+3. `verifyAuth`
+4. `isOfflineTranslationSupported`
 5. `isOfflineModelReady` 或 `downloadOfflineModels`
 6. `createTranslationChannel`（`config.mode = .offline`）
 7. `pushStreamAudioData`
@@ -347,7 +351,7 @@ public final class Builder {
 #### `setNetworkBaseURL(_:)`
 
 - 设置自定义服务端地址。
-- 优先级高于 `setNetworkEnvironment(_:)`。
+- **优先级高于 `setNetworkEnvironment(_:)`**。
 
 #### `build()`
 
@@ -357,7 +361,79 @@ public final class Builder {
 
 ## 6. 支持语言接口
 
-### 6.1 `TmkSupportedLanguagesSource`
+### 6.1 获取语言列表（推荐）
+
+获取在线 / 离线翻译当前支持的语言列表，用于驱动语言选择 UI。两个接口都依赖 `sdkInit(_:)`、不依赖鉴权，内部带磁盘快照缓存：网络失败或服务端无增量时回退本地缓存。
+
+```swift
+@discardableResult
+public func getOnlineSupportedLanguages(
+    version: String? = nil,
+    _ callback: @escaping (Result<TmkLocaleListResponse, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+
+@discardableResult
+public func getOfflineSupportedLanguages(
+    version: String? = nil,
+    _ callback: @escaping (Result<TmkLocaleListResponse, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+```
+
+参数说明：
+
+| 参数 | 必填 | 说明 |
+| --- | --- | --- |
+| `version` | 否 | 本地缓存版本号；不传时优先复用 SDK 已保存的版本号发起增量请求。 |
+| `callback` | 是 | 完成回调，主线程触发；成功返回 `TmkLocaleListResponse`，失败返回统一 `TmkTranslationError`。 |
+
+返回值：`TmkSDKCancellable?`，可取消的请求句柄；创建失败时可能为 `nil`。
+
+数据模型：
+
+```swift
+public struct TmkLocaleListResponse: Equatable, Codable {
+    public let version: String?              // 服务端配置版本号
+    public let languages: [TmkLocaleLanguage]
+    public var localeOptions: [TmkLocaleItem] // 展平并按 code 去重，可直接用于语言选择 UI
+}
+
+public struct TmkLocaleLanguage: Equatable, Codable {
+    public let code: String        // 语言编码，例如 en
+    public let displayName: String // 语言展示名称，例如 英语
+    public let locales: [TmkLocaleItem] // 该语言下的地区/口音；离线配置可为空
+}
+
+public struct TmkLocaleItem: Equatable, Codable {
+    public let code: String        // 地区/口音编码，例如 en-US
+    public let displayName: String // 地区/口音展示名称，例如 美国
+}
+```
+
+> `localeOptions` 会按 `code` 去重并保留首次出现顺序：服务端可能把同一 `code`（如粤语 `zh-HK`）下发在多个语言分组下，去重后避免 UI 出现重复选项。
+
+示例：
+
+```swift
+// 在线语言列表
+_ = TmkTranslationSDK.shared.getOnlineSupportedLanguages { result in
+    switch result {
+    case .success(let response):
+        print(response.version ?? "-")
+        print(response.localeOptions.map { "\($0.displayName)(\($0.code))" })
+    case .failure(let error):
+        print(error.message)
+    }
+}
+
+// 离线语言列表
+_ = TmkTranslationSDK.shared.getOfflineSupportedLanguages { result in
+    if case .success(let response) = result {
+        print(response.localeOptions.map(\.code))
+    }
+}
+```
+
+### 6.2 `TmkSupportedLanguagesSource`（旧接口，已废弃）
 
 ```swift
 public enum TmkSupportedLanguagesSource: Equatable {
@@ -371,9 +447,12 @@ public enum TmkSupportedLanguagesSource: Equatable {
 - `.online`：获取在线翻译支持的语言列表。
 - `.offline`：获取离线翻译支持的语言列表。
 
-### 6.2 `getSupportedLanguages(source:version:uiLocales:_:)`
+### 6.3 `getSupportedLanguages(source:version:uiLocales:_:)`（已废弃）
+
+> 该接口已标记 `@available(*, deprecated)`，请改用 6.1 的 `getOnlineSupportedLanguages` / `getOfflineSupportedLanguages`。以下保留用于历史接入参考。
 
 ```swift
+@available(*, deprecated)
 public func getSupportedLanguages(
     source: TmkSupportedLanguagesSource,
     version: String? = nil,
@@ -459,7 +538,7 @@ _ = TmkTranslationSDK.shared.getSupportedLanguages(source: .offline,
 }
 ```
 
-### 6.3 语言模型
+### 6.4 旧语言模型（配合 6.3 废弃接口）
 
 #### `TmkSupportedLanguagesResponse`
 
@@ -643,7 +722,7 @@ public func updateScenario(_ scenario: TmkRoomScenario,
 
 - 关闭当前房间。
 - 只在在线翻译中使用。
-- `updateRoomLocale(...)` 用于运行中更新在线房间语言。
+- `updateRoomLocale(...)` 用于运行中更新在线房间语言，在不重建房间的前提下生效。语言切换只影响切换后新建的气泡：正在进行的旧气泡会保留其创建时锁定的源/目标语言（旧气泡译文文本仍是旧语言，标签也应保持旧语言）；一对一场景下，`sourceLocales` 固定对应左声道、`targetLocales` 固定对应右声道，左右两侧气泡的源/目标语言方向各自正确。业务侧无需为旧气泡手动纠正语言标签。
 - `updateTranslateEngine(...)` 用于运行中切换在线翻译引擎策略，回调在主线程触发；切换成功后通常对后续服务端处理生效。
 - `updateScenario(...)` 用于运行中切换在线房间能力，可在 `.recognize`、`.toText`、`.toSpeech` 之间切换；业务侧应按新能力调整 UI、播放和结果展示。
 
@@ -675,9 +754,9 @@ public func createTmkTranslationRoom(
 | 枚举 | 说明 |
 | --- | --- |
 | `standard` | 标准一对一对话音频模式 |
-| `lowLatency` | 低延迟一对一对话音频模式，适合双方长时间连续说话、翻译和播报 |
+| `lowLatency` | 低延迟一对一对话音频模式，适合双方长时间连续说话、翻译和播报|
 
-兼容旧参数重载如下：
+兼容旧参数重载（已标记废弃 `@available(*, deprecated)`，新接入请改用上面的 `config:` 重载）：
 
 ```swift
 public func createTmkTranslationRoom(
@@ -735,17 +814,17 @@ public func createTmkTranslationRoom(
 - 建房请求完成前 SDK 内部会临时持有 Room，调用方无需为了等待回调额外强引用 Room。
 - 回调在主线程触发。
 
-示例：
+示例（推荐使用 `TmkTranslationRoomConfig`）：
 
 ```swift
-TmkTranslationSDK.shared.createTmkTranslationRoom(
+let roomConfig = TmkTranslationRoomConfig(
     sourceLang: "zh-CN",
     targetLang: "en-US",
     scenario: .toSpeech,
-    roomId: nil,
-    channelScenario: .listen,
-    messageTunnel: .rtm
-) { result in
+    channelScenario: .listen
+)
+
+TmkTranslationSDK.shared.createTmkTranslationRoom(config: roomConfig) { result in
     switch result {
     case .success(let room):
         print(room.channelDialogResponse?.roomNo ?? "-")
@@ -1312,24 +1391,19 @@ public func pushStreamAudioData(_ data: Data, channelCount: Int, extraChunk: Dat
 ### 10.2 生命周期方法
 
 ```swift
-public func start()
-public func start(completion: @escaping (Result<Void, TmkTranslationError>) -> Void)
-public func stop()
+public func createTranslationChannel()
 public func release()
 ```
 
 说明：
-
-- `start()` / `start(completion:)`
-  - 启动通道。
-  - 通过 SDK 创建出来的通道通常已经自动启动，业务方一般不需要再次手动调用。
-  - `start(completion:)` 的回调会切回主线程。
-- `stop()`
-  - 停止当前通道。
-  - 停止后不释放全部资源，业务侧需要等待最终结果时可先调用 `stop()`。
+- `createTranslationChannel()`
+  - 创建通道资源。
+  - 创建后可销毁。
+  - 创建翻译引擎时使用 
+  -
 - `release()`
   - 释放通道资源。
-  - 释放后不可再次启动。
+  - 释放后需要通过createTranslationChannel再次启动。
   - 页面退出、切换房间或切换语言对时，优先通过 `TmkTranslationSDK.shared.releaseChannel()` 释放当前会话，避免只释放通道而遗漏房间关闭。
 
 ### 10.3 状态与能力查询
@@ -2192,12 +2266,12 @@ TmkTranslationSDK.shared.verifyAuth { result in
     switch result {
     case .success:
         TmkTranslationSDK.shared.createTmkTranslationRoom(
-            sourceLang: "zh-CN",
-            targetLang: "en-US",
-            scenario: .toSpeech,
-            roomId: nil,
-            channelScenario: .listen,
-            messageTunnel: .rtm
+            config: TmkTranslationRoomConfig(
+                sourceLang: "zh-CN",
+                targetLang: "en-US",
+                scenario: .toSpeech,
+                channelScenario: .listen
+            )
         ) { result in
             switch result {
             case .success(let room):
