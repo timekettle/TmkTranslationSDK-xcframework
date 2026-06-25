@@ -667,16 +667,25 @@ public enum TmkOnlineTranslateEngine: String {
 ### `TmkTranslationRoomDialogResponse`
 
 ```swift
-public struct TmkTranslationRoomDialogResponse {
-    public struct TranslationItem {
+public struct TmkTranslationRoomDialogResponse: Equatable, Sendable {
+    public struct TranslationItem: Equatable, Sendable {
         public let locale: String
         public let subscribeUid: String
+    }
+
+    public struct SpeakerItem: Equatable, Sendable {
+        public let channel: String
+        public let locale: String
+        public let connectUid: String
+        public let subscribeUid: String
+        public let speakerIdentityNo: String
     }
 
     public let connectUid: String
     public let roomNo: String
     public let speakerIdentityNo: String
     public let translationList: [TranslationItem]
+    public let speakers: [SpeakerItem]
 }
 ```
 
@@ -691,6 +700,9 @@ public struct TmkTranslationRoomDialogResponse {
 - `translationList`
   - 目标语言订阅列表。
   - 每项的 `subscribeUid` 表示对应语言音频流的订阅 UID。
+- `speakers`
+  - 低延迟一对一对话的左右路 speaker 列表；标准对话场景下可能为空。
+  - 每项包含左右路标识 `channel`、该路语言 `locale`、入会 UID `connectUid`、翻译音频订阅 UID `subscribeUid` 与说话人身份标识 `speakerIdentityNo`。
 
 ### `TmkTranslationRoom`
 
@@ -1387,6 +1399,15 @@ public func pushStreamAudioData(_ data: Data, channelCount: Int, extraChunk: Dat
 - `extraChunk`
   - 附加透传数据。
   - 一般传 `nil`。
+
+此外提供按声道推流的重载，用于低延迟一对一场景指定 PCM 所属的左右路：
+
+```swift
+public func pushStreamAudioData(_ data: Data, speakerChannel: TmkSpeakerChannel, extraChunk: Data? = nil)
+```
+
+- `speakerChannel`
+  - 指定该段 PCM 属于哪一路说话人（`.left` / `.right`）。
 
 ### 10.2 生命周期方法
 
@@ -2298,7 +2319,6 @@ TmkTranslationSDK.shared.verifyAuth { result in
                 print(error.message)
             }
         }
-        _ = room
     case .failure(let error):
         print(error.message)
     }
