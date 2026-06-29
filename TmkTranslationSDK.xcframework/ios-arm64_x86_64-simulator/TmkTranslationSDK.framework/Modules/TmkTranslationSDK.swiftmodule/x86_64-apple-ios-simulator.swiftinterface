@@ -549,6 +549,22 @@ public enum TmkOnlineTranslateEngine : Swift.String, Swift.Equatable, Swift.Send
     get
   }
 }
+public enum TmkTranslateDeliveryMode : Swift.String, Swift.Equatable, Swift.Sendable, Swift.CaseIterable {
+  case `default`
+  case partial
+  case stable
+  #if compiler(>=5.3) && $NonescapableTypes
+  public init?(rawValue: Swift.String)
+  #endif
+  public typealias AllCases = [TmkTranslateDeliveryMode]
+  public typealias RawValue = Swift.String
+  nonisolated public static var allCases: [TmkTranslateDeliveryMode] {
+    get
+  }
+  public var rawValue: Swift.String {
+    get
+  }
+}
 public enum TmkSpeakerChannel : Swift.String, Swift.Sendable {
   case left
   case right
@@ -717,9 +733,10 @@ public struct TmkTranslationRoomConfig {
   public var messageTunnel: TmkTranslationMessageTunnel
   public var speakers: [TmkSpeaker]?
   public var translateEngine: TmkOnlineTranslateEngine
+  public var translateMode: TmkTranslateDeliveryMode
   public var dialogConversationAudioMode: TmkDialogConversationAudioMode
   #if compiler(>=5.3) && $NonescapableTypes
-  public init(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, translateEngine: TmkOnlineTranslateEngine = .automatic, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard)
+  public init(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, translateEngine: TmkOnlineTranslateEngine = .automatic, translateMode: TmkTranslateDeliveryMode = .default, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard)
   #endif
 }
 public struct TmkLocaleListResponse : Swift.Equatable, Swift.Codable {
@@ -782,6 +799,8 @@ extension TranslationMode : Swift.Equatable {}
 extension TranslationMode : Swift.Hashable {}
 extension TmkOnlineTranslateEngine : Swift.Hashable {}
 extension TmkOnlineTranslateEngine : Swift.RawRepresentable {}
+extension TmkTranslateDeliveryMode : Swift.Hashable {}
+extension TmkTranslateDeliveryMode : Swift.RawRepresentable {}
 extension TmkSpeakerChannel : Swift.Equatable {}
 extension TmkSpeakerChannel : Swift.Hashable {}
 extension TmkSpeakerChannel : Swift.RawRepresentable {}
