@@ -4,25 +4,23 @@
 
 | 项目 | 说明 |
 | --- | --- |
-| 当前文档适配版本 | `v1.2.0` |
-| 最近更新日期 | `2026-06-24` |
+| 当前文档适配版本 | `v1.3.1` |
+| 最近更新日期 | `2026-07-17` |
 
 
 ## 本次更新
 
-当前版本更新内容：
+当前版本新增/变更的对外能力：
 
-- 新增频道语言列表接口 `getOnlineSupportedLanguages(version:_:)` 与 `getOfflineSupportedLanguages(version:_:)`，返回精简的 `TmkLocaleListResponse`（含按 code 去重的 `localeOptions`），用于驱动语言选择 UI；接口不依赖鉴权，内置磁盘快照缓存，网络失败或无增量时回退缓存。
-- 原 `getSupportedLanguages(source:version:uiLocales:_:)` 已标记废弃，请改用上述按在线/离线拆分的新接口。
-- 建房接口推荐改用配置对象：`createTmkTranslationRoom(config:_:)` 接收 `TmkTranslationRoomConfig`，建房成功回调返回的房间已含创建通道所需的 dialog 数据；原多参数重载 `createTmkTranslationRoom(sourceLang:targetLang:...)` 已标记废弃。
-- 新增在线翻译运行中语言切换能力：通过 `TmkTranslationRoom.updateRoomLocale(sourceLocales:targetLocales:completion:)` 在不重建房间的前提下更新语言；切换只影响之后新建的气泡，正在进行的旧气泡保留其原始源/目标语言，一对一场景下左右两侧气泡的源/目标语言方向各自正确。
-- 新增 `TmkTranslationSDK.sdkVersion` 接口，可获取当前 SDK 版本号。
-- 新增在线 `bubble_end` 事件与 TTS 高亮事件说明，业务侧可按 `bubble_id` 标记气泡结束，并按 `session_id` / `chunk_id` 更新播放高亮。
-- 新增在线翻译引擎策略设置与运行中切换说明，支持 `.automatic`、`.fast`、`.accurate`。
-- 新增在线房间能力设置与运行中切换说明，支持单 ASR、ASR+MT 文本输出、ASR+MT+TTS 语音输出。
-- 新增`updateScenario` 用于运行中切换在线房间能力。
-- `releaseChannel()` 释放当前通道时会取消未完成建房请求，并异步关闭当前在线房间；调用方无需再为同一会话重复调用 `closeRoom(...)`。
-- 网络环境枚举收敛为 `dev`、`test`、`pre`，历史区域环境不再作为公开接入枚举。
+- 新增识别文本时间段：在线 ASR 的 `onRecognized` 回调，`result.extraData` 会带 `offset` 与 `duration`（`Int64`，单位纳秒），表示该段识别音频在会话中的起始偏移与时长。仅在线识别（ASR）结果携带，翻译（MT）结果与离线场景不携带。
+- 新增离线气泡结束事件 `offline_bubble_end`：与在线 `online_bubble_end` 对齐，业务侧可按 `bubble_id` 标记离线气泡结束态；同一气泡恰好下发一次，且不改变 `onRecognized` / `onTranslate` 的 `isFinal`、`isLast` 语义。
+- 新增通道级运行中能力切换：`TmkTranslationChannel` 新增带回调的 `updateLanguages(sourceLang:targetLang:completion:)`、`updateTranslateMode(_:completion:)`、`updateScenario(_:completion:)`，在线/离线统一入口，无需重建通道即可切换语言、翻译下发模式与能力档位。
+- 新增翻译下发模式 `TmkTranslateDeliveryMode`（`default` / `partial` / `stable`）：离线可通过通道配置或运行中切换控制是否输出中间态翻译；在线由建房请求驱动，忽略该字段。
+- 新增离线能力档位配置 `Builder.setCapabilityTier(_:)`：复用 `TmkRoomScenario`（`recognize` / `toText` / `toSpeech`），与收听/一对一场景正交，仅离线引擎按档位按需加载模型；在线忽略。
+- 新增离线模型下载总进度回调 `TmkOfflineModelDownloadListener.onOfflineModelTotalProgress(downloadedBytesAll:totalBytesAll:)`（可选实现，带默认空实现）。
+- 新增网络请求超时配置 `TmkTranslationGlobalConfig.Builder.setNetworkTimeout(_:)`：统一设置鉴权、建房、建通道、语言列表、音色等所有网络请求的超时时间（秒），不设置时默认 `15` 秒。
+- 离线 TTS 公共数据目录为 `tmk-tts-data`（模型包 key `tts/tmk-tts-data`），随离线运行库升级到 `1.0.9`；接入方若曾硬编码历史目录名 `espeak-ng-data` 需同步更新。
+- `TmkTranslationSDK.sdkVersion` 现返回 `1.3.1`。
 
 ## 1. 简介
 
@@ -86,7 +84,7 @@
 推荐使用 CocoaPods：
 
 ```ruby
-pod 'TmkTranslationSDK', '1.2.0'
+pod 'TmkTranslationSDK', '1.3.1'
 ```
 使用`pod install --repo-update`安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
 
@@ -162,7 +160,7 @@ TmkTranslationSDK.shared
 
 #### `sdkVersion`
 
-获取当前 SDK 版本号，返回不带前缀的语义化版本字符串（如 `1.2.0`）。该属性为类型级静态常量，无需 `shared` 实例即可读取。
+获取当前 SDK 版本号，返回不带前缀的语义化版本字符串（如 `1.3.1`）。该属性为类型级静态常量，无需 `shared` 实例即可读取。
 
 ```swift
 public static let sdkVersion: String
@@ -171,7 +169,7 @@ public static let sdkVersion: String
 示例：
 
 ```swift
-let version = TmkTranslationSDK.sdkVersion // "1.2.0"
+let version = TmkTranslationSDK.sdkVersion // "1.3.1"
 ```
 
 ### 4.2 `sdkInit(_:)`
@@ -309,6 +307,7 @@ public final class Builder {
     public func setNetworkEnvironment(_ environment: TmkTranslationNetworkEnvironment) -> Builder
     public func setNetworkBaseURL(_ url: URL) -> Builder
     public func setNetworkBaseURL(_ urlString: String) -> Builder
+    public func setNetworkTimeout(_ seconds: TimeInterval) -> Builder
     public func build() -> TmkTranslationGlobalConfig
 }
 ```
@@ -352,6 +351,11 @@ public final class Builder {
 
 - 设置自定义服务端地址。
 - **优先级高于 `setNetworkEnvironment(_:)`**。
+
+#### `setNetworkTimeout(_:)`
+
+- 设置所有网络请求（鉴权、建房、建通道、语言列表、音色等）的统一超时时间，单位秒。
+- 传入值 `<= 0` 时忽略并回退默认值；不设置时使用默认 `15` 秒。
 
 #### `build()`
 
@@ -904,6 +908,23 @@ public enum EngineType {
 
 用于识别当前通道实际使用的引擎类型。
 
+### 8.3.1 `TmkTranslateDeliveryMode`
+
+```swift
+public enum TmkTranslateDeliveryMode: String, Equatable, Sendable, CaseIterable {
+    case `default` = ""
+    case partial
+    case stable
+}
+```
+
+说明：
+
+- `default`：默认下发策略，由服务端/引擎按默认策略处理。
+- `partial`：中间态下发，翻译过程中持续下发中间结果，时延更低。
+- `stable`：稳定态下发，仅在翻译稳定后下发，结果更完整。
+- 该枚举仅离线引擎在运行时消费（通过 `Builder.setTranslateMode(_:)` 或 `channel.updateTranslateMode(_:completion:)`）；在线由建房请求驱动，忽略该字段。
+
 ### 8.4 `TmkTranslationPlaybackAudioDataMode`
 
 ```swift
@@ -959,6 +980,8 @@ public final class Builder {
     public func setSpeakers(_ speakers: [TmkSpeaker]) -> Builder
     public func setChannelAudioMode(_ mode: TmkChannelAudioMode) -> Builder
     public func setOfflineAudioChannelMode(_ mode: TmkOfflineAudioChannelMode) -> Builder
+    public func setTranslateMode(_ mode: TmkTranslateDeliveryMode) -> Builder
+    public func setCapabilityTier(_ tier: TmkRoomScenario) -> Builder
     public func build() -> TmkTranslationChannelConfig
 }
 ```
@@ -1045,6 +1068,20 @@ let speakers = [
 - `.standard`：标准模式。
 - `.lowLatency`：低延迟模式。
 - 在线一对一通道音频模式以创建房间时的 `TmkTranslationRoomConfig.dialogConversationAudioMode` 为准。
+
+#### `setTranslateMode(_:)`
+
+- 设置翻译下发模式，取值见 `TmkTranslateDeliveryMode`。
+- 仅离线引擎消费：`.partial` 会额外把未成句的中间态送翻译（回调 `isFinal == false`）；`.stable` / `.default` 仅在断句成句后翻译。
+- 在线引擎忽略该字段（在线由建房请求的 translate_mode 驱动）。
+- 不调用时默认 `.default`。
+
+#### `setCapabilityTier(_:)`
+
+- 设置离线能力档位，复用 `TmkRoomScenario`（`.recognize` / `.toText` / `.toSpeech`）。
+- 与 `setScenario(_:)`（`.listen` / `.oneToOne` 业务场景）正交：本项决定链路走到哪一步返回——`.recognize` 仅识别、`.toText` 识别+翻译、`.toSpeech` 完整链路。
+- 仅离线引擎消费，按档位按需加载模型；在线引擎忽略。
+- 不调用时默认 `.toSpeech`（完整能力，与旧行为等价）。
 
 #### `build()`
 
@@ -1303,7 +1340,7 @@ public func checkOfflineModelReadyAsync(
 - `asr/zh`
 - `mt/zh2en`
 - `tts/en`
-- `tts/espeak-ng-data`
+- `tts/tmk-tts-data`
 
 #### 一对一模式 `Scenario.oneToOne`
 
@@ -1315,7 +1352,7 @@ public func checkOfflineModelReadyAsync(
 - `mt/en2zh`
 - `tts/zh`
 - `tts/en`
-- `tts/espeak-ng-data`
+- `tts/tmk-tts-data`
 
 ### 9.7 离线通道创建示例（统一接口）
 
@@ -1456,6 +1493,23 @@ public func setTranslationListener(_ listener: TmkTranslationListener)
 public func updateLanguages(sourceLang: String, targetLang: String)
 
 @discardableResult
+public func updateLanguages(
+    sourceLang: String,
+    targetLang: String,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+
+public func updateTranslateMode(
+    _ mode: TmkTranslateDeliveryMode,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+)
+
+public func updateScenario(
+    _ scenario: TmkRoomScenario,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+)
+
+@discardableResult
 public func updateSpeaker(
     speakers: [TmkSpeaker],
     callback: @escaping (Result<Void, TmkTranslationError>) -> Void
@@ -1465,8 +1519,18 @@ public func updateSpeaker(
 说明：
 
 - `updateLanguages(sourceLang:targetLang:)`
-  - 在当前通道实例不变的情况下更新语言上下文。
-  - 主要用于在线通道的语言切换。离线通道切换语言前，建议先确认目标语言对模型已就绪；如业务需要严格隔离旧状态，优先 `stop()` / `release()` 后重建通道。
+  - 不带回调的旧接口，在当前通道实例不变的情况下更新语言上下文，无法感知切换结果。
+- `updateLanguages(sourceLang:targetLang:completion:)`
+  - 带回调的统一在线/离线语言切换入口，无需重建通道。
+  - 在线切换有超时且返回可取消句柄；离线为流式非阻塞切换，返回 no-op 句柄、不可取消，切换成功后才写回配置。
+  - 离线切换若只部分成功（语言态分裂），会回调失败，此时应 `releaseChannel()` 后重建通道再重试。
+- `updateTranslateMode(_:completion:)`
+  - 运行中切换翻译下发模式（`.partial` / `.stable` / `.default`）。
+  - 仅离线支持；在线不支持运行时切换，会回调 `.engineNotSupported`（需重新建房）。
+- `updateScenario(_:completion:)`
+  - 通道级运行中切换能力档位（`.recognize` / `.toText` / `.toSpeech`）。
+  - 在线走房间侧网络指令；离线做能力档位升/降，升档时会先做模型就绪检查，未就绪回调 `.offlineModelNotReady`，成功后写回配置。
+  - 与房间级 `TmkTranslationRoom.updateScenario(_:completion:)`（见 7.1）针对同一能力，但作用于当前通道对象。
 - `updateSpeaker(speakers:callback:)`
   - 更新当前通道 TTS 音色。
   - 在线通道会同步更新房间 TTS 配置；离线通道会更新本地引擎音色。
@@ -1514,11 +1578,13 @@ public protocol TmkTranslationListener: AnyObject {
 | `bubble_id` | `String` | 文本气泡 ID；在线来自服务端，离线由 SDK 独立生成 | 在线/离线 |
 | `chunk_id` | `String` | 文本分片 ID；在线来自服务端，离线由 SDK 生成 | 在线/离线 |
 | `channel` | `String` | 常见：`left`、`right`、`1`（离线收听） | 在线/离线 |
+| `offset` | `Int64` | 该段识别音频在会话中的起始偏移，单位纳秒 | 在线 ASR |
+| `duration` | `Int64` | 该段识别音频时长，单位纳秒 | 在线 ASR |
 | `kind` | `String` | `origin` | 离线 |
 | `state` | `String` | `partial`、`completed` | 离线 |
 | `text` | `String` | 当前识别文本（通常与 `result.data` 一致） | 离线 |
 
-注意：`extraData` 字段按事件和模式动态出现，不保证全部存在。
+注意：`extraData` 字段按事件和模式动态出现，不保证全部存在。`offset` / `duration` 仅在线识别（ASR/origin）结果携带，翻译（MT）结果与离线场景不携带。
 
 ### `onTranslate(...)`
 
@@ -1626,6 +1692,9 @@ public protocol TmkTranslationListener: AnyObject {
 | `offline_recognition_failure` | 离线识别失败 | `TmkResult<String>` 或 `nil` |
 | `offline_notification` | 离线通知事件 | `TmkResult<String>` 或 `nil` |
 | `offline_tts_state` | 离线 TTS 状态变化 | `TmkResult<String>` 或 `nil` |
+| `offline_bubble_end` | 离线气泡结束态标记事件 | `TmkResult<String>`，`data` 为 `bubble_end` |
+
+`offline_bubble_end` 与在线 `online_bubble_end` 对齐：SDK 在离线气泡结束时下发，业务层可按 `bubble_id` 将对应气泡标记为结束态并更新展示样式。同一气泡恰好下发一次（内部去重），任意终结路径（切档、停止、切语言、失败、空 final 收尾）都会补发，且使用气泡锁定的语言快照避免语言漂移。该事件不阻止后续内容更新，也不改变 `onRecognized` / `onTranslate` 的 `isFinal`、`isLast` 语义。
 
 离线事件 `result.extraData` 字段与可能取值：
 
@@ -1866,7 +1935,7 @@ App 应以 `onStateChanged` 作为通道 UI 状态的单一来源，不要自行
 | 在线弱网事件 | `online_network_quality`、`online_rtc_stats`、`online_remote_audio_stats`、`online_local_audio_stats` | 连续采样后显示弱网提示，不直接释放通道。真正需要用户决策时等待 `failed` 状态或 `onError`。 |
 | 在线远端离线事件 | `online_remote_user_offline` | 当 `is_expected_service_uid=true` 时，说明服务端音频/翻译订阅 uid 离线，对话不可继续，应提示重新创建或离开。 |
 | 离线 pipeline 事件 | `offline_pipeline_state`、`offline_stream_message_parsed`、`offline_audio_metadata` | 诊断和日志为主；UI 仍以 `onStateChanged` 和业务结果回调为准。 |
-| 离线结果辅助事件 | `offline_asr_partial`、`offline_asr_final`、`offline_mt_partial`、`offline_mt_final`、`offline_tts_output`、`offline_tts_state`、`offline_recognition_failure` | 可用于诊断或弱提示；正式文本和音频展示以识别、翻译、音频回调为准。 |
+| 离线结果辅助事件 | `offline_asr_partial`、`offline_asr_final`、`offline_mt_partial`、`offline_mt_final`、`offline_tts_output`、`offline_tts_state`、`offline_recognition_failure`、`offline_bubble_end` | 可用于诊断或弱提示；`offline_bubble_end` 可用于标记气泡结束态；正式文本和音频展示以识别、翻译、音频回调为准。 |
 | 模型下载事件 | `offline_model_cancelled`、`offline_model_update_required`、下载进度、解压进度、模型包状态变化 | 更新模型列表和进度；取消不弹错误框，需更新时禁止直接启动离线通道。 |
 
 ### 11.6 离线模型包状态处理契约
@@ -2063,6 +2132,7 @@ public struct TmkOfflineModelPackageInfo {
 public protocol TmkOfflineModelDownloadListener: AnyObject {
     func onOfflineModelEvent(name: String, args: Any?)
     func onOfflineModelDownloadProgress(fileName: String, index: Int, total: Int, downloaded: Int64, fileTotal: Int64)
+    func onOfflineModelTotalProgress(downloadedBytesAll: Int64, totalBytesAll: Int64)
     func onOfflineModelUnzipProgress(fileName: String, progress: Double)
     func onOfflineModelReady()
     func onOfflineModelPackageInfosChanged(_ packages: [TmkOfflineModelPackageInfo])
@@ -2088,6 +2158,11 @@ public protocol TmkOfflineModelDownloadListener: AnyObject {
   - `total`：当前批次总包数。
   - `downloaded`：当前包已下载字节数。
   - `fileTotal`：当前包总字节数；当总大小未知时，可能为 `-1`。
+
+- `onOfflineModelTotalProgress(downloadedBytesAll:totalBytesAll:)`
+  - 本次下载批次的总进度回调，按全部资源包字节合计上报，便于展示整体百分比。
+  - 可选实现，协议提供默认空实现。
+  - `totalBytesAll` 在总大小尚未探明时可能为 `0`，业务方需要对该情况做兜底处理，避免除零。
 
 - `onOfflineModelUnzipProgress(fileName:progress:)`
   - 解压进度回调。
@@ -2471,4 +2546,4 @@ TmkTranslationSDK.shared.verifyAuth { result in
 
 ## 20. 版本信息
 
-当前文档适配 `TmkTranslationSDK iOS v1.2.0`。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
+当前文档适配 `TmkTranslationSDK iOS v1.3.1`。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
