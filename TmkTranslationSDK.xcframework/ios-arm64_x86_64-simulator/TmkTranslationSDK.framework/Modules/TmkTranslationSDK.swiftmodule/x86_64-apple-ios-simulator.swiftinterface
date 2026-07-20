@@ -120,7 +120,6 @@ public protocol TmkOfflineModelDownloadListener : AnyObject {
   func onOfflineModelEvent(name: Swift.String, args: Any?)
   #endif
   func onOfflineModelDownloadProgress(fileName: Swift.String, index: Swift.Int, total: Swift.Int, downloaded: Swift.Int64, fileTotal: Swift.Int64)
-  func onOfflineModelTotalProgress(downloadedBytesAll: Swift.Int64, totalBytesAll: Swift.Int64)
   func onOfflineModelUnzipProgress(fileName: Swift.String, progress: Swift.Double)
   func onOfflineModelReady()
   func onOfflineModelPackageInfosChanged(_ packages: [TmkOfflineModelPackageInfo])
@@ -131,7 +130,6 @@ extension TmkOfflineModelDownloadListener {
   public func onOfflineModelEvent(name: Swift.String, args: Any?)
   #endif
   public func onOfflineModelDownloadProgress(fileName: Swift.String, index: Swift.Int, total: Swift.Int, downloaded: Swift.Int64, fileTotal: Swift.Int64)
-  public func onOfflineModelTotalProgress(downloadedBytesAll: Swift.Int64, totalBytesAll: Swift.Int64)
   public func onOfflineModelUnzipProgress(fileName: Swift.String, progress: Swift.Double)
   public func onOfflineModelReady()
   public func onOfflineModelPackageInfosChanged(_ packages: [TmkOfflineModelPackageInfo])
@@ -273,7 +271,7 @@ public struct TmkTranslationRoomDialogResponse : Swift.Equatable, Swift.Sendable
   #endif
   @objc deinit
 }
-public enum TmkRoomScenario : Swift.Equatable {
+public enum TmkRoomScenario {
   case recognize
   case toText
   case toSpeech
@@ -452,8 +450,6 @@ public enum TmkOfflineAudioChannelMode : Swift.Equatable {
     final public func setModelRootDirectory(_ directory: Swift.String) -> TmkTranslationChannelConfig.Builder
     final public func setSpeakers(_ speakers: [TmkSpeaker]) -> TmkTranslationChannelConfig.Builder
     final public func setChannelAudioMode(_ mode: TmkChannelAudioMode) -> TmkTranslationChannelConfig.Builder
-    final public func setTranslateMode(_ mode: TmkTranslateDeliveryMode) -> TmkTranslationChannelConfig.Builder
-    final public func setCapabilityTier(_ tier: TmkRoomScenario) -> TmkTranslationChannelConfig.Builder
     @available(*, deprecated, message: "Use setChannelAudioMode(_:) instead.")
     final public func setOfflineAudioChannelMode(_ mode: TmkOfflineAudioChannelMode) -> TmkTranslationChannelConfig.Builder
     final public func build() -> TmkTranslationChannelConfig
@@ -501,7 +497,6 @@ public enum TmkTranslationNetworkEnvironment : Swift.String, Swift.Equatable, Sw
     final public func setNetworkEnvironment(_ environment: TmkTranslationNetworkEnvironment) -> TmkTranslationGlobalConfig.Builder
     final public func setNetworkBaseURL(_ url: Foundation.URL) -> TmkTranslationGlobalConfig.Builder
     final public func setNetworkBaseURL(_ urlString: Swift.String) -> TmkTranslationGlobalConfig.Builder
-    final public func setNetworkTimeout(_ seconds: Foundation.TimeInterval) -> TmkTranslationGlobalConfig.Builder
     final public func build() -> TmkTranslationGlobalConfig
     @objc deinit
   }
@@ -621,16 +616,6 @@ public struct TmkSpeaker : Swift.Equatable, Swift.Sendable {
   final public func getChannelEngineType() -> EngineType
   final public func setTranslationListener(_ listener: any TmkTranslationListener)
   final public func updateLanguages(sourceLang: Swift.String, targetLang: Swift.String)
-  #if compiler(>=5.3) && $NonescapableTypes
-  @discardableResult
-  final public func updateLanguages(sourceLang: Swift.String, targetLang: Swift.String, completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func updateTranslateMode(_ mode: TmkTranslateDeliveryMode, completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void)
-  #endif
-  #if compiler(>=5.3) && $NonescapableTypes
-  final public func updateScenario(_ scenario: TmkRoomScenario, completion: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void)
-  #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @discardableResult
   final public func updateSpeaker(speakers: [TmkSpeaker], callback: @escaping (Swift.Result<Swift.Void, TmkTranslationError>) -> Swift.Void) -> (any TmkSDKCancellable)?
@@ -792,6 +777,7 @@ extension TmkOfflineModelPackageState : Swift.Hashable {}
 extension TmkOfflineModelPackageState : Swift.RawRepresentable {}
 extension TmkTranslationMessageTunnel : Swift.Hashable {}
 extension TmkTranslationMessageTunnel : Swift.RawRepresentable {}
+extension TmkRoomScenario : Swift.Equatable {}
 extension TmkRoomScenario : Swift.Hashable {}
 extension TmkSDKErrorCode : Swift.Equatable {}
 extension TmkSDKErrorCode : Swift.Hashable {}
