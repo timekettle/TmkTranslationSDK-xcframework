@@ -1,191 +1,231 @@
 # TmkTranslationSDK iOS API 文档
 
+# TmkTranslationSDK iOS API 文档
+
 ## 文档版本信息
 
-| 项目 | 说明 |
-| --- | --- |
-| 当前文档适配版本 | `v1.2.0` |
-| 最近更新日期 | `2026-06-24` |
-
+|项目|说明|
+|---|---|
+|当前文档适配版本|v1\.3\.1|
+|最近更新日期|2026\-07\-21|
 
 ## 本次更新
 
 当前版本更新内容：
 
-- 新增频道语言列表接口 `getOnlineSupportedLanguages(version:_:)` 与 `getOfflineSupportedLanguages(version:_:)`，返回精简的 `TmkLocaleListResponse`（含按 code 去重的 `localeOptions`），用于驱动语言选择 UI；接口不依赖鉴权，内置磁盘快照缓存，网络失败或无增量时回退缓存。
-- 原 `getSupportedLanguages(source:version:uiLocales:_:)` 已标记废弃，请改用上述按在线/离线拆分的新接口。
-- 建房接口推荐改用配置对象：`createTmkTranslationRoom(config:_:)` 接收 `TmkTranslationRoomConfig`，建房成功回调返回的房间已含创建通道所需的 dialog 数据；原多参数重载 `createTmkTranslationRoom(sourceLang:targetLang:...)` 已标记废弃。
-- 新增在线翻译运行中语言切换能力：通过 `TmkTranslationRoom.updateRoomLocale(sourceLocales:targetLocales:completion:)` 在不重建房间的前提下更新语言；切换只影响之后新建的气泡，正在进行的旧气泡保留其原始源/目标语言，一对一场景下左右两侧气泡的源/目标语言方向各自正确。
-- 新增 `TmkTranslationSDK.sdkVersion` 接口，可获取当前 SDK 版本号。
-- 新增在线 `bubble_end` 事件与 TTS 高亮事件说明，业务侧可按 `bubble_id` 标记气泡结束，并按 `session_id` / `chunk_id` 更新播放高亮。
-- 新增在线翻译引擎策略设置与运行中切换说明，支持 `.automatic`、`.fast`、`.accurate`。
-- 新增在线房间能力设置与运行中切换说明，支持单 ASR、ASR+MT 文本输出、ASR+MT+TTS 语音输出。
-- 新增`updateScenario` 用于运行中切换在线房间能力。
-- `releaseChannel()` 释放当前通道时会取消未完成建房请求，并异步关闭当前在线房间；调用方无需再为同一会话重复调用 `closeRoom(...)`。
-- 网络环境枚举收敛为 `dev`、`test`、`pre`，历史区域环境不再作为公开接入枚举。
+- 新增网络请求统一超时配置 setNetworkTimeout\(\_:\)，作用于鉴权、建房、建通道、语言列表等所有网络请求，不设置时默认 15 秒；超时由 watchdog 联动，与网络请求超时保持一致。
 
-## 1. 简介
+- 新增通道配置 setTranslateMode\(\_:\)，用于离线通道设置翻译下发模式（partial 中间态下发 / stable 断句后下发），在线引擎忽略此配置。
 
-`TmkTranslationSDK` 用于将业务侧采集的 PCM 音频接入翻译能力，并向业务侧返回：
+- 新增通道配置 setCapabilityTier\(\_:\)，用于离线通道设置能力档位（\.recognize 仅 ASR / \.toText ASR\+MT / \.toSpeech 完整链路），控制离线引擎按需加载模型。
+
+- 新增 channel\.updateLanguages\(sourceLang:targetLang:completion:\) 带回调重载：在线为真句柄（有超时、可取消），离线为流式切换（不打断流、不销毁重建 pipeline、不可取消）。
+
+- 新增 channel\.updateTranslateMode\(\_:completion:\)，运行时切换翻译下发模式；仅离线通道支持，在线返回 \.engineNotSupported。
+
+- 新增 channel\.updateScenario\(\_:completion:\)，运行时切换能力档位（在线/离线统一入口）；在线走服务端热切，离线升档前校验模型就绪后按需加载/卸载 MT/TTS。
+
+- onRecognized 回调的 result\.extraData 新增 "offset"（Int64，纳秒）和 "duration"（Int64，纳秒），表示本段 ASR 语音在音频流中的起始偏移与时长；服务端未下发时不存在，MT 翻译回调不携带该字段。
+
+- 新增离线气泡结束事件 offline\_bubble\_end，语义与在线 online\_bubble\_end 对齐：SDK 收到离线 pipeline 的气泡结束信号后，通过 onEvent 以该事件名回调，args 为 TmkResult\<String\>，可从 result\.bubbleId 读取气泡 ID。
+
+- 离线 TTS 公共数据目录从 tts/espeak\-ng\-data 改名为 tts/tmk\-tts\-data（升级离线库至 1\.0\.9），下载相关路径同步更新。
+
+## 简介
+
+TmkTranslationSDK 用于将业务侧采集的 PCM 音频接入翻译能力，并向业务侧返回：
 
 - 识别文本
+
 - 翻译文本
+
 - 翻译后的 PCM 音频
+
 - 通道状态与错误信息
+
 - 诊断日志与离线模型状态
 
 当前 SDK 同时支持：
 
 - 在线翻译
+
 - 离线翻译
+
 - 收听模式（单声道）
+
 - 一对一模式（双声道）
 
 本文面向外部接入方，重点说明：
 
 - SDK 初始化与鉴权
+
 - 在线/离线接入流程
+
 - 所有公开接口与数据模型
+
 - 常见使用方式与注意事项
 
 ---
 
-## 2. 接入前准备
+## 接入前准备
 
-### 2.1 环境要求
+### 2\.1 环境要求
 
-| 项目 | 说明 |
-| --- | --- |
-| 最低系统版本 | `iOS 15.0+` |
-| Swift 版本 | `Swift 5.x` |
-| 真机架构 | `arm64` |
-| 模拟器 | 以发布产物包含的 simulator slice 为准 |
-| 发布产物 | `TmkTranslationSDK.xcframework` |
+|项目|说明|
+|---|---|
+|最低系统版本|iOS 15\.0\+|
+|Swift 版本|Swift 5\.x|
+|真机架构|arm64|
+|模拟器|以发布产物包含的 simulator slice 为准|
+|发布产物|TmkTranslationSDK\.xcframework|
 
-### 2.2 权限要求
+### 2\.2 权限要求
 
 宿主 App 需要声明麦克风权限：
 
-```xml
+```Plain Text
 <key>NSMicrophoneUsageDescription</key>
 <string>需要访问麦克风以采集实时语音</string>
 ```
 
 如果联调环境使用 HTTP，还需要按实际情况配置 ATS 例外。生产环境建议只使用 HTTPS
 
-```xml
+```Plain Text
 <key>NSAppTransportSecurity</key>
-	<dict>
-	  <key>NSAllowsArbitraryLoads</key>
-	<true/>
+        <dict>
+          <key>NSAllowsArbitraryLoads</key>
+        <true/>
 </dict>
 ```
 
-### 2.3 安装示例
+### 2\.3 安装示例
 
-推荐使用 CocoaPods：
+#### 2\.3\.1 推荐使用 CocoaPods
 
-```ruby
+```Plain Text
 pod 'TmkTranslationSDK', '1.2.0'
 ```
-使用`pod install --repo-update`安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
+
+使用pod install \-\-repo\-update安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
 
 如具体发布版本与本文不一致，请以发布说明为准。
 
+
+
 ---
 
-## 3. 核心流程总览
+## 核心流程总览
 
-### 3.1 在线翻译
+### 3\.1 在线翻译
 
 在线模式典型流程：
 
-1. `sdkInit`
-2. `getOnlineSupportedLanguages(version:_:)`
-3. `verifyAuth`
-4. `createTmkTranslationRoom`
-5. `createTranslationChannel`
-6. `pushStreamAudioData`
-7. `releaseChannel `
-8. `destroy`
+1. sdkInit
 
-### 3.2 离线翻译
+2. getOnlineSupportedLanguages\(version:\_:\)
+
+3. verifyAuth
+
+4. createTmkTranslationRoom
+
+5. createTranslationChannel
+
+6. pushStreamAudioData
+
+7. releaseChannel 
+
+8. destroy
+
+### 3\.2 离线翻译
 
 离线模式典型流程：
 
-1. `sdkInit`
-2. `getOfflineSupportedLanguages(version:_:)`
-3. `verifyAuth`
-4. `isOfflineTranslationSupported`
-5. `isOfflineModelReady` 或 `downloadOfflineModels`
-6. `createTranslationChannel`（`config.mode = .offline`）
-7. `pushStreamAudioData`
-8. `releaseChannel`
-9. `destroy`
+1. sdkInit
 
-### 3.3 回调线程说明
+2. getOfflineSupportedLanguages\(version:\_:\)
+
+3. verifyAuth
+
+4. isOfflineTranslationSupported
+
+5. isOfflineModelReady 或 downloadOfflineModels
+
+6. createTranslationChannel（config\.mode = \.offline）
+
+7. pushStreamAudioData
+
+8. releaseChannel
+
+9. destroy
+
+### 3\.3 回调线程说明
 
 SDK 对外的大多数异步回调都会切回主线程后再回调业务方，包括：
 
-- `verifyAuth`
-- `getSupportedLanguages`
-- `createTmkTranslationRoom`
-- `createTranslationChannel`
-- `closeRoom`
+- verifyAuth
 
-监听器 `TmkTranslationListener` 的回调会切回主线程后再回调业务方，可直接用于更新 UI。
+- getOnlineSupportedLanguages / getOfflineSupportedLanguages
 
-离线模型下载监听器 `TmkOfflineModelDownloadListener` 的回调同样会切回主线程。
+- createTmkTranslationRoom
 
-### 3.4 在线与离线的主要区别
+- createTranslationChannel
 
-| 项目 | 在线翻译 | 离线翻译 |
-| --- | --- | --- |
-| 是否依赖 `verifyAuth` | 是 | 建议先鉴权，用于确认离线能力 |
-| 是否需要房间 | 需要 | 不需要 |
-| 是否需要离线模型 | 不需要 | 需要 |
-| 通道创建接口 | `createTranslationChannel` | `createTranslationChannel` |
+- closeRoom
+
+监听器 TmkTranslationListener 的回调会切回主线程后再回调业务方，可直接用于更新 UI。
+
+离线模型下载监听器 TmkOfflineModelDownloadListener 的回调同样会切回主线程。
+
+### 3\.4 在线与离线的主要区别
+
+|项目|在线翻译|离线翻译|
+|---|---|---|
+|是否依赖 verifyAuth|是|建议先鉴权，用于确认离线能力|
+|是否需要房间|需要|不需要|
+|是否需要离线模型|不需要|需要|
+|通道创建接口|createTranslationChannel|createTranslationChannel|
 
 ---
 
-## 4. 初始化与鉴权
+## 初始化与鉴权
 
-### 4.1 `TmkTranslationSDK.shared`
+### 4\.1 TmkTranslationSDK\.shared
 
 SDK 入口是单例：
 
-```swift
+```Plain Text
 TmkTranslationSDK.shared
 ```
 
-类型：`TmkTranslationSDK`
+类型：TmkTranslationSDK
 
-#### `sdkVersion`
+#### sdkVersion
 
-获取当前 SDK 版本号，返回不带前缀的语义化版本字符串（如 `1.2.0`）。该属性为类型级静态常量，无需 `shared` 实例即可读取。
+获取当前 SDK 版本号，返回不带前缀的语义化版本字符串（如 1\.2\.0）。该属性为类型级静态常量，无需 shared 实例即可读取。
 
-```swift
+```Plain Text
 public static let sdkVersion: String
 ```
 
 示例：
 
-```swift
+```Plain Text
 let version = TmkTranslationSDK.sdkVersion // "1.2.0"
 ```
 
-### 4.2 `sdkInit(_:)`
+### 4\.2 sdkInit\(\_:\)
 
 用于初始化 SDK 全局配置。
 
-```swift
+```Plain Text
 public func sdkInit(_ config: TmkTranslationGlobalConfig)
 ```
 
 参数说明：
 
-- `config: TmkTranslationGlobalConfig`
-  - SDK 全局配置对象。
+- config: TmkTranslationGlobalConfig
+
+    - SDK 全局配置对象。
 
 返回值：
 
@@ -194,12 +234,14 @@ public func sdkInit(_ config: TmkTranslationGlobalConfig)
 行为说明：
 
 - 只保存全局配置并初始化日志。
+
 - 不会自动触发鉴权。
-- 调用 `destroy()` 后，如需继续使用，必须重新调用 `sdkInit(_:)`。
+
+- 调用 destroy\(\) 后，如需继续使用，必须重新调用 sdkInit\(\_:\)。
 
 示例：
 
-```swift
+```Plain Text
 let globalConfig = TmkTranslationGlobalConfig.Builder()
     .setAuth(appId: "your_app_id", secret: "your_app_secret")
     .setOnlineAuthContext(
@@ -215,20 +257,23 @@ let globalConfig = TmkTranslationGlobalConfig.Builder()
 TmkTranslationSDK.shared.sdkInit(globalConfig)
 ```
 
-### 4.3 `verifyAuth(_:)`
+### 4\.3 verifyAuth\(\_:\)
 
 执行在线/离线鉴权。
 
-```swift
+```Plain Text
 public func verifyAuth(_ callback: @escaping AuthCallback)
 ```
 
 参数说明：
 
-- `callback`
-  - 鉴权回调。
-  - 成功：`.success(())`
-  - 失败：`.failure(TmkTranslationError)`
+- callback
+
+    - 鉴权回调。
+
+    - 成功：\.success\(\(\)\)
+
+    - 失败：\.failure\(TmkTranslationError\)
 
 返回值：
 
@@ -237,15 +282,20 @@ public func verifyAuth(_ callback: @escaping AuthCallback)
 行为说明：
 
 - 首次调用时会懒初始化网络监听、诊断和鉴权基础设施。
+
 - 在线翻译必须先鉴权成功。
-- `verifyAuth(_:)` 内部会先执行在线鉴权；在线鉴权成功后，如果服务端开启离线能力，会继续尝试 License 获取和离线鉴权，用于记录离线支持状态。
-- `verifyAuth(_:)` 的回调成功/失败只由在线鉴权结果决定；离线开关关闭、License 获取失败或离线鉴权失败都不会导致本次 `verifyAuth(_:)` 回调失败。
-- 离线翻译建议先鉴权，再通过 `isOfflineTranslationSupported()` 判断当前账号是否支持离线能力。
+
+- verifyAuth\(\_:\) 内部会先执行在线鉴权；在线鉴权成功后，如果服务端开启离线能力，会继续尝试 License 获取和离线鉴权，用于记录离线支持状态。
+
+- verifyAuth\(\_:\) 的回调成功/失败只由在线鉴权结果决定；离线开关关闭、License 获取失败或离线鉴权失败都不会导致本次 verifyAuth\(\_:\) 回调失败。
+
+- 离线翻译建议先鉴权，再通过 isOfflineTranslationSupported\(\) 判断当前账号是否支持离线能力。
+
 - 离线翻译并不是完全零前置条件可直接使用：至少需要先成功鉴权一次、离线能力开关已开启、且相关离线模型曾下载成功。
 
 示例：
 
-```swift
+```Plain Text
 TmkTranslationSDK.shared.verifyAuth { result in
     switch result {
     case .success:
@@ -256,33 +306,35 @@ TmkTranslationSDK.shared.verifyAuth { result in
 }
 ```
 
-### 4.4 `isOfflineTranslationSupported()`
+### 4\.4 isOfflineTranslationSupported\(\)
 
 查询当前鉴权结果是否支持离线翻译。
 
-```swift
+```Plain Text
 public func isOfflineTranslationSupported() -> Bool
 ```
 
 返回值：
 
-- `true`：当前鉴权上下文支持离线翻译。
-- `false`：当前账号未开通离线翻译能力，或尚未完成离线鉴权。
+- true：当前鉴权上下文支持离线翻译。
+
+- false：当前账号未开通离线翻译能力，或尚未完成离线鉴权。
 
 注意：
 
-- 建议在 `verifyAuth(_:)` 成功后再调用。
-- `verifyAuth(_:)` 成功仅表示在线鉴权成功；如果离线鉴权未成功，当前接口仍可能返回 `false`。
+- 建议在 verifyAuth\(\_:\) 成功后再调用。
+
+- verifyAuth\(\_:\) 成功仅表示在线鉴权成功；如果离线鉴权未成功，当前接口仍可能返回 false。
 
 ---
 
-## 5. 全局配置 `TmkTranslationGlobalConfig`
+## 全局配置 TmkTranslationGlobalConfig
 
-### 5.1 `TmkTranslationNetworkEnvironment`
+### 5\.1 TmkTranslationNetworkEnvironment
 
 SDK 内置环境枚举：
 
-```swift
+```Plain Text
 public enum TmkTranslationNetworkEnvironment: String {
     case dev
     case test
@@ -292,12 +344,13 @@ public enum TmkTranslationNetworkEnvironment: String {
 
 建议：
 
-- `dev` 仅用于开发调试，对外接入请优先使用 `test` 或 Timekettle 指定环境。
-- `setNetworkBaseURL(_:)` 一般只用于联调或特殊接入，不建议线上随意切换。
+- dev 仅用于开发调试，对外接入请优先使用 test 或 Timekettle 指定环境。
 
-### 5.2 `TmkTranslationGlobalConfig.Builder`
+- setNetworkBaseURL\(\_:\) 一般只用于联调或特殊接入，不建议线上随意切换。
 
-```swift
+### 5\.2 TmkTranslationGlobalConfig\.Builder
+
+```Plain Text
 public final class Builder {
     public init()
     public func setAuth(appId: String, secret: String) -> Builder
@@ -309,63 +362,84 @@ public final class Builder {
     public func setNetworkEnvironment(_ environment: TmkTranslationNetworkEnvironment) -> Builder
     public func setNetworkBaseURL(_ url: URL) -> Builder
     public func setNetworkBaseURL(_ urlString: String) -> Builder
+    public func setNetworkTimeout(_ seconds: TimeInterval) -> Builder
     public func build() -> TmkTranslationGlobalConfig
 }
 ```
 
 各接口说明：
 
-#### `setAuth(appId:secret:)`
+#### setAuth\(appId:secret:\)
 
-- `appId`
-  - 业务鉴权 App ID。
-- `secret`
-  - 业务鉴权 App Secret。
+- appId
+
+    - 业务鉴权 App ID。
+
+- secret
+
+    - 业务鉴权 App Secret。
 
 必填。
 
-#### `setOnlineAuthContext(tenantId:externalUserId:installId:)`
+#### setOnlineAuthContext\(tenantId:externalUserId:installId:\)
 
-- `tenantId`
-  - 可选，租户标识。
-- `externalUserId`
-  - 可选，业务用户 ID。
-  - 如果传入，则优先级高于 `installId`。
-- `installId`
-  - 可选，设备/安装实例 ID。
+- tenantId
 
-#### `setLogEnabled(_:)`
+    - 可选，租户标识。
 
-- `true`：输出 SDK 控制台日志。
-- `false`：关闭控制台日志。
+- externalUserId
 
-#### `setDiagnosisEnabled(_:)`
+    - 可选，业务用户 ID。
 
-- `true`：开启诊断日志与诊断文件采集。
-- `false`：关闭诊断能力。
+    - 如果传入，则优先级高于 installId。
 
-#### `setNetworkEnvironment(_:)`
+- installId
+
+    - 可选，设备/安装实例 ID。
+
+#### setLogEnabled\(\_:\)
+
+- true：输出 SDK 控制台日志。
+
+- false：关闭控制台日志。
+
+#### setDiagnosisEnabled\(\_:\)
+
+- true：开启诊断日志与诊断文件采集。
+
+- false：关闭诊断能力。
+
+#### setNetworkEnvironment\(\_:\)
 
 - 设置预置环境。
 
-#### `setNetworkBaseURL(_:)`
+#### setNetworkBaseURL\(\_:\)
 
 - 设置自定义服务端地址。
-- **优先级高于 `setNetworkEnvironment(_:)`**。
 
-#### `build()`
+- **优先级高于 setNetworkEnvironment\(\_:\)**。
 
-- 生成不可变的 `TmkTranslationGlobalConfig`。
+#### setNetworkTimeout\(\_:\)
+
+- 设置所有网络请求的统一超时时间（秒）。
+
+- 作用于鉴权、建房、建通道、语言列表、音色更新等所有网络请求，以及对应的 watchdog 超时。
+
+- 小于等于 0 时忽略，回退默认 15 秒。
+
+#### build\(\)
+
+- 生成不可变的 TmkTranslationGlobalConfig。
 
 ---
 
-## 6. 支持语言接口
+## 支持语言接口
 
-### 6.1 获取语言列表（推荐）
+### 6\.1 获取语言列表（推荐）
 
-获取在线 / 离线翻译当前支持的语言列表，用于驱动语言选择 UI。两个接口都依赖 `sdkInit(_:)`、不依赖鉴权，内部带磁盘快照缓存：网络失败或服务端无增量时回退本地缓存。
+获取在线 / 离线翻译当前支持的语言列表，用于驱动语言选择 UI。两个接口都依赖 sdkInit\(\_:\)、不依赖鉴权，内部带磁盘快照缓存：网络失败或服务端无增量时回退本地缓存。
 
-```swift
+```Plain Text
 @discardableResult
 public func getOnlineSupportedLanguages(
     version: String? = nil,
@@ -381,16 +455,16 @@ public func getOfflineSupportedLanguages(
 
 参数说明：
 
-| 参数 | 必填 | 说明 |
-| --- | --- | --- |
-| `version` | 否 | 本地缓存版本号；不传时优先复用 SDK 已保存的版本号发起增量请求。 |
-| `callback` | 是 | 完成回调，主线程触发；成功返回 `TmkLocaleListResponse`，失败返回统一 `TmkTranslationError`。 |
+|参数|必填|说明|
+|---|---|---|
+|version|否|本地缓存版本号；不传时优先复用 SDK 已保存的版本号发起增量请求。|
+|callback|是|完成回调，主线程触发；成功返回 TmkLocaleListResponse，失败返回统一 TmkTranslationError。|
 
-返回值：`TmkSDKCancellable?`，可取消的请求句柄；创建失败时可能为 `nil`。
+返回值：TmkSDKCancellable?，可取消的请求句柄；创建失败时可能为 nil。
 
 数据模型：
 
-```swift
+```Plain Text
 public struct TmkLocaleListResponse: Equatable, Codable {
     public let version: String?              // 服务端配置版本号
     public let languages: [TmkLocaleLanguage]
@@ -409,11 +483,13 @@ public struct TmkLocaleItem: Equatable, Codable {
 }
 ```
 
-> `localeOptions` 会按 `code` 去重并保留首次出现顺序：服务端可能把同一 `code`（如粤语 `zh-HK`）下发在多个语言分组下，去重后避免 UI 出现重复选项。
+> localeOptions 会按 code 去重并保留首次出现顺序：服务端可能把同一 code（如粤语 zh\-HK）下发在多个语言分组下，去重后避免 UI 出现重复选项。
+> 
+> 
 
 示例：
 
-```swift
+```Plain Text
 // 在线语言列表
 _ = TmkTranslationSDK.shared.getOnlineSupportedLanguages { result in
     switch result {
@@ -433,186 +509,15 @@ _ = TmkTranslationSDK.shared.getOfflineSupportedLanguages { result in
 }
 ```
 
-### 6.2 `TmkSupportedLanguagesSource`（旧接口，已废弃）
-
-```swift
-public enum TmkSupportedLanguagesSource: Equatable {
-    case online
-    case offline
-}
-```
-
-含义：
-
-- `.online`：获取在线翻译支持的语言列表。
-- `.offline`：获取离线翻译支持的语言列表。
-
-### 6.3 `getSupportedLanguages(source:version:uiLocales:_:)`（已废弃）
-
-> 该接口已标记 `@available(*, deprecated)`，请改用 6.1 的 `getOnlineSupportedLanguages` / `getOfflineSupportedLanguages`。以下保留用于历史接入参考。
-
-```swift
-@available(*, deprecated)
-public func getSupportedLanguages(
-    source: TmkSupportedLanguagesSource,
-    version: String? = nil,
-    uiLocales: [String] = [],
-    _ callback: @escaping (Result<TmkSupportedLanguagesResponse, TmkTranslationError>) -> Void
-) -> TmkSDKCancellable?
-```
-
-参数说明：
-
-- `source`
-  - 语言列表类型，必填。
-  - `.online` 表示在线翻译支持语言。
-  - `.offline` 表示离线翻译支持语言。
-- `version`
-  - 可选，本地缓存版本号。
-  - 在线模式下，若不传，SDK 会优先复用已缓存的版本号发起增量请求。
-- `uiLocales`
-  - 可选 UI 语言列表。
-  - 用于控制返回的语言展示名称，例如优先显示中文名称。
-- `callback`
-  - 完成回调。
-
-返回值：
-
-- `TmkSDKCancellable?`
-  - 可取消的请求句柄。
-  - 若创建失败可能返回 `nil`。
-
-行为说明：
-
-#### 在线语言列表
-
-- 不依赖鉴权；完成 `sdkInit(_:)` 后即可请求。
-- 依赖网络可用；若当前无网络，在线语言列表请求会失败。
-- SDK 会根据 `version` 尝试返回最新语言列表；当本次没有新的语言列表时，会优先返回本地已保存的列表。
-- 如果本次获取失败，但本地已有可用语言列表，SDK 会优先返回本地列表；没有可用列表时才回调错误。
-
-#### 离线语言列表
-
-- 不依赖鉴权。
-- 当 `uiLocales` 为空，或包含 `zh` 前缀时，离线语言名优先显示中文；否则显示原生语言名。
-- 当前支持的离线语言如下：
-
-| 语言 | code | 说明 |
-| --- | --- | --- |
-| 中文 | `zh` | 简体中文离线语言码 |
-| 英语 | `en` | 英语离线语言码 |
-| 日语 | `ja` | 日语离线语言码 |
-| 韩语 | `ko` | 韩语离线语言码 |
-| 法语 | `fr` | 法语离线语言码 |
-| 西班牙语 | `es` | 西班牙语离线语言码 |
-| 俄语 | `ru` | 俄语离线语言码 |
-| 德语 | `de` | 德语离线语言码 |
-| 意大利语 | `it` | 意大利语离线语言码 |
-| 阿拉伯语 | `ar` | 阿拉伯语离线语言码 |
-| 泰语 | `th` | 泰语离线语言码 |
-
-示例：
-
-```swift
-// 在线语言列表
-_ = TmkTranslationSDK.shared.getSupportedLanguages(source: .online,
-                                                   uiLocales: ["zh-CN"]) { result in
-    switch result {
-    case .success(let response):
-        print(response.version ?? "-")
-        print(response.localeOptions.map(\.code))
-    case .failure(let error):
-        print(error.message)
-    }
-}
-
-// 离线语言列表
-_ = TmkTranslationSDK.shared.getSupportedLanguages(source: .offline,
-                                                   uiLocales: ["zh-CN"]) { result in
-    switch result {
-    case .success(let response):
-        print(response.localeOptions.map { "\($0.uiLang)(\($0.code))" })
-    case .failure(let error):
-        print(error.message)
-    }
-}
-```
-
-### 6.4 旧语言模型（配合 6.3 废弃接口）
-
-#### `TmkSupportedLanguagesResponse`
-
-```swift
-public struct TmkSupportedLanguagesResponse {
-    public let version: String?
-    public let languages: [TmkSupportedLanguage]
-    public var localeOptions: [TmkSupportedLocale]
-}
-```
-
-字段说明：
-
-- `version`
-  - 语言配置版本号。
-- `languages`
-  - 按语言分组后的列表。
-- `localeOptions`
-  - 展平后的 locale 列表，适合直接用于语言选择 UI。
-
-#### `TmkSupportedLanguage`
-
-```swift
-public struct TmkSupportedLanguage {
-    public let code: String
-    public let locales: [TmkSupportedLocale]
-    public let nativeAccent: String
-    public let nativeLang: String
-    public let uiAccent: String
-    public let uiLang: String
-}
-```
-
-字段说明：
-
-- `code`
-  - 语言代码，例如 `en`。
-- `locales`
-  - 该语言下可选 locale 列表。
-- `nativeAccent` / `nativeLang`
-  - 原生展示名称。
-- `uiAccent` / `uiLang`
-  - 当前 UI 语言下的展示名称。
-
-#### `TmkSupportedLocale`
-
-```swift
-public struct TmkSupportedLocale {
-    public let code: String
-    public let nativeAccent: String
-    public let nativeLang: String
-    public let uiAccent: String
-    public let uiLang: String
-}
-```
-
-字段说明：
-
-- `code`
-  - locale 代码，例如 `en-US` 或 `zh`。
-- `nativeAccent` / `nativeLang`
-  - 原生展示名称。
-- `uiAccent` / `uiLang`
-  - 当前 UI 语言下的展示名称。
-
 ---
 
-## 7. 在线翻译：房间与通道
+## 在线翻译：房间与通道
 
-### 7.1 房间相关类型
+### 7\.1 房间相关类型
 
-### `TmkTranslationMessageTunnel`（仅在线翻译使用）
+### TmkTranslationMessageTunnel（仅在线翻译使用）
 
-```swift
+```Plain Text
 public enum TmkTranslationMessageTunnel: String, Equatable {
     case rtm
     case rtc
@@ -621,18 +526,21 @@ public enum TmkTranslationMessageTunnel: String, Equatable {
 
 含义：
 
-- `rtm`：通过 Agora RTM 接收识别/翻译文本。
-- `rtc`：通过 Agora RTC stream message 接收识别/翻译文本。
+- rtm：通过 Agora RTM 接收识别/翻译文本。
 
-一般建议使用 `rtm`。
+- rtc：通过 Agora RTC stream message 接收识别/翻译文本。
+
+一般建议使用 rtm。
 
 说明：
+
 - 该配置仅在线翻译使用。
-- 离线翻译不使用 `TmkTranslationMessageTunnel`。
 
-### `TmkRoomScenario`
+- 离线翻译不使用 TmkTranslationMessageTunnel。
 
-```swift
+### TmkRoomScenario
+
+```Plain Text
 public enum TmkRoomScenario {
     case recognize
     case toText
@@ -642,15 +550,17 @@ public enum TmkRoomScenario {
 
 含义：
 
-- `recognize`：单 ASR，只输出识别文本。
-- `toText`：ASR+MT，输出文本翻译，不要求 TTS 语音合成。
-- `toSpeech`：ASR+MT+TTS，输出识别文本、翻译文本和翻译音频。
+- recognize：单 ASR，只输出识别文本。
 
-实时翻译常用 `toSpeech`。
+- toText：ASR\+MT，输出文本翻译，不要求 TTS 语音合成。
 
-### `TmkOnlineTranslateEngine`
+- toSpeech：ASR\+MT\+TTS，输出识别文本、翻译文本和翻译音频。
 
-```swift
+实时翻译常用 toSpeech。
+
+### TmkOnlineTranslateEngine
+
+```Plain Text
 public enum TmkOnlineTranslateEngine: String {
     case automatic = ""
     case fast = "g_001"
@@ -658,15 +568,32 @@ public enum TmkOnlineTranslateEngine: String {
 }
 ```
 
+TmkTranslateDeliveryMode
+
+```TypeScript
+/// 翻译结果下发模式。
+/// - **Note**: 控制服务端翻译文本的下发时机；标准对话与现场收听共用同一套语义。
+**public** **enum** TmkTranslateDeliveryMode: String, Equatable, Sendable, CaseIterable {
+    /// 默认下发策略：传空字符串，由服务端按当前默认策略处理。
+    **case** `default` = ""
+    /// 中间态下发：翻译过程中持续下发中间结果，时延更低。
+    **case** partial
+    /// 稳定态下发：仅在翻译稳定后下发，结果更完整。
+    **case** stable
+}
+```
+
 含义：
 
-- `automatic`：由服务端自动选择在线翻译引擎。
-- `fast`：快速模式。
-- `accurate`：精准模式。
+- automatic：由服务端自动选择在线翻译引擎。
 
-### `TmkTranslationRoomDialogResponse`
+- fast：快速模式。
 
-```swift
+- accurate：精准模式。
+
+### TmkTranslationRoomDialogResponse
+
+```Plain Text
 public struct TmkTranslationRoomDialogResponse: Equatable, Sendable {
     public struct TranslationItem: Equatable, Sendable {
         public let locale: String
@@ -691,35 +618,51 @@ public struct TmkTranslationRoomDialogResponse: Equatable, Sendable {
 
 字段说明：
 
-- `connectUid`
-  - 当前用户连接 UID。
-- `roomNo`
-  - 服务端房间号。
-- `speakerIdentityNo`
-  - 说话人身份号。
-- `translationList`
-  - 目标语言订阅列表。
-  - 每项的 `subscribeUid` 表示对应语言音频流的订阅 UID。
-- `speakers`
-  - 低延迟一对一对话的左右路 speaker 列表；标准对话场景下可能为空。
-  - 每项包含左右路标识 `channel`、该路语言 `locale`、入会 UID `connectUid`、翻译音频订阅 UID `subscribeUid` 与说话人身份标识 `speakerIdentityNo`。
+- connectUid
 
-### `TmkTranslationRoom`
+    - 当前用户连接 UID。
 
-`TmkTranslationRoom` 是在线翻译的房间容器。
+- roomNo
+
+    - 服务端房间号。
+
+- speakerIdentityNo
+
+    - 说话人身份号。
+
+- translationList
+
+    - 目标语言订阅列表。
+
+    - 每项的 subscribeUid 表示对应语言音频流的订阅 UID。
+
+- speakers
+
+    - 低延迟一对一对话的左右路 speaker 列表；标准对话场景下可能为空。
+
+    - 每项包含左右路标识 channel、该路语言 locale、入会 UID connectUid、翻译音频订阅 UID subscribeUid 与说话人身份标识 speakerIdentityNo。
+
+### TmkTranslationRoom
+
+TmkTranslationRoom 是在线翻译的房间容器。
 
 公开属性：
 
-- `channelDialogResponse: TmkTranslationRoomDialogResponse?`
-  - 最近一次成功建房后的 dialog 快照。
-- `roomScenario: TmkRoomScenario`
-  - 当前房间业务场景。
-- `messageTunnel: TmkTranslationMessageTunnel`
-  - 当前文本消息通道。
+- channelDialogResponse: TmkTranslationRoomDialogResponse?
+
+    - 最近一次成功建房后的 dialog 快照。
+
+- roomScenario: TmkRoomScenario
+
+    - 当前房间业务场景。
+
+- messageTunnel: TmkTranslationMessageTunnel
+
+    - 当前文本消息通道。
 
 公开方法：
 
-```swift
+```Plain Text
 public func closeRoom(completion: @escaping (Result<Void, TmkTranslationError>) -> Void) -> TmkSDKCancellable?
 public func updateRoomLocale(sourceLocales: [String],
                              targetLocales: [String],
@@ -733,16 +676,20 @@ public func updateScenario(_ scenario: TmkRoomScenario,
 说明：
 
 - 关闭当前房间。
-- 只在在线翻译中使用。
-- `updateRoomLocale(...)` 用于运行中更新在线房间语言，在不重建房间的前提下生效。语言切换只影响切换后新建的气泡：正在进行的旧气泡会保留其创建时锁定的源/目标语言（旧气泡译文文本仍是旧语言，标签也应保持旧语言）；一对一场景下，`sourceLocales` 固定对应左声道、`targetLocales` 固定对应右声道，左右两侧气泡的源/目标语言方向各自正确。业务侧无需为旧气泡手动纠正语言标签。
-- `updateTranslateEngine(...)` 用于运行中切换在线翻译引擎策略，回调在主线程触发；切换成功后通常对后续服务端处理生效。
-- `updateScenario(...)` 用于运行中切换在线房间能力，可在 `.recognize`、`.toText`、`.toSpeech` 之间切换；业务侧应按新能力调整 UI、播放和结果展示。
 
-### 7.2 `createTmkTranslationRoom(...)`
+- 只在在线翻译中使用。
+
+- updateRoomLocale\(\.\.\.\) 用于运行中更新在线房间语言，在不重建房间的前提下生效。语言切换只影响切换后新建的气泡：正在进行的旧气泡会保留其创建时锁定的源/目标语言（旧气泡译文文本仍是旧语言，标签也应保持旧语言）；一对一场景下，sourceLocales 固定对应左声道、targetLocales 固定对应右声道，左右两侧气泡的源/目标语言方向各自正确。业务侧无需为旧气泡手动纠正语言标签。
+
+- updateTranslateEngine\(\.\.\.\) 用于运行中切换在线翻译引擎策略，回调在主线程触发；切换成功后通常对后续服务端处理生效。
+
+- updateScenario\(\.\.\.\) 用于运行中切换在线房间能力，可在 \.recognize、\.toText、\.toSpeech 之间切换；业务侧应按新能力调整 UI、播放和结果展示。
+
+### 7\.2 createTmkTranslationRoom\(\.\.\.\)
 
 推荐使用配置对象创建在线房间：
 
-```swift
+```Plain Text
 public struct TmkTranslationRoomConfig {
     public var sourceLang: String
     public var targetLang: String
@@ -752,7 +699,9 @@ public struct TmkTranslationRoomConfig {
     public var messageTunnel: TmkTranslationMessageTunnel
     public var speakers: [TmkSpeaker]?
     public var translateEngine: TmkOnlineTranslateEngine
+    public var translateModel: TmkTranslateDeliveryMode
     public var dialogConversationAudioMode: TmkDialogConversationAudioMode
+    public var enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption?
 }
 
 public func createTmkTranslationRoom(
@@ -761,16 +710,25 @@ public func createTmkTranslationRoom(
 )
 ```
 
-`TmkDialogConversationAudioMode` 用于在线一对一对话音频模式：
+TmkDialogConversationAudioMode 用于在线一对一对话音频模式：
 
-| 枚举 | 说明 |
-| --- | --- |
-| `standard` | 标准一对一对话音频模式 |
-| `lowLatency` | 低延迟一对一对话音频模式，适合双方长时间连续说话、翻译和播报|
+|枚举|说明|
+|---|---|
+|standard|标准一对一对话音频模式|
+|lowLatency|低延迟一对一对话音频模式，适合双方长时间连续说话、翻译和播报|
 
-兼容旧参数重载（已标记废弃 `@available(*, deprecated)`，新接入请改用上面的 `config:` 重载）：
+TmkSensitiveWordRedactionOption 用于控制客户端可见文本的敏感词脱敏，实际语种和词库由 Vocat 配置决定：
 
-```swift
+|枚举|请求值|
+|---|---|
+|enabled|true|
+|disabled|false|
+
+默认值为 `.enabled` 并下发 `true`；显式设置为 `nil` 时不下发字段，保持服务端默认行为。该字段同时用于 `room/dialog` 和 `room/mono-dialog`。
+
+兼容旧参数重载（已标记废弃 @available\(\*, deprecated\)，新接入请改用上面的 config: 重载）：
+
+```Plain Text
 public func createTmkTranslationRoom(
     sourceLang: String = "en-US",
     targetLang: String = "zh-CN",
@@ -780,55 +738,86 @@ public func createTmkTranslationRoom(
     messageTunnel: TmkTranslationMessageTunnel = .rtm,
     speakers: [TmkSpeaker]? = nil,
     translateEngine: TmkOnlineTranslateEngine = .automatic,
+    translateModel: TmkTranslateDeliveryMode = .default,
     _ callback: @escaping CreateRoomCallback
 )
 ```
 
 参数说明：
 
-- `sourceLang`
-  - 源语言代码，例如 `zh-CN`。
-- `targetLang`
-  - 目标语言代码，例如 `en-US`。
-- `scenario`
-  - 房间业务场景，通常使用 `.toSpeech`。
-- `roomId`
-  - 可选业务房间号。
-  - 传 `nil` 时由服务端生成。
-- `channelScenario`
-  - 通道场景。
-  - 常用值：`.listen`、`.oneToOne`。
-- `messageTunnel`
-  - 文本消息通道。
-- `speakers`
-  - 在线建房时初始 TTS 音色。
-  - 传 `nil` 时使用服务端默认音色策略。
-- `translateEngine`
-  - 在线翻译引擎策略。
-  - `.automatic` 表示由服务端自动选择。
-- `callback`
-  - 建房结果回调。
-  - 成功：`.success(TmkTranslationRoom)`，此时 Room 已包含创建通道所需的 dialog 数据。
-  - 失败：`.failure(TmkTranslationError)`。
+- sourceLang
+
+    - 源语言代码，例如 zh\-CN。
+
+- targetLang
+
+    - 目标语言代码，例如 en\-US。
+
+- scenario
+
+    - 房间业务场景，通常使用 \.toSpeech。
+
+- roomId
+
+    - 可选业务房间号。
+
+    - 传 nil 时由服务端生成。
+
+- channelScenario
+
+    - 通道场景。
+
+    - 常用值：\.listen、\.oneToOne。
+
+- messageTunnel
+
+    - 文本消息通道。
+
+- speakers
+
+    - 在线建房时初始 TTS 音色。
+
+    - 传 nil 时使用服务端默认音色策略。
+
+- translateEngine
+
+    - 在线翻译引擎策略。
+
+    - \.automatic 表示由服务端自动选择。
+
+- callback
+
+    - 建房结果回调。
+
+    - 成功：\.success\(TmkTranslationRoom\)，此时 Room 已包含创建通道所需的 dialog 数据。
+
+    - 失败：\.failure\(TmkTranslationError\)。
 
 返回值：
 
 - 无。
-- 不要从立即返回值获取 Room；必须在 `callback` 成功分支中拿到 Room 后再创建通道。
+
+- 不要从立即返回值获取 Room；必须在 callback 成功分支中拿到 Room 后再创建通道。
 
 说明：
 
 - 在线翻译必须先建房，再创建通道。
-- 建房时 `scenario` 决定初始在线房间能力：`.recognize` 为单 ASR，`.toText` 为 ASR+MT 文本输出，`.toSpeech` 为 ASR+MT+TTS 语音输出。
-- 建房时 `translateEngine` 决定初始在线翻译引擎策略；运行中可通过 `room.updateTranslateEngine(...)` 切换。
-- 在线一对一的通道音频模式来自 `TmkTranslationRoomConfig.dialogConversationAudioMode`；离线一对一的通道音频模式来自 `TmkTranslationChannelConfig.Builder.setChannelAudioMode(...)`。
+
+- 建房时 scenario 决定初始在线房间能力：\.recognize 为单 ASR，\.toText 为 ASR\+MT 文本输出，\.toSpeech 为 ASR\+MT\+TTS 语音输出。
+
+- 建房时 translateEngine 决定初始在线翻译引擎策略；运行中可通过 room\.updateTranslateEngine\(\.\.\.\) 切换。
+
+- 在线一对一的通道音频模式来自 TmkTranslationRoomConfig\.dialogConversationAudioMode；离线一对一的通道音频模式来自 TmkTranslationChannelConfig\.Builder\.setChannelAudioMode\(\.\.\.\)。
+
 - SDK 不再返回半成品 Room，避免业务侧在 dialog 数据未准备好时误用。
+
 - 建房请求完成前 SDK 内部会临时持有 Room，调用方无需为了等待回调额外强引用 Room。
+
 - 回调在主线程触发。
 
-示例（推荐使用 `TmkTranslationRoomConfig`）：
+示例（推荐使用 TmkTranslationRoomConfig）：
 
-```swift
+```Plain Text
 let roomConfig = TmkTranslationRoomConfig(
     sourceLang: "zh-CN",
     targetLang: "en-US",
@@ -848,11 +837,11 @@ TmkTranslationSDK.shared.createTmkTranslationRoom(config: roomConfig) { result i
 
 ---
 
-## 8. 通道配置 `TmkTranslationChannelConfig`
+## 通道配置 TmkTranslationChannelConfig
 
-### 8.1 `Scenario`
+### 8\.1 Scenario
 
-```swift
+```Plain Text
 public enum Scenario {
     case presentation
     case listen
@@ -863,16 +852,21 @@ public enum Scenario {
 
 说明：
 
-- `listen`
-  - 收听模式，单声道输入。
-- `oneToOne`
-  - 一对一模式，双声道输入。
-- `presentation`、`listenFar`
-  - 兼容保留场景，是否启用以具体业务配置为准。
+- listen
 
-### 8.2 `TranslationMode`
+    - 收听模式，单声道输入。
 
-```swift
+- oneToOne
+
+    - 一对一模式，双声道输入。
+
+- presentation、listenFar
+
+    - 兼容保留场景，是否启用以具体业务配置为准。
+
+### 8\.2 TranslationMode
+
+```Plain Text
 public enum TranslationMode {
     case offline
     case online
@@ -883,19 +877,23 @@ public enum TranslationMode {
 
 说明：
 
-- `offline`：离线翻译。
-- `online`：在线翻译。
-- `auto`：自动选择。
-- `mix`：离线 + 在线混合。
+- offline：离线翻译。
+
+- online：在线翻译。
+
+- auto：自动选择。
+
+- mix：离线 \+ 在线混合。
 
 注意：
 
-- 当前 SDK 实现中，`auto` 和 `mix` 会落到在线引擎执行。
-- 对外接入时，如果需要明确行为，建议优先使用 `.online` 或 `.offline`。
+- 当前 SDK 实现中，auto 和 mix 会落到在线引擎执行。
 
-### 8.3 `EngineType`
+- 对外接入时，如果需要明确行为，建议优先使用 \.online 或 \.offline。
 
-```swift
+### 8\.3 EngineType
+
+```Plain Text
 public enum EngineType {
     case offline
     case online
@@ -904,9 +902,9 @@ public enum EngineType {
 
 用于识别当前通道实际使用的引擎类型。
 
-### 8.4 `TmkTranslationPlaybackAudioDataMode`
+### 8\.4 TmkTranslationPlaybackAudioDataMode
 
-```swift
+```Plain Text
 public enum TmkTranslationPlaybackAudioDataMode {
     case audioFrameDelegate
     case pullPlaybackAudioFrameRawData
@@ -915,14 +913,17 @@ public enum TmkTranslationPlaybackAudioDataMode {
 
 说明：
 
-- `audioFrameDelegate`
-  - 使用音频帧代理方式获取下行音频。
-- `pullPlaybackAudioFrameRawData`
-  - 使用主动拉取方式获取下行音频。
+- audioFrameDelegate
 
-### 8.5 `TmkTranslationPlaybackAudioPullConfig`
+    - 使用音频帧代理方式获取下行音频。
 
-```swift
+- pullPlaybackAudioFrameRawData
+
+    - 使用主动拉取方式获取下行音频。
+
+### 8\.5 TmkTranslationPlaybackAudioPullConfig
+
+```Plain Text
 public struct TmkTranslationPlaybackAudioPullConfig {
     public let intervalMs: Int
     public let lengthInByte: Int?
@@ -933,16 +934,21 @@ public struct TmkTranslationPlaybackAudioPullConfig {
 
 字段说明：
 
-- `intervalMs`
-  - 拉取周期，单位毫秒。
-  - 默认 `10`。
-- `lengthInByte`
-  - 每次拉取的字节数。
-  - `nil` 表示由 SDK 自动计算。
+- intervalMs
 
-### 8.6 `TmkTranslationChannelConfig.Builder`
+    - 拉取周期，单位毫秒。
 
-```swift
+    - 默认 10。
+
+- lengthInByte
+
+    - 每次拉取的字节数。
+
+    - nil 表示由 SDK 自动计算。
+
+### 8\.6 TmkTranslationChannelConfig\.Builder
+
+```Plain Text
 public final class Builder {
     public init()
     public func setRoom(_ room: TmkTranslationRoom) -> Builder
@@ -959,102 +965,152 @@ public final class Builder {
     public func setSpeakers(_ speakers: [TmkSpeaker]) -> Builder
     public func setChannelAudioMode(_ mode: TmkChannelAudioMode) -> Builder
     public func setOfflineAudioChannelMode(_ mode: TmkOfflineAudioChannelMode) -> Builder
+    public func setTranslateMode(_ mode: TmkTranslateDeliveryMode) -> Builder
+    public func setCapabilityTier(_ tier: TmkRoomScenario) -> Builder
     public func build() -> TmkTranslationChannelConfig
 }
 ```
 
 各接口说明：
 
-#### `setRoom(_:)`
+#### setRoom\(\_:\)
 
 - 在线翻译必填。
+
 - 离线翻译不需要设置房间。
 
-#### `setMode(_:)`
+#### setMode\(\_:\)
 
-- 设置翻译模式，通常使用 `.online` 或 `.offline`。
+- 设置翻译模式，通常使用 \.online 或 \.offline。
 
-#### `setScenario(_:)`
+#### setScenario\(\_:\)
 
 - 设置通道场景。
-- 收听模式一般传 `.listen`。
-- 一对一一般传 `.oneToOne`。
 
-#### `setSourceLang(_:)` / `setTargetLang(_:)`
+- 收听模式一般传 \.listen。
+
+- 一对一一般传 \.oneToOne。
+
+#### setSourceLang\(\_:\) / setTargetLang\(\_:\)
 
 - 设置源语言和目标语言代码。
-- 在线通常使用 BCP-47 代码，例如 `zh-CN`、`en-US`。
-- 离线通常使用短码，例如 `zh`、`en`。
 
-#### `setPCMSampleRate(_:)`
+- 在线通常使用 BCP\-47 代码，例如 zh\-CN、en\-US。
+
+- 离线通常使用短码，例如 zh、en。
+
+#### setPCMSampleRate\(\_:\)
 
 - 设置输入 PCM 采样率。
-- 当前 SDK 与 Demo 主流程以 `16000` 为准。
-- 其他采样率暂未完成完整兼容性验证，正式接入建议优先使用 `16000`。
 
-#### `setPCMChannels(_:)`
+- 当前 SDK 与 Demo 主流程以 16000 为准。
+
+- 其他采样率暂未完成完整兼容性验证，正式接入建议优先使用 16000。
+
+#### setPCMChannels\(\_:\)
 
 - 设置输入 PCM 通道数。
-- `1`：单声道。
-- `2`：双声道。
 
-#### `setPlaybackAudioDataMode(_:)`
+- 1：单声道。
+
+- 2：双声道。
+
+#### setPlaybackAudioDataMode\(\_:\)
 
 - 设置下行音频获取方式。
 
-#### `setPlaybackAudioPullConfig(_:)`
+#### setPlaybackAudioPullConfig\(\_:\)
 
 - 设置播放音频拉取参数。
+
 - 该配置是否生效，取决于当前引擎与音频输出模式；接入时不要将其视为所有场景都必然生效的控制项。
 
-#### `setMessageTunnel(_:)`
+#### setMessageTunnel\(\_:\)
 
 - 设置文本消息通道。
-- 仅在线翻译生效，离线翻译会忽略该配置。
-- 默认使用房间上的 `messageTunnel`。
 
-#### `setModelRootDirectory(_:)`
+- 仅在线翻译生效，离线翻译会忽略该配置。
+
+- 默认使用房间上的 messageTunnel。
+
+#### setModelRootDirectory\(\_:\)
 
 - 仅离线翻译需要设置。
+
 - 传模型根目录绝对路径。
 
-#### `setSpeakers(_:)`
+#### setSpeakers\(\_:\)
 
 - 设置在线/离线 TTS 音色。
-- 不调用时使用 SDK 默认音色。
-- 收听模式通常只设置 `.left` 声道。
-- 一对一模式可分别设置 `.left` 和 `.right` 声道。
 
-```swift
+- 不调用时使用 SDK 默认音色。
+
+- 收听模式通常只设置 \.left 声道。
+
+- 一对一模式可分别设置 \.left 和 \.right 声道。
+
+```Plain Text
 let speakers = [
     TmkSpeaker(channel: .left, gender: .female),
     TmkSpeaker(channel: .right, gender: .male)
 ]
 ```
 
-#### `setOfflineAudioChannelMode(_:)`
+#### setOfflineAudioChannelMode\(\_:\)
 
-- 旧兼容接口，建议新接入使用 `setChannelAudioMode(_:)`。
-- `.stereo`：默认值，左右声道混成立体声输出。
-- `.mono`：按单声道输出，适合业务侧自行管理播放声道的场景。
+- 旧兼容接口，建议新接入使用 setChannelAudioMode\(\_:\)。
+
+- \.stereo：默认值，左右声道混成立体声输出。
+
+- \.mono：按单声道输出，适合业务侧自行管理播放声道的场景。
+
 - 离线收听模式固定按单声道输出。
 
-#### `setChannelAudioMode(_:)`
+#### setChannelAudioMode\(\_:\)
 
 - 设置离线一对一通道音频模式。
-- `.standard`：标准模式。
-- `.lowLatency`：低延迟模式。
-- 在线一对一通道音频模式以创建房间时的 `TmkTranslationRoomConfig.dialogConversationAudioMode` 为准。
 
-#### `build()`
+- \.standard：标准模式。
 
-- 构建不可变的 `TmkTranslationChannelConfig`。
+- \.lowLatency：低延迟模式。
 
-### 8.6.1 音色与离线输出通道模型
+- 在线一对一通道音频模式以创建房间时的 TmkTranslationRoomConfig\.dialogConversationAudioMode 为准。
 
-#### `TmkSpeaker`
+#### setTranslateMode\(\_:\)
 
-```swift
+- 设置离线通道翻译下发模式。
+
+- \.partial：中间态下发，持续输出未成句的中间结果（isFinal=false），时延更低。
+
+- \.stable / \.default：断句成句后下发，结果更完整。
+
+- 仅离线引擎消费；在线引擎忽略此字段（在线由建房时 translateMode 决定）。
+
+- 运行时可通过 channel\.updateTranslateMode\(\_:completion:\) 切换。
+
+#### setCapabilityTier\(\_:\)
+
+- 设置离线能力档位，控制离线引擎按需加载哪些模型：
+
+    - \.recognize：仅 ASR，只输出识别文本，不加载 MT/TTS 模型。
+
+    - \.toText：ASR\+MT，输出识别和翻译文本，不加载 TTS 模型。
+
+    - \.toSpeech：完整链路（默认），ASR\+MT\+TTS 全部加载。
+
+- 仅离线引擎消费；在线引擎忽略（在线由建房/updateScenario 服务端裁剪）。
+
+- 运行时可通过 channel\.updateScenario\(\_:completion:\) 切换。
+
+#### build\(\)
+
+- 构建不可变的 TmkTranslationChannelConfig。
+
+### 8\.6\.1 音色与离线输出通道模型
+
+#### TmkSpeaker
+
+```Plain Text
 public enum TmkSpeakerChannel: String {
     case left
     case right
@@ -1071,18 +1127,18 @@ public struct TmkSpeaker {
 }
 ```
 
-#### `TmkOfflineAudioChannelMode`
+#### TmkOfflineAudioChannelMode
 
-```swift
+```Plain Text
 public enum TmkOfflineAudioChannelMode {
     case mono
     case stereo
 }
 ```
 
-### 8.7 创建通道接口（在线/离线统一入口）
+### 8\.7 创建通道接口（在线/离线统一入口）
 
-```swift
+```Plain Text
 public func createTranslationChannel(
     _ config: TmkTranslationChannelConfig,
     callback: @escaping CreateChannelCallback
@@ -1097,31 +1153,41 @@ public func createTranslationChannel(
 
 参数说明：
 
-- `config`
-  - 通道配置对象。
-- `listener`
-  - 可选，启动前预绑定的监听器。
-- `callback`
-  - 通道创建结果回调。
+- config
+
+    - 通道配置对象。
+
+- listener
+
+    - 可选，启动前预绑定的监听器。
+
+- callback
+
+    - 通道创建结果回调。
 
 返回值：
 
 - 无返回值。
-- 创建成功后，通过 `callback(.success(TmkTranslationChannel))` 返回通道对象。
+
+- 创建成功后，通过 callback\(\.success\(TmkTranslationChannel\)\) 返回通道对象。
 
 说明：
 
 - 在线和离线都通过该接口创建通道。
-- SDK 会根据 `config.mode` 选择实际引擎：
-  - `mode = .online`：在线引擎
-  - `mode = .offline`：离线引擎
+
+- SDK 会根据 config\.mode 选择实际引擎：
+
+    - mode = \.online：在线引擎
+
+    - mode = \.offline：离线引擎
+
 - SDK 会在创建成功后自动启动通道。
 
-### 8.8 在线通道创建示例
+### 8\.8 在线通道创建示例
 
 #### 收听模式
 
-```swift
+```Plain Text
 let config = TmkTranslationChannelConfig.Builder()
     .setRoom(room)
     .setScenario(.listen)
@@ -1144,7 +1210,7 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
 
 #### 一对一模式
 
-```swift
+```Plain Text
 let config = TmkTranslationChannelConfig.Builder()
     .setRoom(room)
     .setScenario(.oneToOne)
@@ -1172,29 +1238,32 @@ TmkTranslationSDK.shared.createTranslationChannel(config) { result in
 
 ---
 
-## 9. 离线模型管理
+## 离线模型管理
 
 离线翻译并不是“零前置条件即可直接使用”。在正式使用离线翻译前，至少需要满足以下条件：
 
-1. 至少成功调用过一次 `verifyAuth(_:)`。
-2. 当前账号已开通离线翻译能力，即 `isOfflineTranslationSupported()` 返回 `true`。
+1. 至少成功调用过一次 verifyAuth\(\_:\)。
+
+2. 当前账号已开通离线翻译能力，即 isOfflineTranslationSupported\(\) 返回 true。
+
 3. 所需离线模型曾下载成功，且本地文件仍然完整可用。
 
-### 9.1 默认离线模型目录
+### 9\.1 默认离线模型目录
 
-```swift
+```Plain Text
 public func defaultOfflineModelRootDirectory() -> String
 public func defaultOfflineModelRootDirectoryURL() -> URL
 ```
 
 说明：
 
-- 返回 SDK 默认离线模型目录（`Documents/tmkOfflineModel`）。
-- 业务方不传 `modelRootDirectory` 时，相关离线接口会使用该目录。
+- 返回 SDK 默认离线模型目录（Documents/tmkOfflineModel）。
 
-### 9.2 `downloadOfflineModels(...)`
+- 业务方不传 modelRootDirectory 时，相关离线接口会使用该目录。
 
-```swift
+### 9\.2 downloadOfflineModels\(\.\.\.\)
+
+```Plain Text
 public func downloadOfflineModels(
     srcLang: String,
     dstLang: String,
@@ -1208,25 +1277,39 @@ public func downloadOfflineModels(
 
 参数说明：
 
-- `srcLang`
-  - 源语言代码，例如 `zh`。
-- `dstLang`
-  - 目标语言代码，例如 `en`。
-- `modelRootDirectory`
-  - 模型根目录。
-  - `nil` 时使用默认目录。
-- `scenario`
-  - `.listen` 或 `.oneToOne`。
-- `needMt`
-  - 是否下载 MT 模型。
-- `needTts`
-  - 是否下载 TTS 模型。
-- `listener`
-  - 下载监听器。
+- srcLang
 
-### 9.3 `cancelOfflineModelDownload()`
+    - 源语言代码，例如 zh。
 
-```swift
+- dstLang
+
+    - 目标语言代码，例如 en。
+
+- modelRootDirectory
+
+    - 模型根目录。
+
+    - nil 时使用默认目录。
+
+- scenario
+
+    - \.listen 或 \.oneToOne。
+
+- needMt
+
+    - 是否下载 MT 模型。
+
+- needTts
+
+    - 是否下载 TTS 模型。
+
+- listener
+
+    - 下载监听器。
+
+### 9\.3 cancelOfflineModelDownload\(\)
+
+```Plain Text
 public func cancelOfflineModelDownload()
 ```
 
@@ -1234,9 +1317,9 @@ public func cancelOfflineModelDownload()
 
 - 取消当前正在进行的离线模型下载。
 
-### 9.4 `getOfflineModelPackageInfos(...)`
+### 9\.4 getOfflineModelPackageInfos\(\.\.\.\)
 
-```swift
+```Plain Text
 public func getOfflineModelPackageInfos(
     srcLang: String,
     dstLang: String,
@@ -1250,11 +1333,12 @@ public func getOfflineModelPackageInfos(
 说明：
 
 - 获取指定语言对在当前场景下的离线模型包清单与状态。
+
 - 可用于下载前展示包列表，或用于模型状态诊断。
 
-### 9.5 模型就绪检查接口
+### 9\.5 模型就绪检查接口
 
-```swift
+```Plain Text
 public func isOfflineModelReady(
     srcLang: String,
     dstLang: String,
@@ -1265,14 +1349,14 @@ public func isOfflineModelReady(
 ) -> Bool
 ```
 
-```swift
+```Plain Text
 public func isAsrModelReady(langCode: String, modelRootDirectory: String? = nil) -> Bool
 public func isMtModelReady(srcLang: String, dstLang: String, modelRootDirectory: String? = nil) -> Bool
 public func isTtsModelReady(langCode: String, modelRootDirectory: String? = nil) -> Bool
 public func isTtsDataReady(modelRootDirectory: String? = nil) -> Bool
 ```
 
-```swift
+```Plain Text
 public func checkOfflineModelReadyAsync(
     srcLang: String,
     dstLang: String,
@@ -1287,41 +1371,55 @@ public func checkOfflineModelReadyAsync(
 
 说明：
 
-- `isOfflineModelReady(...)`
-  - 校验当前语言对在指定场景下所需资源是否都已就绪。
-- `checkOfflineModelReadyAsync(...)`
-  - 异步执行离线模型就绪检查。
-  - 推荐在页面初始化或 UI 交互链路中优先使用，避免同步目录扫描导致主线程卡顿。
+- isOfflineModelReady\(\.\.\.\)
+
+    - 校验当前语言对在指定场景下所需资源是否都已就绪。
+
+- checkOfflineModelReadyAsync\(\.\.\.\)
+
+    - 异步执行离线模型就绪检查。
+
+    - 推荐在页面初始化或 UI 交互链路中优先使用，避免同步目录扫描导致主线程卡顿。
+
 - 其余接口用于单项模型检查。
 
-### 9.6 离线场景所需模型说明
+### 9\.6 离线场景所需模型说明
 
-#### 收听模式 `Scenario.listen`
+#### 收听模式 Scenario\.listen
 
-以 `zh -> en` 为例，通常需要：
+以 zh \-\> en 为例，通常需要：
 
-- `asr/zh`
-- `mt/zh2en`
-- `tts/en`
-- `tts/espeak-ng-data`
+- asr/zh
 
-#### 一对一模式 `Scenario.oneToOne`
+- mt/zh2en
 
-以 `zh <-> en` 为例，通常需要：
+- tts/en
 
-- `asr/zh`
-- `asr/en`
-- `mt/zh2en`
-- `mt/en2zh`
-- `tts/zh`
-- `tts/en`
-- `tts/espeak-ng-data`
+- tts/tmk\-tts\-data
 
-### 9.7 离线通道创建示例（统一接口）
+#### 一对一模式 Scenario\.oneToOne
+
+以 zh \<\-\> en 为例，通常需要：
+
+- asr/zh
+
+- asr/en
+
+- mt/zh2en
+
+- mt/en2zh
+
+- tts/zh
+
+- tts/en
+
+- tts/tmk\-tts\-data
+
+### 9\.7 离线通道创建示例（统一接口）
 
 #### 离线收听
 
-```swift
+```Plain Text
 let config = TmkTranslationChannelConfig.Builder()
     .setMode(.offline)
     .setScenario(.listen)
@@ -1344,7 +1442,7 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
 
 #### 离线一对一
 
-```swift
+```Plain Text
 let config = TmkTranslationChannelConfig.Builder()
     .setMode(.offline)
     .setScenario(.oneToOne)
@@ -1372,64 +1470,84 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
 
 说明：
 
-- `.setSpeakers(...)` 只覆盖传入声道的音色；不传时使用 SDK 默认音色。
-- `.setOfflineAudioChannelMode(.stereo)` 是离线一对一默认行为，适合直接播放立体声 TTS。
-- 如业务侧希望自行合成播放声道，可设置 `.setOfflineAudioChannelMode(.mono)` 后按 `Result.extraData["channel"]` 管理音频来源。
+- \.setSpeakers\(\.\.\.\) 只覆盖传入声道的音色；不传时使用 SDK 默认音色。
+
+- \.setOfflineAudioChannelMode\(\.stereo\) 是离线一对一默认行为，适合直接播放立体声 TTS。
+
+- 如业务侧希望自行合成播放声道，可设置 \.setOfflineAudioChannelMode\(\.mono\) 后按 Result\.extraData\["channel"\] 管理音频来源。
 
 ---
 
-## 10. 通道对象 `TmkTranslationChannel`
+## 通道对象 TmkTranslationChannel
 
-`TmkTranslationChannel` 表示一个正在工作的翻译通道。
+TmkTranslationChannel 表示一个正在工作的翻译通道。
 
-### 10.1 `pushStreamAudioData(_:channelCount:extraChunk:)`
+### 10\.1 pushStreamAudioData\(\_:channelCount:extraChunk:\)
 
-```swift
+```Plain Text
 public func pushStreamAudioData(_ data: Data, channelCount: Int, extraChunk: Data? = nil)
 ```
 
 参数说明：
 
-- `data`
-  - 输入 PCM 数据。
-- `channelCount`
-  - 输入通道数。
-  - `1`：单声道。
-  - `2`：双声道。
-- `extraChunk`
-  - 附加透传数据。
-  - 一般传 `nil`。
+- data
+
+    - 输入 PCM 数据。
+
+- channelCount
+
+    - 输入通道数。
+
+    - 1：单声道。
+
+    - 2：双声道。
+
+- extraChunk
+
+    - 附加透传数据。
+
+    - 一般传 nil。
 
 此外提供按声道推流的重载，用于低延迟一对一场景指定 PCM 所属的左右路：
 
-```swift
+```Plain Text
 public func pushStreamAudioData(_ data: Data, speakerChannel: TmkSpeakerChannel, extraChunk: Data? = nil)
 ```
 
-- `speakerChannel`
-  - 指定该段 PCM 属于哪一路说话人（`.left` / `.right`）。
+- speakerChannel
 
-### 10.2 生命周期方法
+    - 指定该段 PCM 属于哪一路说话人（\.left / \.right）。
 
-```swift
+### 10\.2 生命周期方法
+
+```Plain Text
 public func createTranslationChannel()
 public func release()
 ```
 
 说明：
-- `createTranslationChannel()`
-  - 创建通道资源。
-  - 创建后可销毁。
-  - 创建翻译引擎时使用 
-  -
-- `release()`
-  - 释放通道资源。
-  - 释放后需要通过createTranslationChannel再次启动。
-  - 页面退出、切换房间或切换语言对时，优先通过 `TmkTranslationSDK.shared.releaseChannel()` 释放当前会话，避免只释放通道而遗漏房间关闭。
 
-### 10.3 状态与能力查询
+- createTranslationChannel\(\)
 
-```swift
+    - 创建通道资源。
+
+    - 创建后可销毁。
+
+    - 创建翻译引擎时使用
+
+    
+
+- release\(\)
+
+    - 释放通道资源。
+
+    - 释放后需要通过createTranslationChannel再次启动。
+
+    - 页面退出、切换房间或切换语言对时，优先通过 TmkTranslationSDK\.shared\.releaseChannel\(\) 释放当前会话，避免只释放通道而遗漏房间关闭。
+
+### 10\.3 状态与能力查询
+
+```Plain Text
 public func currentRuntimeState() -> TmkTranslationChannelStateSnapshot
 public func getTranslationMode() -> TranslationMode
 public func getScenario() -> Scenario
@@ -1439,21 +1557,48 @@ public func setTranslationListener(_ listener: TmkTranslationListener)
 
 说明：
 
-- `currentRuntimeState()`
-  - 获取当前通道状态快照。
-- `getTranslationMode()`
-  - 获取创建通道时配置的翻译模式。
-- `getScenario()`
-  - 获取创建通道时配置的场景。
-- `getChannelEngineType()`
-  - 获取当前通道实际使用的引擎类型。
-- `setTranslationListener(_:)`
-  - 动态设置监听器。
+- currentRuntimeState\(\)
 
-### 10.4 运行中更新能力
+    - 获取当前通道状态快照。
 
-```swift
+- getTranslationMode\(\)
+
+    - 获取创建通道时配置的翻译模式。
+
+- getScenario\(\)
+
+    - 获取创建通道时配置的场景。
+
+- getChannelEngineType\(\)
+
+    - 获取当前通道实际使用的引擎类型。
+
+- setTranslationListener\(\_:\)
+
+    - 动态设置监听器。
+
+### 10\.4 运行中更新能力
+
+```Plain Text
 public func updateLanguages(sourceLang: String, targetLang: String)
+
+@discardableResult
+public func updateLanguages(
+    sourceLang: String,
+    targetLang: String,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+
+public func updateTranslateMode(
+    _ mode: TmkTranslateDeliveryMode,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+)
+
+@discardableResult
+public func updateScenario(
+    _ scenario: TmkRoomScenario,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
 
 @discardableResult
 public func updateSpeaker(
@@ -1464,22 +1609,53 @@ public func updateSpeaker(
 
 说明：
 
-- `updateLanguages(sourceLang:targetLang:)`
-  - 在当前通道实例不变的情况下更新语言上下文。
-  - 主要用于在线通道的语言切换。离线通道切换语言前，建议先确认目标语言对模型已就绪；如业务需要严格隔离旧状态，优先 `stop()` / `release()` 后重建通道。
-- `updateSpeaker(speakers:callback:)`
-  - 更新当前通道 TTS 音色。
-  - 在线通道会同步更新房间 TTS 配置；离线通道会更新本地引擎音色。
-  - `speakers` 的声道规则与 `TmkTranslationChannelConfig.Builder.setSpeakers(_:)` 一致。
-  - `callback` 会返回设置结果；返回的 `TmkSDKCancellable?` 仅能取消尚未执行的设置任务，已生效的音色不会回滚。
+- updateLanguages\(sourceLang:targetLang:\)
+
+    - 同步更新内部语言字段，不发起任何网络请求或模型切换，主要供兼容旧逻辑使用。
+
+- updateLanguages\(sourceLang:targetLang:completion:\)
+
+    - 异步切换通道语言，在线/离线统一入口。
+
+    - 在线场景：向服务端发送语言切换指令，有超时；返回真句柄，可取消。
+
+    - 离线场景：流式切换，不销毁/重建整体 pipeline，不打断正在进行的流；源语言变化时立即重建 ASR，目标语言变化时下一段懒切换 MT/TTS（单实例）；切换近乎瞬时，不加超时，返回 no-op 句柄（cancel 无副作用）。
+
+    - 切换成功后写回内部语言字段；失败时不写回，避免 UI 与底层状态不一致。
+
+- updateTranslateMode\(\_:completion:\)
+
+    - 运行时切换翻译下发模式（partial/stable）。
+
+    - 仅离线通道支持：切换近乎瞬时，不重建 pipeline；切到 stable 会立即停发中间态，切到 partial 下一段起生效。
+
+    - 在线通道：回调 \.failure\(\.engineNotSupported\)。
+
+- updateScenario\(\_:completion:\)
+
+    - 运行时切换能力档位（\.recognize / \.toText / \.toSpeech），在线/离线统一入口。
+
+    - 在线场景：向服务端发送 updateScenario 指令，有超时；返回真句柄，可取消。
+
+    - 离线场景：升档前校验目标档位所需模型是否就绪（未就绪回 offlineModelNotReady），就绪则按需补建 MT/TTS；降档立即释放不再需要的 MT/TTS；ASR 全程常驻不打断流。成功后写回 config 的 capabilityTier，供 stop→start 重启时沿用。
+
+- updateSpeaker\(speakers:callback:\)
+
+    - 更新当前通道 TTS 音色。
+
+    - 在线通道会同步更新房间 TTS 配置；离线通道会更新本地引擎音色。
+
+    - speakers 的声道规则与 TmkTranslationChannelConfig\.Builder\.setSpeakers\(\_:\) 一致。
+
+    - callback 会返回设置结果；返回的 TmkSDKCancellable? 仅能取消尚未执行的设置任务，已生效的音色不会回滚。
 
 ---
 
-## 11. 监听器与回调数据
+## 监听器与回调数据
 
-### 11.1 `TmkTranslationListener`
+### 11\.1 TmkTranslationListener
 
-```swift
+```Plain Text
 public protocol TmkTranslationListener: AnyObject {
     func onRecognized(from engine: AbstractChannelEngine, result: TmkResult<String>, isFinal: Bool)
     func onTranslate(from engine: AbstractChannelEngine, result: TmkResult<String>, isFinal: Bool)
@@ -1493,170 +1669,203 @@ public protocol TmkTranslationListener: AnyObject {
 
 回调线程：
 
-- `TmkTranslationListener` 的所有回调都会在主线程回调。
+- TmkTranslationListener 的所有回调都会在主线程回调。
 
 各回调说明：
 
-### `onRecognized(...)`
+### onRecognized\(\.\.\.\)
 
 - 识别结果回调。
-- `result.data`：识别文本。
-- `isFinal` 可能取值：
-  - `false`：增量识别结果，后续还可能继续回调。
-  - `true`：本段识别最终结果。
-- `result.isLast`：当前结果对象中的结束标记，通常与 `isFinal` 含义保持一致。
-- `result.srcCode` / `result.dstCode`：当前通道的源语言与目标语言代码。
-- `result.extraData` 字段与可能取值（按当前 SDK 实现）：
 
-| key | 类型 | 可能取值/说明 | 出现场景 |
-| --- | --- | --- | --- |
-| `trace_id` | `String` | 链路追踪 ID；未启用 trace 时可能不存在 | 在线/离线 |
-| `bubble_id` | `String` | 文本气泡 ID；在线来自服务端，离线由 SDK 独立生成 | 在线/离线 |
-| `chunk_id` | `String` | 文本分片 ID；在线来自服务端，离线由 SDK 生成 | 在线/离线 |
-| `channel` | `String` | 常见：`left`、`right`、`1`（离线收听） | 在线/离线 |
-| `kind` | `String` | `origin` | 离线 |
-| `state` | `String` | `partial`、`completed` | 离线 |
-| `text` | `String` | 当前识别文本（通常与 `result.data` 一致） | 离线 |
+- result\.data：识别文本。
 
-注意：`extraData` 字段按事件和模式动态出现，不保证全部存在。
+- isFinal 可能取值：
 
-### `onTranslate(...)`
+    - false：增量识别结果，后续还可能继续回调。
+
+    - true：本段识别最终结果。
+
+- result\.isLast：当前结果对象中的结束标记，通常与 isFinal 含义保持一致。
+
+- result\.srcCode / result\.dstCode：当前通道的源语言与目标语言代码。
+
+- result\.extraData 字段与可能取值（按当前 SDK 实现）：
+
+|key|类型|可能取值/说明|出现场景|
+|---|---|---|---|
+|trace\_id|String|链路追踪 ID；未启用 trace 时可能不存在|在线/离线|
+|bubble\_id|String|文本气泡 ID；在线来自服务端，离线由 SDK 独立生成|在线/离线|
+|chunk\_id|String|文本分片 ID；在线来自服务端，离线由 SDK 生成|在线/离线|
+|channel|String|常见：left、right、1（离线收听）|在线/离线|
+|kind|String|origin|离线|
+|state|String|partial、completed|离线|
+|text|String|当前识别文本（通常与 result\.data 一致）|离线|
+|offset|Int64|本段 ASR 语音在音频流中的起始偏移（纳秒）；服务端未下发时不存在|在线/离线|
+|duration|Int64|本段 ASR 语音时长（纳秒）；服务端未下发时不存在|在线/离线|
+
+注意：extraData 字段按事件和模式动态出现，不保证全部存在。offset/duration 仅 ASR 识别回调携带，MT 翻译回调（onTranslate）不包含此字段。
+
+### onTranslate\(\.\.\.\)
 
 - 翻译结果回调。
-- `result.data`：翻译文本。
-- `isFinal` 可能取值：
-  - `false`：增量翻译结果。
-  - `true`：本段翻译最终结果。
-- `result.extraData` 字段与可能取值（按当前 SDK 实现）：
 
-| key | 类型 | 可能取值/说明 | 出现场景 |
-| --- | --- | --- | --- |
-| `trace_id` | `String` | 链路追踪 ID；未启用 trace 时可能不存在 | 在线/离线 |
-| `bubble_id` | `String` | 文本气泡 ID；在线来自服务端，离线由 SDK 独立生成 | 在线/离线 |
-| `chunk_id` | `String` | 文本分片 ID；在线来自服务端，离线由 SDK 生成 | 在线/离线 |
-| `channel` | `String` | 常见：`left`、`right`、`1`（离线收听） | 在线/离线 |
-| `kind` | `String` | `translation` | 离线 |
-| `state` | `String` | `partial`、`completed` | 离线 |
-| `text` | `String` | 当前翻译文本（通常与 `result.data` 一致） | 离线 |
+- result\.data：翻译文本。
 
-注意：`extraData` 字段按事件和模式动态出现，不保证全部存在。
+- isFinal 可能取值：
 
-### `onAudioDataReceive(...)`
+    - false：增量翻译结果。
+
+    - true：本段翻译最终结果。
+
+- result\.extraData 字段与可能取值（按当前 SDK 实现）：
+
+|key|类型|可能取值/说明|出现场景|
+|---|---|---|---|
+|trace\_id|String|链路追踪 ID；未启用 trace 时可能不存在|在线/离线|
+|bubble\_id|String|文本气泡 ID；在线来自服务端，离线由 SDK 独立生成|在线/离线|
+|chunk\_id|String|文本分片 ID；在线来自服务端，离线由 SDK 生成|在线/离线|
+|channel|String|常见：left、right、1（离线收听）|在线/离线|
+|kind|String|translation|离线|
+|state|String|partial、completed|离线|
+|text|String|当前翻译文本（通常与 result\.data 一致）|离线|
+
+注意：extraData 字段按事件和模式动态出现，不保证全部存在。
+
+### onAudioDataReceive\(\.\.\.\)
 
 - 翻译后的 PCM 音频回调。
-- `data`：原始 PCM16LE 音频数据。
-- `channelCount` 可能取值：
-  - `1`：单声道。
-  - `2`：双声道。
-- `result.data` 当前通常是描述性文本，不建议业务方依赖其固定内容。
-- `result.extraData` 字段与可能取值（按当前 SDK 实现）：
 
-| key | 类型 | 可能取值/说明 | 出现场景 |
-| --- | --- | --- | --- |
-| `uid` | `UInt` | 音频来源 UID | 在线 |
-| `trace_id` | `String` | 链路追踪 ID；未启用 trace 时可能不存在 | 离线 |
-| `bubble_id` | `String` | 文本气泡 ID；离线由 SDK 独立生成 | 离线 |
-| `chunk_id` | `String` | 文本分片 ID；离线由 SDK 生成 | 离线 |
-| `channel` | `String` | `1`（离线收听）或 `left`/`right`（离线一对一） | 离线 |
+- data：原始 PCM16LE 音频数据。
 
-### `onError(_:)`
+- channelCount 可能取值：
+
+    - 1：单声道。
+
+    - 2：双声道。
+
+- result\.data 当前通常是描述性文本，不建议业务方依赖其固定内容。
+
+- result\.extraData 字段与可能取值（按当前 SDK 实现）：
+
+|key|类型|可能取值/说明|出现场景|
+|---|---|---|---|
+|uid|UInt|音频来源 UID|在线|
+|trace\_id|String|链路追踪 ID；未启用 trace 时可能不存在|离线|
+|bubble\_id|String|文本气泡 ID；离线由 SDK 独立生成|离线|
+|chunk\_id|String|文本分片 ID；离线由 SDK 生成|离线|
+|channel|String|1（离线收听）或 left/right（离线一对一）|离线|
+
+### onError\(\_:\)
 
 - SDK 统一错误回调。
-- `error.code`：统一错误码。
-- `error.category` 常见取值：`caller`、`network`、`rtcRtm`、`audio`、`state`、`internal`。
-- `error.message`：对外可读的错误描述。
 
-### `onError(code:message:)`
+- error\.code：统一错误码。
+
+- error\.category 常见取值：caller、network、rtcRtm、audio、state、internal。
+
+- error\.message：对外可读的错误描述。
+
+### onError\(code:message:\)
 
 - 兼容旧接口的错误回调。
-- 默认实现会由 `onError(_:)` 自动桥接。
 
-### `onEvent(name:args:)`
+- 默认实现会由 onError\(\_:\) 自动桥接。
+
+### onEvent\(name:args:\)
 
 - 通用事件回调。
-- `name` 为事件名。
-- `args` 通常为 `TmkResult<String>`，也可能为 `nil`。
-- 当 `args` 为 `TmkResult<String>` 时，可通过 `result.extraData` 获取事件扩展字段。
+
+- name 为事件名。
+
+- args 通常为 TmkResult\<String\>，也可能为 nil。
+
+- 当 args 为 TmkResult\<String\> 时，可通过 result\.extraData 获取事件扩展字段。
 
 常见在线事件：
 
-| 事件名 | 含义 | `args` 常见内容 |
-| --- | --- | --- |
-| `online_stream_message_parsed` | 在线识别/翻译流消息解析完成 | `TmkResult<String>` |
-| `online_audio_metadata` | 在线音频链路元数据事件 | `TmkResult<String>` 或 `nil` |
-| `online_recognition_failure` | 在线识别失败 | `TmkResult<String>` 或 `nil` |
-| `online_notification` | 在线通知事件 | `TmkResult<String>` 或 `nil` |
-| `online_tts_state` | 在线 TTS 状态变化，可用于播放高亮 | `TmkResult<String>` 或 `nil` |
-| `online_bubble_end` | 在线气泡结束态标记事件 | `TmkResult<String>`，`data` 为 `bubble_end` |
+|事件名|含义|args 常见内容|
+|---|---|---|
+|online\_stream\_message\_parsed|在线识别/翻译流消息解析完成|TmkResult\<String\>|
+|online\_audio\_metadata|在线音频链路元数据事件|TmkResult\<String\> 或 nil|
+|online\_recognition\_failure|在线识别失败|TmkResult\<String\> 或 nil|
+|online\_notification|在线通知事件|TmkResult\<String\> 或 nil|
+|online\_tts\_state|在线 TTS 状态变化，可用于播放高亮|TmkResult\<String\> 或 nil|
+|online\_bubble\_end|在线气泡结束态标记事件|TmkResult\<String\>，data 为 bubble\_end|
 
-`online_bubble_end` 表示 SDK 收到服务端针对某个 `bubble_id` 下发的 `bubble_end` 事件。业务层可将对应 bubble 标记为结束态并更新展示样式；该事件不阻止后续同 `bubble_id` 的识别或翻译内容继续更新，也不改变 `onRecognized` / `onTranslate` 的 `isFinal`、`isLast` 语义。
+online\_bubble\_end 表示 SDK 收到服务端针对某个 bubble\_id 下发的 bubble\_end 事件。业务层可将对应 bubble 标记为结束态并更新展示样式；该事件不阻止后续同 bubble\_id 的识别或翻译内容继续更新，也不改变 onRecognized / onTranslate 的 isFinal、isLast 语义。
 
-`online_tts_state` 表示服务端下发的 TTS 播放状态。SDK 会把 `session_id`、`chunk_id`、`bubble_id`、`is_end` 等字段透传到 `result.extraData`：业务侧可用 `session_id` 高亮源文片段、用 `chunk_id` 高亮译文片段；`is_end == true` 时应取消对应高亮。高亮属于 App/Demo 展示逻辑，SDK 只负责透传事件和稳定字段。
+online\_tts\_state 表示服务端下发的 TTS 播放状态。SDK 会把 session\_id、chunk\_id、bubble\_id、is\_end 等字段透传到 result\.extraData：业务侧可用 session\_id 高亮源文片段、用 chunk\_id 高亮译文片段；is\_end == true 时应取消对应高亮。高亮属于 App/Demo 展示逻辑，SDK 只负责透传事件和稳定字段。
 
-在线事件 `result.extraData` 字段与可能取值：
+在线事件 result\.extraData 字段与可能取值：
 
-| key | 类型 | 可能取值/说明 |
-| --- | --- | --- |
-| `uid` | `UInt` | 远端用户 UID |
-| `stream_id` | `Int` | Agora 流 ID |
-| `event` | `String` | `translate_speech_to_speech`、`notification`、`recognition_failure`、`tts_playback_state` 或其他服务端事件名 |
-| `event_type` | `String` | `translateSpeechToSpeech`、`notification`、`recognitionFailure`、`ttsPlaybackState`、`unknown(...)` |
-| `kind` | `String` | 常见：`origin`、`translation` |
-| `trace_id` | `String` | 链路追踪 ID |
-| `channel` | `String` | 常见：`left`、`right` |
-| `locale` | `String` | 语言代码，如 `zh-CN`、`en-US` |
-| `text` | `String` | 事件文本内容 |
-| `state` | `String` | 常见：`partial`、`completed`、`failed`、`started` |
-| `is_end` | `Bool` | `true` / `false` |
-| `bubble_id` | `String` | 文本气泡 ID；`online_bubble_end` 中用于标记对应气泡结束 |
-| `session_id` | `String` | 在线语音段 ID；`online_tts_state` 中可用于源文高亮 |
-| `chunk_id` | `String` | 在线翻译片段 ID；`online_tts_state` 中可用于译文高亮 |
-| `metadata_size` | `Int` | metadata 字节数（`online_audio_metadata`） |
-| `payload_size` | `Int` | 消息/metadata 字节数 |
-| `tx_quality` | `Int` | 上行网络质量（Agora 枚举值） |
-| `rx_quality` | `Int` | 下行网络质量（Agora 枚举值） |
-| `audio_loss_rate` | `Int` | 音频丢包率（百分比整数） |
+|key|类型|可能取值/说明|
+|---|---|---|
+|uid|UInt|远端用户 UID|
+|stream\_id|Int|Agora 流 ID|
+|event|String|translate\_speech\_to\_speech、notification、recognition\_failure、tts\_playback\_state 或其他服务端事件名|
+|event\_type|String|translateSpeechToSpeech、notification、recognitionFailure、ttsPlaybackState、unknown\(\.\.\.\)|
+|kind|String|常见：origin、translation|
+|trace\_id|String|链路追踪 ID|
+|channel|String|常见：left、right|
+|locale|String|语言代码，如 zh\-CN、en\-US|
+|text|String|事件文本内容|
+|state|String|常见：partial、completed、failed、started|
+|is\_end|Bool|true / false|
+|bubble\_id|String|文本气泡 ID；online\_bubble\_end 中用于标记对应气泡结束|
+|session\_id|String|在线语音段 ID；online\_tts\_state 中可用于源文高亮|
+|chunk\_id|String|在线翻译片段 ID；online\_tts\_state 中可用于译文高亮|
+|metadata\_size|Int|metadata 字节数（online\_audio\_metadata）|
+|payload\_size|Int|消息/metadata 字节数|
+|tx\_quality|Int|上行网络质量（Agora 枚举值）|
+|rx\_quality|Int|下行网络质量（Agora 枚举值）|
+|audio\_loss\_rate|Int|音频丢包率（百分比整数）|
 
 常见离线事件：
 
-| 事件名 | 含义 | `args` 常见内容 |
-| --- | --- | --- |
-| `offline_stream_message_parsed` | 离线识别/翻译事件 | `TmkResult<String>` |
-| `offline_audio_metadata` | 离线音频链路元数据事件 | `TmkResult<String>` 或 `nil` |
-| `offline_recognition_failure` | 离线识别失败 | `TmkResult<String>` 或 `nil` |
-| `offline_notification` | 离线通知事件 | `TmkResult<String>` 或 `nil` |
-| `offline_tts_state` | 离线 TTS 状态变化 | `TmkResult<String>` 或 `nil` |
+|事件名|含义|args 常见内容|
+|---|---|---|
+|offline\_stream\_message\_parsed|离线识别/翻译事件|TmkResult\<String\>|
+|offline\_audio\_metadata|离线音频链路元数据事件|TmkResult\<String\> 或 nil|
+|offline\_recognition\_failure|离线识别失败|TmkResult\<String\> 或 nil|
+|offline\_notification|离线通知事件|TmkResult\<String\> 或 nil|
+|offline\_tts\_state|离线 TTS 状态变化|TmkResult\<String\> 或 nil|
+|offline\_bubble\_end|离线气泡结束事件，与在线 online\_bubble\_end 语义对齐|TmkResult\<String\>，可从 result\.bubbleId 读取气泡 ID|
 
-离线事件 `result.extraData` 字段与可能取值：
+离线事件 result\.extraData 字段与可能取值：
 
-| key | 类型 | 可能取值/说明 |
-| --- | --- | --- |
-| `trace_id` | `String` | 链路追踪 ID；仅在 Demo 侧发送 trace 时存在 |
-| `bubble_id` | `String` | 文本气泡 ID；离线由 SDK 独立生成 |
-| `chunk_id` | `String` | 文本分片 ID；离线由 SDK 生成 |
-| `channel` | `String` | 收听：`1`；一对一：`left` / `right` |
-| `event` | `String` | `translate_speech_to_speech`、`recognition_failure`、`notification`、`tts_playback_state` |
-| `kind` | `String` | `origin`、`translation`（`offline_stream_message_parsed`） |
-| `state` | `String` | `partial`、`completed`、`failed`、`started` |
-| `text` | `String` | 事件文本或错误文本 |
-| `locale` | `String` | 语言代码（origin=源语言，translation=目标语言） |
-| `stage` | `String` | `asr`、`translation`、`tts`（失败通知事件） |
-| `uid` | `UInt` | 音频 metadata 对应 UID（`offline_audio_metadata`） |
-| `metadata_size` | `Int` | metadata 字节数 |
-| `payload_size` | `Int` | payload 字节数 |
+|key|类型|可能取值/说明|
+|---|---|---|
+|trace\_id|String|链路追踪 ID；仅在 Demo 侧发送 trace 时存在|
+|bubble\_id|String|文本气泡 ID；离线由 SDK 独立生成|
+|chunk\_id|String|文本分片 ID；离线由 SDK 生成|
+|channel|String|收听：1；一对一：left / right|
+|event|String|translate\_speech\_to\_speech、recognition\_failure、notification、tts\_playback\_state|
+|kind|String|origin、translation（offline\_stream\_message\_parsed）|
+|state|String|partial、completed、failed、started|
+|text|String|事件文本或错误文本|
+|locale|String|语言代码（origin=源语言，translation=目标语言）|
+|stage|String|asr、translation、tts（失败通知事件）|
+|uid|UInt|音频 metadata 对应 UID（offline\_audio\_metadata）|
+|metadata\_size|Int|metadata 字节数|
+|payload\_size|Int|payload 字节数|
 
-### `onStateChanged(...)`
+### onStateChanged\(\.\.\.\)
 
 - 通道状态变化回调。
+
 - 推荐业务方监听该回调，用于展示“启动中 / 运行中 / 重连中 / 失败”等状态。
-- `snapshot.state` 全量取值见下文 `TmkTranslationChannelState`。
-- `snapshot.reason` 全量取值见下文 `TmkTranslationChannelStateReason`。
-- `snapshot.code`：当状态变化由错误触发时，可能包含错误码；否则为 `nil`。
-- `snapshot.isRecoverable`：`true` 表示 SDK 仍可能自动恢复，`false` 表示通常需要业务方介入。
+
+- snapshot\.state 全量取值见下文 TmkTranslationChannelState。
+
+- snapshot\.reason 全量取值见下文 TmkTranslationChannelStateReason。
+
+- snapshot\.code：当状态变化由错误触发时，可能包含错误码；否则为 nil。
+
+- snapshot\.isRecoverable：true 表示 SDK 仍可能自动恢复，false 表示通常需要业务方介入。
 
 示例：
 
-```swift
+```Plain Text
 final class TranslationHandler: TmkTranslationListener {
     func onRecognized(from engine: AbstractChannelEngine, result: TmkResult<String>, isFinal: Bool) {
         print("识别: \(result.data), final=\(isFinal)")
@@ -1683,9 +1892,9 @@ final class TranslationHandler: TmkTranslationListener {
 }
 ```
 
-### 11.2 `TmkResult<T>`
+### 11\.2 TmkResult\<T\>
 
-```swift
+```Plain Text
 public struct TmkResult<T> {
     public let sessionId: Int
     public let bubbleId: String
@@ -1699,38 +1908,59 @@ public struct TmkResult<T> {
 
 字段说明：
 
-- `sessionId`
-  - 会话 ID。
-  - 在线场景下一般对应 Agora uid 或会话维度标识。
-  - 离线场景由 SDK 生成，规则为毫秒级时间戳追加同毫秒内递增序号，降低同一时刻左右声道同时产出时的冲突概率。
-- `bubbleId`
-  - 文本气泡 ID。
-  - 在线场景优先来自服务端 `bubble_id`。
-  - 离线场景由 SDK 按与 `sessionId` 相同的毫秒级时间戳+序号规则独立生成，不等同于 `sessionId`。
-- `data`
-  - 结果主体。
-  - 文本结果里通常是 `String`。
-- `srcCode`
-  - 源语言代码。
-- `dstCode`
-  - 目标语言代码。
-- `isLast`
-  - 是否是最后一条结果。
-- `extraData`
-  - 附加信息字典。
-  - `chunk_id` 在线场景来自服务端；离线场景由 SDK 按毫秒级时间戳+序号规则生成，并与同一段 ASR/MT/TTS 结果保持一致。
+- sessionId
+
+    - 会话 ID。
+
+    - 在线场景下一般对应 Agora uid 或会话维度标识。
+
+    - 离线场景由 SDK 生成，规则为毫秒级时间戳追加同毫秒内递增序号，降低同一时刻左右声道同时产出时的冲突概率。
+
+- bubbleId
+
+    - 文本气泡 ID。
+
+    - 在线场景优先来自服务端 bubble\_id。
+
+    - 离线场景由 SDK 按与 sessionId 相同的毫秒级时间戳\+序号规则独立生成，不等同于 sessionId。
+
+- data
+
+    - 结果主体。
+
+    - 文本结果里通常是 String。
+
+- srcCode
+
+    - 源语言代码。
+
+- dstCode
+
+    - 目标语言代码。
+
+- isLast
+
+    - 是否是最后一条结果。
+
+- extraData
+
+    - 附加信息字典。
+
+    - chunk\_id 在线场景来自服务端；离线场景由 SDK 按毫秒级时间戳\+序号规则生成，并与同一段 ASR/MT/TTS 结果保持一致。
 
 注意：
 
-- `extraData` 属于兼容型扩展字段。
+- extraData 属于兼容型扩展字段。
+
 - 不同模式和不同事件的字段可能不同。
-- 如无明确依赖，请不要强依赖某个未文档化 key；建议仅使用本节 `11.1` 中已列字段。
 
-### 11.3 通道状态模型
+- 如无明确依赖，请不要强依赖某个未文档化 key；建议仅使用本节 11\.1 中已列字段。
 
-### `TmkTranslationChannelState`
+### 11\.3 通道状态模型
 
-```swift
+### TmkTranslationChannelState
+
+```Plain Text
 public enum TmkTranslationChannelState: String {
     case idle
     case starting
@@ -1745,20 +1975,20 @@ public enum TmkTranslationChannelState: String {
 
 常见取值说明：
 
-| 值 | 含义 |
-| --- | --- |
-| `idle` | 初始状态，尚未启动 |
-| `starting` | 启动中 |
-| `running` | 运行中 |
-| `reconnecting` | 重连中 |
-| `degraded` | 已降级运行，通常仍可继续工作 |
-| `stopping` | 停止中 |
-| `stopped` | 已停止 |
-| `failed` | 已失败，通常需要业务方介入 |
+|值|含义|
+|---|---|
+|idle|初始状态，尚未启动|
+|starting|启动中|
+|running|运行中|
+|reconnecting|重连中|
+|degraded|已降级运行，通常仍可继续工作|
+|stopping|停止中|
+|stopped|已停止|
+|failed|已失败，通常需要业务方介入|
 
-### `TmkTranslationChannelStateReason`
+### TmkTranslationChannelStateReason
 
-```swift
+```Plain Text
 public enum TmkTranslationChannelStateReason: String {
     case none
     case startRequested
@@ -1786,33 +2016,33 @@ public enum TmkTranslationChannelStateReason: String {
 
 常见取值说明：
 
-| 值 | 含义 |
-| --- | --- |
-| `none` | 无特殊原因 |
-| `startRequested` | 已收到启动请求 |
-| `started` | 启动完成 |
-| `stopRequested` | 已收到停止请求 |
-| `stopped` | 已停止 |
-| `networkUnavailable` | 网络不可用 |
-| `networkRestored` | 网络已恢复 |
-| `rtcConnecting` | 在线链路连接中 |
-| `rtcConnected` | 在线链路已连接 |
-| `rtcInterrupted` | 在线链路中断 |
-| `rtcLost` | 在线链路丢失 |
-| `rtcKeepAliveTimeout` | 在线保活超时 |
-| `rtcTokenRequested` | 正在请求 RTC token |
-| `rtcTokenWillExpire` | RTC token 即将过期 |
-| `sessionExpired` | 当前会话已过期 |
-| `invalidConfiguration` | 配置无效 |
-| `permissionDenied` | 权限不足 |
-| `bannedByServer` | 被服务端禁用 |
-| `serviceRejected` | 服务端拒绝请求 |
-| `messageChannelFailure` | 文本消息通道异常 |
-| `engineError` | 底层引擎异常 |
+|值|含义|
+|---|---|
+|none|无特殊原因|
+|startRequested|已收到启动请求|
+|started|启动完成|
+|stopRequested|已收到停止请求|
+|stopped|已停止|
+|networkUnavailable|网络不可用|
+|networkRestored|网络已恢复|
+|rtcConnecting|在线链路连接中|
+|rtcConnected|在线链路已连接|
+|rtcInterrupted|在线链路中断|
+|rtcLost|在线链路丢失|
+|rtcKeepAliveTimeout|在线保活超时|
+|rtcTokenRequested|正在请求 RTC token|
+|rtcTokenWillExpire|RTC token 即将过期|
+|sessionExpired|当前会话已过期|
+|invalidConfiguration|配置无效|
+|permissionDenied|权限不足|
+|bannedByServer|被服务端禁用|
+|serviceRejected|服务端拒绝请求|
+|messageChannelFailure|文本消息通道异常|
+|engineError|底层引擎异常|
 
-### `TmkTranslationChannelStateSnapshot`
+### TmkTranslationChannelStateSnapshot
 
-```swift
+```Plain Text
 public struct TmkTranslationChannelStateSnapshot {
     public let state: TmkTranslationChannelState
     public let reason: TmkTranslationChannelStateReason
@@ -1825,70 +2055,81 @@ public struct TmkTranslationChannelStateSnapshot {
 
 字段说明：
 
-- `state`
-  - 当前状态。
-- `reason`
-  - 状态变化原因。
-- `code`
-  - 关联错误码，可能为空。
-- `message`
-  - 补充说明文本。
-- `isRecoverable`
-  - 是否可恢复。
-- `updatedAt`
-  - 更新时间。
+- state
 
-### 11.4 状态回调处理契约
+    - 当前状态。
 
-App 应以 `onStateChanged` 作为通道 UI 状态的单一来源，不要自行把 `starting` 伪造为 `running`，也不要因单次弱网事件主动销毁通道。
+- reason
 
-| state | 常见 reason | App 推荐处理 |
-| --- | --- | --- |
-| `idle` | `none` | 显示待启动或初始化状态，不推流。 |
-| `starting` | `startRequested` / `rtcConnecting` / `rtcConnected` | 显示“通道连接中/正在加载”，禁止重复创建。`rtcConnected` 只表示媒体链路已连接，不代表完整业务链路已 ready。 |
-| `running` | `started` / `rtcConnected` / `networkRestored` | 显示通道可用，允许采集，清除弱网或重连提示。 |
-| `degraded` | `networkUnavailable` / `messageChannelFailure` / `rtcTokenRequested` / `rtcTokenWillExpire` | 显示非阻塞弱网或能力受损提示，不停止录音/播放，不弹 fatal 错误框。 |
-| `reconnecting` | `networkUnavailable` / `rtcInterrupted` / `rtcLost` / `messageChannelFailure` | 显示连接恢复中，禁止重复创建，等待 SDK 恢复或升级为失败。 |
-| `stopping` | `stopRequested` | 禁用操作按钮，等待停止完成。 |
-| `stopped` | `stopped` | 清理 UI 状态或离开页面。 |
-| `failed` | `sessionExpired` / `invalidConfiguration` / `permissionDenied` / `bannedByServer` / `serviceRejected` / `rtcKeepAliveTimeout` / `engineError` | 停止录音/播放，按错误码提示用户重新创建、重新初始化、下载模型、重新鉴权或离开。 |
+    - 状态变化原因。
 
-离线通道不产生 `rtcConnecting`、`rtcConnected`、`rtcInterrupted`、`rtcLost`、`rtcKeepAliveTimeout`、`messageChannelFailure` 等 RTC/RTM 原因；离线 UI 仍消费同一套 `state`，但原因主要来自模型、pipeline 和离线鉴权状态。
+- code
 
-### 11.5 事件回调处理契约
+    - 关联错误码，可能为空。
 
-`onEvent` 用于诊断、弱提示和补充状态，不应替代 `onRecognized`、`onTranslate`、`onAudioDataReceive` 和 `onStateChanged`。
+- message
 
-| 事件类型 | 常见事件 | App 推荐处理 |
-| --- | --- | --- |
-| 在线运行事件 | `online_started`、`online_stopped`、`online_runtime_state_changed` | 日志和 UI 辅助；UI 状态以 `onStateChanged` 为准。 |
-| 在线消息事件 | `online_stream_message_raw`、`online_stream_message_parsed`、`online_notification`、`notification` | 诊断为主；`close_room` 类通知需要停止当前会话引用，并提示用户重新创建或离开。 |
-| 在线弱网事件 | `online_network_quality`、`online_rtc_stats`、`online_remote_audio_stats`、`online_local_audio_stats` | 连续采样后显示弱网提示，不直接释放通道。真正需要用户决策时等待 `failed` 状态或 `onError`。 |
-| 在线远端离线事件 | `online_remote_user_offline` | 当 `is_expected_service_uid=true` 时，说明服务端音频/翻译订阅 uid 离线，对话不可继续，应提示重新创建或离开。 |
-| 离线 pipeline 事件 | `offline_pipeline_state`、`offline_stream_message_parsed`、`offline_audio_metadata` | 诊断和日志为主；UI 仍以 `onStateChanged` 和业务结果回调为准。 |
-| 离线结果辅助事件 | `offline_asr_partial`、`offline_asr_final`、`offline_mt_partial`、`offline_mt_final`、`offline_tts_output`、`offline_tts_state`、`offline_recognition_failure` | 可用于诊断或弱提示；正式文本和音频展示以识别、翻译、音频回调为准。 |
-| 模型下载事件 | `offline_model_cancelled`、`offline_model_update_required`、下载进度、解压进度、模型包状态变化 | 更新模型列表和进度；取消不弹错误框，需更新时禁止直接启动离线通道。 |
+    - 补充说明文本。
 
-### 11.6 离线模型包状态处理契约
+- isRecoverable
 
-| package state | App 推荐处理 |
-| --- | --- |
-| `ready` | 显示已就绪；所有必需包 ready 后可创建离线通道。 |
-| `needsDownload` | 显示待下载，禁止启动离线通道。 |
-| `needsUpdate` | 显示需更新，引导重新下载。 |
-| `resumable` | 显示可续传，点击下载继续。 |
-| `downloading` | 显示下载进度，允许取消。 |
-| `unzipping` | 显示解压进度，避免重复触发下载。 |
-| `failed` | 显示失败，允许重试。 |
-| `cancelled` | 显示已取消，允许重新下载，不弹错误框。 |
+    - 是否可恢复。
+
+- updatedAt
+
+    - 更新时间。
+
+### 11\.4 状态回调处理契约
+
+App 应以 onStateChanged 作为通道 UI 状态的单一来源，不要自行把 starting 伪造为 running，也不要因单次弱网事件主动销毁通道。
+
+|state|常见 reason|App 推荐处理|
+|---|---|---|
+|idle|none|显示待启动或初始化状态，不推流。|
+|starting|startRequested / rtcConnecting / rtcConnected|显示“通道连接中/正在加载”，禁止重复创建。rtcConnected 只表示媒体链路已连接，不代表完整业务链路已 ready。|
+|running|started / rtcConnected / networkRestored|显示通道可用，允许采集，清除弱网或重连提示。|
+|degraded|networkUnavailable / messageChannelFailure / rtcTokenRequested / rtcTokenWillExpire|显示非阻塞弱网或能力受损提示，不停止录音/播放，不弹 fatal 错误框。|
+|reconnecting|networkUnavailable / rtcInterrupted / rtcLost / messageChannelFailure|显示连接恢复中，禁止重复创建，等待 SDK 恢复或升级为失败。|
+|stopping|stopRequested|禁用操作按钮，等待停止完成。|
+|stopped|stopped|清理 UI 状态或离开页面。|
+|failed|sessionExpired / invalidConfiguration / permissionDenied / bannedByServer / serviceRejected / rtcKeepAliveTimeout / engineError|停止录音/播放，按错误码提示用户重新创建、重新初始化、下载模型、重新鉴权或离开。|
+
+离线通道不产生 rtcConnecting、rtcConnected、rtcInterrupted、rtcLost、rtcKeepAliveTimeout、messageChannelFailure 等 RTC/RTM 原因；离线 UI 仍消费同一套 state，但原因主要来自模型、pipeline 和离线鉴权状态。
+
+### 11\.5 事件回调处理契约
+
+onEvent 用于诊断、弱提示和补充状态，不应替代 onRecognized、onTranslate、onAudioDataReceive 和 onStateChanged。
+
+|事件类型|常见事件|App 推荐处理|
+|---|---|---|
+|在线运行事件|online\_started、online\_stopped、online\_runtime\_state\_changed|日志和 UI 辅助；UI 状态以 onStateChanged 为准。|
+|在线消息事件|online\_stream\_message\_raw、online\_stream\_message\_parsed、online\_notification、notification|诊断为主；close\_room 类通知需要停止当前会话引用，并提示用户重新创建或离开。|
+|在线弱网事件|online\_network\_quality、online\_rtc\_stats、online\_remote\_audio\_stats、online\_local\_audio\_stats|连续采样后显示弱网提示，不直接释放通道。真正需要用户决策时等待 failed 状态或 onError。|
+|在线远端离线事件|online\_remote\_user\_offline|当 is\_expected\_service\_uid=true 时，说明服务端音频/翻译订阅 uid 离线，对话不可继续，应提示重新创建或离开。|
+|离线 pipeline 事件|offline\_pipeline\_state、offline\_stream\_message\_parsed、offline\_audio\_metadata|诊断和日志为主；UI 仍以 onStateChanged 和业务结果回调为准。|
+|离线结果辅助事件|offline\_asr\_partial、offline\_asr\_final、offline\_mt\_partial、offline\_mt\_final、offline\_tts\_output、offline\_tts\_state、offline\_recognition\_failure|可用于诊断或弱提示；正式文本和音频展示以识别、翻译、音频回调为准。|
+|模型下载事件|offline\_model\_cancelled、offline\_model\_update\_required、下载进度、解压进度、模型包状态变化|更新模型列表和进度；取消不弹错误框，需更新时禁止直接启动离线通道。|
+
+### 11\.6 离线模型包状态处理契约
+
+|package state|App 推荐处理|
+|---|---|
+|ready|显示已就绪；所有必需包 ready 后可创建离线通道。|
+|needsDownload|显示待下载，禁止启动离线通道。|
+|needsUpdate|显示需更新，引导重新下载。|
+|resumable|显示可续传，点击下载继续。|
+|downloading|显示下载进度，允许取消。|
+|unzipping|显示解压进度，避免重复触发下载。|
+|failed|显示失败，允许重试。|
+|cancelled|显示已取消，允许重新下载，不弹错误框。|
 
 ---
 
-## 12. 错误模型与统一错误码表
+## 错误模型与统一错误码表
 
-### 12.1 `TmkTranslationErrorCategory`
+### 12\.1 TmkTranslationErrorCategory
 
-```swift
+```Plain Text
 public enum TmkTranslationErrorCategory: String {
     case caller
     case network
@@ -1899,29 +2140,29 @@ public enum TmkTranslationErrorCategory: String {
 }
 ```
 
-### 12.2 `TmkTranslationError`
+### 12\.2 TmkTranslationError
 
-```swift
+```Plain Text
 public enum TmkTranslationError: Error, LocalizedError
 ```
 
 常用公开属性：
 
-| 属性 | 说明 |
-| --- | --- |
-| `code` | SDK 统一错误码。 |
-| `constantName` | 错误码常量名。 |
-| `message` | 对外可读错误文案。 |
-| `category` | 错误分类。 |
-| `chineseDescription` / `englishDescription` | 中英文说明。 |
-| `underlyingError` | 原始底层错误。 |
-| `actualErrorCode` | 实际底层错误码，例如离线组件或 LicenseCore 诊断码。 |
-| `actualErrorMessage` | 实际底层错误信息；上传或展示前必须脱敏。 |
-| `actualErrorDomain` | 实际底层错误域。 |
+|属性|说明|
+|---|---|
+|code|SDK 统一错误码。|
+|constantName|错误码常量名。|
+|message|对外可读错误文案。|
+|category|错误分类。|
+|chineseDescription / englishDescription|中英文说明。|
+|underlyingError|原始底层错误。|
+|actualErrorCode|实际底层错误码，例如离线组件或 LicenseCore 诊断码。|
+|actualErrorMessage|实际底层错误信息；上传或展示前必须脱敏。|
+|actualErrorDomain|实际底层错误域。|
 
 示例：
 
-```swift
+```Plain Text
 func onError(_ error: TmkTranslationError) {
     print(error.code)
     print(error.category.rawValue)
@@ -1931,71 +2172,73 @@ func onError(_ error: TmkTranslationError) {
 }
 ```
 
-### 12.3 统一错误码表
+### 12\.3 统一错误码表
 
-以下表格合并 SDK 统一错误码、离线组件诊断码和离线 License 鉴权组件码。业务 UI 主要消费 `error.code`；`actualErrorCode` / `actualErrorMessage` 只用于脱敏后的诊断排障。
+以下表格合并 SDK 统一错误码、离线组件诊断码和离线 License 鉴权组件码。业务 UI 主要消费 error\.code；actualErrorCode / actualErrorMessage 只用于脱敏后的诊断排障。
 
-| code | constantName | 适用范围/分类 | 说明 | 处理契约 |
-| --- | --- | --- | --- | --- |
-| `2001101` | `SDK_NOT_INITIALIZED` | common/state | SDK 未初始化。 | 提示初始化失败，先完成 `sdkInit`，不要继续建房或建通道。 |
-| `2001102` | `AUTHENTICATION_FAILED` | common/caller | 在线鉴权失败，或离线能力接口/离线通道因 License 鉴权失败而无法继续。 | 在线鉴权失败时提示重新鉴权；离线能力失败时引导联网重试或检查账号权限。 |
-| `2001103` | `ROOM_CREATION_FAILED` | online/network | 在线房间创建失败。 | 允许用户重试创建；连续失败时离开当前对话并记录诊断。 |
-| `2001104` | `CHANNEL_CREATION_FAILED` | common/rtcRtm | 在线通道创建失败，或离线通道组装失败。 | 在线重新创建对话；离线重新初始化通道并检查模型资源。 |
-| `2001105` | `ENGINE_NOT_SUPPORTED` | common/rtcRtm | 当前 SDK、账号或配置不支持该引擎能力。 | 提示能力不支持，停止当前流程。 |
-| `2001106` | `INVALID_CONFIGURATION` | common/caller | 配置非法，包括语言、声道、音色、appId、channel 等参数不合法。 | 修正配置后再创建；不要用旧配置重复重试。 |
-| `2001107` | `NETWORK_UNAVAILABLE` | common/network | 网络不可用；也可能出现在模型下载、鉴权、语言列表等网络请求失败场景。 | `reconnecting` 时提示恢复中；下载或请求失败时提供重试入口。 |
-| `2001108` | `AUDIO_PROCESSING_ERROR` | common/audio | 采集、播放、推 PCM 或音频会话异常。 | 停止录音/播放，在线重建对话，离线重新初始化。 |
-| `2001109` | `TTS_SYNTHESIS_ERROR` | common/rtcRtm | 在线或离线 TTS 合成异常；离线 `stage == tts` 优先映射到该错误。 | 单句失败可弱提示；连续失败或通道失败时重建/重新初始化。 |
-| `2001110` | `TRANSLATION_ERROR` | common/rtcRtm | 在线翻译异常；离线 ASR/MT 阶段失败。 | 单句失败可弱提示；通道失败时在线重建，离线重新初始化。 |
-| `2001111` | `SESSION_EXPIRED` | online/network | 在线会话或 RTC/RTM token 已过期。 | 停止当前会话，提示用户重新创建对话。 |
-| `2001112` | `QUOTA_EXCEEDED` | common/network | 账号或应用服务配额不足。 | 提示配额不足并停止当前流程。 |
-| `2001113` | `INVALID_LANGUAGE_CODE` | common/caller | 语言代码非法或当前模式不支持；离线会归一 `zh-CN`、`zh-HK` 等到 `zh`，当前离线主要支持 `zh` / `en`。 | 引导重新选择支持语言；在线重新创建对话，离线重新初始化通道。 |
-| `2001114` | `ENGINE_INITIALIZATION_FAILED` | common/rtcRtm | 引擎初始化失败；离线 creation failed、load timeout 或模型加载超时。 | 允许重试；多次失败时提示检查 SDK 资源和离线模型完整性。 |
-| `2001115` | `BUFFER_OVERFLOW` | common/audio | 音频输入或输出缓冲超过处理能力。 | 降低推流频率或重启采集；严重时重建通道。 |
-| `2001116` | `THREAD_INTERRUPTED` | common/internal | 工作线程被中断。 | 允许重试；若持续出现，记录诊断并重建流程。 |
-| `2001117` | `OFFLINE_MODEL_NOT_READY` | offline/model | 模型缺失、校验失败、下载失败、离线鉴权未通过或账号未开通离线能力。 | 引导下载、更新模型或重新鉴权；不要直接启动离线通道。 |
-| `2001999` | `UNKNOWN_ERROR` | common/internal | 未知错误或底层错误无法映射。 | 记录诊断，在线重建对话，离线重新初始化。 |
-| `2002001` | `NETWORK_INVALID_URL` | common/caller | 网络 URL、模型下载 URL 或后台地址配置错误。 | 提示配置错误，停止当前流程。 |
-| `2002002` | `NETWORK_TRANSPORT_ERROR` | common/network | 网络传输失败，包括 DNS、TLS、超时或模型下载失败。 | 提供重试；模型下载场景保留续传/重试入口。 |
-| `2002003` | `NETWORK_HTTP_STATUS_ERROR` | common/network | HTTP 非成功状态。 | 401/403 优先重新鉴权，5xx 可重试，其他状态按服务端文案处理。 |
-| `2002004` | `NETWORK_RESPONSE_DECODING_ERROR` | common/network | 响应、manifest 或语言列表解析失败。 | 提示服务响应异常，记录诊断。 |
-| `2002005` | `NETWORK_BUSINESS_ERROR` | common/network | 服务端业务错误。 | 展示服务端错误文案；必要时重新鉴权或离开当前流程。 |
-| `2002006` | `REQUEST_CANCELLED` | common/network | 用户取消、页面退出、主动停止或音色设置被取消。 | 不弹错误框，仅恢复 UI 到已取消/已停止状态。 |
-| `2003002` | `INVALID_STATE` | common/state | 当前状态不允许操作；例如通道释放后继续调用。 | 重复停止可忽略；关键路径失败时重建或重新初始化。 |
-| `2003003` | `DEPENDENCY_UNAVAILABLE` | common/rtcRtm | 必要依赖、离线库或模型能力不可用。 | 提示 SDK/资源异常，停止当前流程并记录诊断。 |
-| `2003004` | `RTC_OPERATION_FAILED` | online/rtcRtm | 实时链路操作失败，包括 RTC/RTM 启动失败、发消息失败、服务端订阅 uid 离线或底层 RTC 错误。 | 提示重新创建或离开；`online_remote_user_offline` 且 `is_expected_service_uid=true` 时当前对话不可继续。 |
-| `2003005` | `MESSAGE_DECODING_FAILED` | common/rtcRtm | 在线/离线消息解析失败。 | 仅记录日志，不直接关闭通道。 |
-| `2003006` | `AUDIO_CHANNEL_CREATION_FAILED` | common/audio | 音频通道创建失败。 | 停止采集并提示重建/重新初始化。 |
-| `2003007` | `TRACK_EVENT_NOT_CONFIGURED` | common/internal | 埋点未配置。 | 不影响翻译主流程，可忽略或记录日志。 |
-| `2003008` | `TRACK_EVENT_INVALID_EVENT_NAME` | common/caller | 埋点事件名为空或非法。 | 不影响翻译主流程，可忽略或修正埋点配置。 |
-| `2004001` | `OFFLINE_INVALID_ARGUMENT` | offline/diagnostic | 离线翻译组件参数无效。 | 作为 `actualErrorCode` 排障；修正语言、声道、模型路径或开关配置后重新初始化。 |
-| `2004002` | `OFFLINE_CREATION_FAILED` | offline/diagnostic | 离线引擎创建失败。 | 作为 `actualErrorCode` 排障；检查模型文件和依赖资源，重新初始化离线通道。 |
-| `2004003` | `OFFLINE_OPERATION_FAILED` | offline/diagnostic | 离线引擎操作失败。 | 作为 `actualErrorCode` 排障；停止当前 pipeline 后重新初始化。 |
-| `2004004` | `OFFLINE_ENGINE_RELEASED` | offline/diagnostic | 离线引擎已释放后继续调用。 | 作为 `actualErrorCode` 排障；忽略退出后的回调或重新创建通道。 |
-| `2004005` | `OFFLINE_LOAD_TIMEOUT` | offline/diagnostic | 离线模型加载超时。 | 作为 `actualErrorCode` 排障；检查模型完整性并重新加载。 |
-| `2004101` | `OFFLINE_AUTH_EMPTY_CONTENT` | offline/license | License 内容为空；native 返回码 `1001`。 | 重新联网鉴权并获取 License；不要继续启动离线通道。 |
-| `2004102` | `OFFLINE_AUTH_DECRYPT_OR_PARSE_FAILED` | offline/license | License 解密或解析失败；native 返回码 `1002`。 | 重新联网鉴权；不要删除设备密钥，不上传原始 License。 |
-| `2004103` | `OFFLINE_AUTH_SIGNATURE_INVALID` | offline/license | License 签名无效；native 返回码 `1003`。 | 重新联网鉴权；若仍失败，检查后台签发配置。 |
-| `2004104` | `OFFLINE_AUTH_CLIENT_PACKAGE_OR_DEVICE_MISMATCH` | offline/license | client、包名或设备绑定不匹配；native 返回码 `1004`。 | 检查包名、账号和设备绑定，重新鉴权。 |
-| `2004105` | `OFFLINE_AUTH_MODEL_KEY_EMPTY` | offline/license | 模型密钥为空；native 返回码 `1005`。 | 检查账号离线授权范围，重新鉴权。 |
-| `2004106` | `OFFLINE_AUTH_EXPIRED_OR_NOT_YET_VALID` | offline/license | License 已过期或尚未生效；native 返回码 `1006`。 | 联网重新签发 License 后再使用离线能力。 |
-| `2004107` | `OFFLINE_AUTH_UNSUPPORTED` | offline/license | License 版本或算法不支持；native 返回码 `1007`。 | 升级 SDK 或联系后台确认签发格式。 |
-| `2004108` | `OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL` | offline/license | 当前 scope 或模型未授权；native 返回码 `1008`。 | 检查账号授权范围，重新鉴权或联系后台开通。 |
-| `2004199` | `OFFLINE_AUTH_INTERNAL_ERROR` | offline/license | 离线 License 鉴权内部错误或未知 native 返回码。 | 记录诊断，联网重试；持续失败时提交脱敏日志排查。 |
+|code|constantName|适用范围/分类|说明|处理契约|
+|---|---|---|---|---|
+|2001101|SDK\_NOT\_INITIALIZED|common/state|SDK 未初始化。|提示初始化失败，先完成 sdkInit，不要继续建房或建通道。|
+|2001102|AUTHENTICATION\_FAILED|common/caller|在线鉴权失败，或离线能力接口/离线通道因 License 鉴权失败而无法继续。|在线鉴权失败时提示重新鉴权；离线能力失败时引导联网重试或检查账号权限。|
+|2001103|ROOM\_CREATION\_FAILED|online/network|在线房间创建失败。|允许用户重试创建；连续失败时离开当前对话并记录诊断。|
+|2001104|CHANNEL\_CREATION\_FAILED|common/rtcRtm|在线通道创建失败，或离线通道组装失败。|在线重新创建对话；离线重新初始化通道并检查模型资源。|
+|2001105|ENGINE\_NOT\_SUPPORTED|common/rtcRtm|当前 SDK、账号或配置不支持该引擎能力。|提示能力不支持，停止当前流程。|
+|2001106|INVALID\_CONFIGURATION|common/caller|配置非法，包括语言、声道、音色、appId、channel 等参数不合法。|修正配置后再创建；不要用旧配置重复重试。|
+|2001107|NETWORK\_UNAVAILABLE|common/network|网络不可用；也可能出现在模型下载、鉴权、语言列表等网络请求失败场景。|reconnecting 时提示恢复中；下载或请求失败时提供重试入口。|
+|2001108|AUDIO\_PROCESSING\_ERROR|common/audio|采集、播放、推 PCM 或音频会话异常。|停止录音/播放，在线重建对话，离线重新初始化。|
+|2001109|TTS\_SYNTHESIS\_ERROR|common/rtcRtm|在线或离线 TTS 合成异常；离线 stage == tts 优先映射到该错误。|单句失败可弱提示；连续失败或通道失败时重建/重新初始化。|
+|2001110|TRANSLATION\_ERROR|common/rtcRtm|在线翻译异常；离线 ASR/MT 阶段失败。|单句失败可弱提示；通道失败时在线重建，离线重新初始化。|
+|2001111|SESSION\_EXPIRED|online/network|在线会话或 RTC/RTM token 已过期。|停止当前会话，提示用户重新创建对话。|
+|2001112|QUOTA\_EXCEEDED|common/network|账号或应用服务配额不足。|提示配额不足并停止当前流程。|
+|2001113|INVALID\_LANGUAGE\_CODE|common/caller|语言代码非法或当前模式不支持；离线会归一 zh\-CN、zh\-HK 等到 zh，当前离线主要支持 zh / en。|引导重新选择支持语言；在线重新创建对话，离线重新初始化通道。|
+|2001114|ENGINE\_INITIALIZATION\_FAILED|common/rtcRtm|引擎初始化失败；离线 creation failed、load timeout 或模型加载超时。|允许重试；多次失败时提示检查 SDK 资源和离线模型完整性。|
+|2001115|BUFFER\_OVERFLOW|common/audio|音频输入或输出缓冲超过处理能力。|降低推流频率或重启采集；严重时重建通道。|
+|2001116|THREAD\_INTERRUPTED|common/internal|工作线程被中断。|允许重试；若持续出现，记录诊断并重建流程。|
+|2001117|OFFLINE\_MODEL\_NOT\_READY|offline/model|模型缺失、校验失败、下载失败、离线鉴权未通过或账号未开通离线能力。|引导下载、更新模型或重新鉴权；不要直接启动离线通道。|
+|2001999|UNKNOWN\_ERROR|common/internal|未知错误或底层错误无法映射。|记录诊断，在线重建对话，离线重新初始化。|
+|2002001|NETWORK\_INVALID\_URL|common/caller|网络 URL、模型下载 URL 或后台地址配置错误。|提示配置错误，停止当前流程。|
+|2002002|NETWORK\_TRANSPORT\_ERROR|common/network|网络传输失败，包括 DNS、TLS、超时或模型下载失败。|提供重试；模型下载场景保留续传/重试入口。|
+|2002003|NETWORK\_HTTP\_STATUS\_ERROR|common/network|HTTP 非成功状态。|401/403 优先重新鉴权，5xx 可重试，其他状态按服务端文案处理。|
+|2002004|NETWORK\_RESPONSE\_DECODING\_ERROR|common/network|响应、manifest 或语言列表解析失败。|提示服务响应异常，记录诊断。|
+|2002005|NETWORK\_BUSINESS\_ERROR|common/network|服务端业务错误。|展示服务端错误文案；必要时重新鉴权或离开当前流程。|
+|2002006|REQUEST\_CANCELLED|common/network|用户取消、页面退出、主动停止或音色设置被取消。|不弹错误框，仅恢复 UI 到已取消/已停止状态。|
+|2003002|INVALID\_STATE|common/state|当前状态不允许操作；例如通道释放后继续调用。|重复停止可忽略；关键路径失败时重建或重新初始化。|
+|2003003|DEPENDENCY\_UNAVAILABLE|common/rtcRtm|必要依赖、离线库或模型能力不可用。|提示 SDK/资源异常，停止当前流程并记录诊断。|
+|2003004|RTC\_OPERATION\_FAILED|online/rtcRtm|实时链路操作失败，包括 RTC/RTM 启动失败、发消息失败、服务端订阅 uid 离线或底层 RTC 错误。|提示重新创建或离开；online\_remote\_user\_offline 且 is\_expected\_service\_uid=true 时当前对话不可继续。|
+|2003005|MESSAGE\_DECODING\_FAILED|common/rtcRtm|在线/离线消息解析失败。|仅记录日志，不直接关闭通道。|
+|2003006|AUDIO\_CHANNEL\_CREATION\_FAILED|common/audio|音频通道创建失败。|停止采集并提示重建/重新初始化。|
+|2003007|TRACK\_EVENT\_NOT\_CONFIGURED|common/internal|埋点未配置。|不影响翻译主流程，可忽略或记录日志。|
+|2003008|TRACK\_EVENT\_INVALID\_EVENT\_NAME|common/caller|埋点事件名为空或非法。|不影响翻译主流程，可忽略或修正埋点配置。|
+|2004001|OFFLINE\_INVALID\_ARGUMENT|offline/diagnostic|离线翻译组件参数无效。|作为 actualErrorCode 排障；修正语言、声道、模型路径或开关配置后重新初始化。|
+|2004002|OFFLINE\_CREATION\_FAILED|offline/diagnostic|离线引擎创建失败。|作为 actualErrorCode 排障；检查模型文件和依赖资源，重新初始化离线通道。|
+|2004003|OFFLINE\_OPERATION\_FAILED|offline/diagnostic|离线引擎操作失败。|作为 actualErrorCode 排障；停止当前 pipeline 后重新初始化。|
+|2004004|OFFLINE\_ENGINE\_RELEASED|offline/diagnostic|离线引擎已释放后继续调用。|作为 actualErrorCode 排障；忽略退出后的回调或重新创建通道。|
+|2004005|OFFLINE\_LOAD\_TIMEOUT|offline/diagnostic|离线模型加载超时。|作为 actualErrorCode 排障；检查模型完整性并重新加载。|
+|2004101|OFFLINE\_AUTH\_EMPTY\_CONTENT|offline/license|License 内容为空；native 返回码 1001。|重新联网鉴权并获取 License；不要继续启动离线通道。|
+|2004102|OFFLINE\_AUTH\_DECRYPT\_OR\_PARSE\_FAILED|offline/license|License 解密或解析失败；native 返回码 1002。|重新联网鉴权；不要删除设备密钥，不上传原始 License。|
+|2004103|OFFLINE\_AUTH\_SIGNATURE\_INVALID|offline/license|License 签名无效；native 返回码 1003。|重新联网鉴权；若仍失败，检查后台签发配置。|
+|2004104|OFFLINE\_AUTH\_CLIENT\_PACKAGE\_OR\_DEVICE\_MISMATCH|offline/license|client、包名或设备绑定不匹配；native 返回码 1004。|检查包名、账号和设备绑定，重新鉴权。|
+|2004105|OFFLINE\_AUTH\_MODEL\_KEY\_EMPTY|offline/license|模型密钥为空；native 返回码 1005。|检查账号离线授权范围，重新鉴权。|
+|2004106|OFFLINE\_AUTH\_EXPIRED\_OR\_NOT\_YET\_VALID|offline/license|License 已过期或尚未生效；native 返回码 1006。|联网重新签发 License 后再使用离线能力。|
+|2004107|OFFLINE\_AUTH\_UNSUPPORTED|offline/license|License 版本或算法不支持；native 返回码 1007。|升级 SDK 或联系后台确认签发格式。|
+|2004108|OFFLINE\_AUTH\_UNAUTHORIZED\_SCOPE\_OR\_MODEL|offline/license|当前 scope 或模型未授权；native 返回码 1008。|检查账号授权范围，重新鉴权或联系后台开通。|
+|2004199|OFFLINE\_AUTH\_INTERNAL\_ERROR|offline/license|离线 License 鉴权内部错误或未知 native 返回码。|记录诊断，联网重试；持续失败时提交脱敏日志排查。|
 
 补充说明：
 
-- 离线翻译在底层失败时，会按阶段映射为统一错误码：`tts -> 2001109 / TTS_SYNTHESIS_ERROR`，`translation/asr -> 2001110 / TRANSLATION_ERROR`。底层组件码保留在 `actualErrorCode` 中。
-- 离线 License 鉴权失败不会导致在线 `verifyAuth(_:)` 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 `error.code` 统一映射为 `2001102 / AUTHENTICATION_FAILED`，offlineLib 组件码写入 `error.actualErrorCode`，native LicenseCore 返回码写入 `error.actualErrorMessage`。
-- License 签发响应可能返回 `license_id` 或 `licenseId`。SDK 仅可将脱敏后的 `licenseId` 用于诊断关联，不应输出原始 License、`clientSecret` 或设备私钥。
+- 离线翻译在底层失败时，会按阶段映射为统一错误码：tts \-\> 2001109 / TTS\_SYNTHESIS\_ERROR，translation/asr \-\> 2001110 / TRANSLATION\_ERROR。底层组件码保留在 actualErrorCode 中。
+
+- 离线 License 鉴权失败不会导致在线 verifyAuth\(\_:\) 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 error\.code 统一映射为 2001102 / AUTHENTICATION\_FAILED，offlineLib 组件码写入 error\.actualErrorCode，native LicenseCore 返回码写入 error\.actualErrorMessage。
+
+- License 签发响应可能返回 license\_id 或 licenseId。SDK 仅可将脱敏后的 licenseId 用于诊断关联，不应输出原始 License、clientSecret 或设备私钥。
 
 ---
 
-## 13. 离线模型下载监听器
+## 离线模型下载监听器
 
-### 13.1 `TmkOfflineModelPackageState`
+### 13\.1 TmkOfflineModelPackageState
 
-```swift
+```Plain Text
 public enum TmkOfflineModelPackageState: String {
     case ready
     case needsDownload
@@ -2010,20 +2253,20 @@ public enum TmkOfflineModelPackageState: String {
 
 取值说明：
 
-| 值 | 含义 |
-| --- | --- |
-| `ready` | 已准备完成 |
-| `needsDownload` | 尚未下载，需要下载 |
-| `needsUpdate` | 本地版本过旧，需要更新 |
-| `resumable` | 可继续下载 |
-| `downloading` | 下载中 |
-| `unzipping` | 解压中 |
-| `failed` | 处理失败 |
-| `cancelled` | 已取消 |
+|值|含义|
+|---|---|
+|ready|已准备完成|
+|needsDownload|尚未下载，需要下载|
+|needsUpdate|本地版本过旧，需要更新|
+|resumable|可继续下载|
+|downloading|下载中|
+|unzipping|解压中|
+|failed|处理失败|
+|cancelled|已取消|
 
-### 13.2 `TmkOfflineModelPackageInfo`
+### 13\.2 TmkOfflineModelPackageInfo
 
-```swift
+```Plain Text
 public struct TmkOfflineModelPackageInfo {
     public let packageKey: String
     public let type: String
@@ -2040,26 +2283,41 @@ public struct TmkOfflineModelPackageInfo {
 
 字段说明：
 
-- `packageKey`
-  - 资源包键，例如 `asr/zh`。
-- `type`
-  - 包类型，例如 `asr`、`mt`、`tts`。
-- `name`
-  - 包名称，例如 `zh`、`zh2en`。
-- `state`
-  - 当前资源包状态。
-- `index` / `total`
-  - 当前批次中的序号和总数。
-- `downloadedBytes` / `totalBytes`
-  - 下载进度。
-- `unzipProgress`
-  - 解压进度，范围 `0.0 ~ 1.0`。
-- `localDirectory`
-  - 本地目录。
+- packageKey
 
-### 13.3 `TmkOfflineModelDownloadListener`
+    - 资源包键，例如 asr/zh。
 
-```swift
+- type
+
+    - 包类型，例如 asr、mt、tts。
+
+- name
+
+    - 包名称，例如 zh、zh2en。
+
+- state
+
+    - 当前资源包状态。
+
+- index / total
+
+    - 当前批次中的序号和总数。
+
+- downloadedBytes / totalBytes
+
+    - 下载进度。
+
+- unzipProgress
+
+    - 解压进度，范围 0\.0 \~ 1\.0。
+
+- localDirectory
+
+    - 本地目录。
+
+### 13\.3 TmkOfflineModelDownloadListener
+
+```Plain Text
 public protocol TmkOfflineModelDownloadListener: AnyObject {
     func onOfflineModelEvent(name: String, args: Any?)
     func onOfflineModelDownloadProgress(fileName: String, index: Int, total: Int, downloaded: Int64, fileTotal: Int64)
@@ -2072,90 +2330,120 @@ public protocol TmkOfflineModelDownloadListener: AnyObject {
 
 回调线程：
 
-- `TmkOfflineModelDownloadListener` 的所有回调都会在主线程回调。
+- TmkOfflineModelDownloadListener 的所有回调都会在主线程回调。
 
 各回调说明：
 
-- `onOfflineModelEvent(name:args:)`
-  - 下载过程中的通用事件回调。
-  - `name` 为事件名。
-  - `args` 可能为 `nil`，也可能为简单说明对象。业务方不应强依赖其具体结构。
+- onOfflineModelEvent\(name:args:\)
 
-- `onOfflineModelDownloadProgress(fileName:index:total:downloaded:fileTotal:)`
-  - 下载进度回调。
-  - `fileName`：当前资源包名称。
-  - `index`：当前资源包在本次下载批次中的序号，通常从 `1` 开始。
-  - `total`：当前批次总包数。
-  - `downloaded`：当前包已下载字节数。
-  - `fileTotal`：当前包总字节数；当总大小未知时，可能为 `-1`。
+    - 下载过程中的通用事件回调。
 
-- `onOfflineModelUnzipProgress(fileName:progress:)`
-  - 解压进度回调。
-  - `progress` 范围为 `0.0 ~ 1.0`。
+    - name 为事件名。
 
-- `onOfflineModelReady()`
-  - 当前批次所需模型均已准备完成。
+    - args 可能为 nil，也可能为简单说明对象。业务方不应强依赖其具体结构。
 
-- `onOfflineModelPackageInfosChanged(_:)`
-  - 整批资源包状态变化回调。
-  - `packages` 中每个 `TmkOfflineModelPackageInfo.state` 可能取值：
-    - `ready`：已就绪
-    - `needsDownload`：需要下载
-    - `needsUpdate`：需要更新
-    - `resumable`：可继续下载
-    - `downloading`：下载中
-    - `unzipping`：解压中
-    - `failed`：失败
-    - `cancelled`：已取消
+- onOfflineModelDownloadProgress\(fileName:index:total:downloaded:fileTotal:\)
 
-- `onOfflineModelError(_:)`
-  - 下载或解压过程中的统一错误回调。
+    - 下载进度回调。
+
+    - fileName：当前资源包名称。
+
+    - index：当前资源包在本次下载批次中的序号，通常从 1 开始。
+
+    - total：当前批次总包数。
+
+    - downloaded：当前包已下载字节数。
+
+    - fileTotal：当前包总字节数；当总大小未知时，可能为 \-1。
+
+- onOfflineModelUnzipProgress\(fileName:progress:\)
+
+    - 解压进度回调。
+
+    - progress 范围为 0\.0 \~ 1\.0。
+
+- onOfflineModelReady\(\)
+
+    - 当前批次所需模型均已准备完成。
+
+- onOfflineModelPackageInfosChanged\(\_:\)
+
+    - 整批资源包状态变化回调。
+
+    - packages 中每个 TmkOfflineModelPackageInfo\.state 可能取值：
+
+        - ready：已就绪
+
+        - needsDownload：需要下载
+
+        - needsUpdate：需要更新
+
+        - resumable：可继续下载
+
+        - downloading：下载中
+
+        - unzipping：解压中
+
+        - failed：失败
+
+        - cancelled：已取消
+
+- onOfflineModelError\(\_:\)
+
+    - 下载或解压过程中的统一错误回调。
 
 ---
 
-## 14. 诊断能力
+## 诊断能力
 
-### 14.1 `getDiagnosisDirectoryURL()`
+### 14\.1 getDiagnosisDirectoryURL\(\)
 
-```swift
+```Plain Text
 public func getDiagnosisDirectoryURL() -> URL?
 ```
 
 返回值：
 
 - 诊断目录 URL。
-- 如果当前没有诊断目录，返回 `nil`。
+
+- 如果当前没有诊断目录，返回 nil。
 
 说明：
 
-- 只有在 `setDiagnosisEnabled(true)` 后，SDK 才会产生诊断文件。
+- 只有在 setDiagnosisEnabled\(true\) 后，SDK 才会产生诊断文件。
+
 - 目录中可能包含日志、诊断音频等排障信息。
+
 - 分享或上传前，建议由业务方确认数据合规。
-- 诊断日志可能包含 `licenseId`、错误码、模型版本、包名和耗时等排障字段；不应包含原始 License、`clientSecret`、设备私钥或完整用户隐私数据。
+
+- 诊断日志可能包含 licenseId、错误码、模型版本、包名和耗时等排障字段；不应包含原始 License、clientSecret、设备私钥或完整用户隐私数据。
+
 - 如需上传诊断目录，建议业务侧先完成用户授权、脱敏和访问控制。
 
 示例：
 
-```swift
+```Plain Text
 guard let diagnosisURL = TmkTranslationSDK.shared.getDiagnosisDirectoryURL() else {
     return
 }
 print(diagnosisURL)
 ```
 
-### 14.2 数据安全与凭据管理
+### 14\.2 数据安全与凭据管理
 
-- `appId` / `clientSecret` 是业务鉴权凭据，建议通过独立配置或 CI 注入，避免写入公开仓库。
-- `clientSecret` 会参与本地 License 加密/解密，变更后旧 License 可能无法继续解密。SDK 会尝试重新请求 License；如果设备处于离线状态，业务侧应提示用户联网后重新调用 `verifyAuth(_:)`。
-- 设备密钥由 `tmk-offline` 组件维护，密钥 tag 通过组件接口获取。业务侧不应硬编码 tag，也不应在 Release 版本调用调试清理能力。
+- appId / clientSecret 是业务鉴权凭据，建议通过独立配置或 CI 注入，避免写入公开仓库。
+
+- clientSecret 会参与本地 License 加密/解密，变更后旧 License 可能无法继续解密。SDK 会尝试重新请求 License；如果设备处于离线状态，业务侧应提示用户联网后重新调用 verifyAuth\(\_:\)。
+
+- 设备密钥由 tmk\-offline 组件维护，密钥 tag 通过组件接口获取。业务侧不应硬编码 tag，也不应在 Release 版本调用调试清理能力。
 
 ---
 
-## 15. PCM 工具
+## PCM 工具
 
-`TmkTranslationPCMTools` 提供常用 PCM 工具方法：
+TmkTranslationPCMTools 提供常用 PCM 工具方法：
 
-```swift
+```Plain Text
 public enum TmkTranslationPCMTools {
     public static func mixStereo16LE(left: Data, right: Data) -> Data?
     public static func mixMonoToStereo16LE(mono: Data, isLeft: Bool) -> Data?
@@ -2167,24 +2455,33 @@ public enum TmkTranslationPCMTools {
 
 用途说明：
 
-- `mixStereo16LE(left:right:)`
-  - 将左右单声道 PCM 合成为立体声交错 PCM。
-- `mixMonoToStereo16LE(mono:isLeft:)`
-  - 把单声道复制到左或右声道，生成立体声。
-- `splitStereoInterleaved16LE(_:)`
-  - 将立体声交错 PCM 拆成左右单声道。
-- `pcm16LEToFloat(_:)`
-  - 16-bit PCM 转浮点数组。
-- `floatToPCM16LE(_:)`
-  - 浮点数组转 16-bit PCM。
+- mixStereo16LE\(left:right:\)
+
+    - 将左右单声道 PCM 合成为立体声交错 PCM。
+
+- mixMonoToStereo16LE\(mono:isLeft:\)
+
+    - 把单声道复制到左或右声道，生成立体声。
+
+- splitStereoInterleaved16LE\(\_:\)
+
+    - 将立体声交错 PCM 拆成左右单声道。
+
+- pcm16LEToFloat\(\_:\)
+
+    - 16\-bit PCM 转浮点数组。
+
+- floatToPCM16LE\(\_:\)
+
+    - 浮点数组转 16\-bit PCM。
 
 ---
 
-## 16. 可取消请求句柄
+## 可取消请求句柄
 
-### 16.1 `TmkSDKCancellable`
+### 16\.1 TmkSDKCancellable
 
-```swift
+```Plain Text
 public protocol TmkSDKCancellable {
     func cancel()
 }
@@ -2194,59 +2491,66 @@ public protocol TmkSDKCancellable {
 
 - 用于取消未完成的异步请求，例如语言列表请求、房间关闭请求等。
 
-### 16.2 `TmkAnySDKCancellable`
+### 16\.2 TmkAnySDKCancellable
 
-```swift
+```Plain Text
 public final class TmkAnySDKCancellable: TmkSDKCancellable {
     public init(onCancel: @escaping () -> Void)
     public func cancel()
 }
 ```
 
-一般业务方不需要主动创建，通常只需要持有 SDK 返回的 `TmkSDKCancellable?` 即可。
+一般业务方不需要主动创建，通常只需要持有 SDK 返回的 TmkSDKCancellable? 即可。
 
 ---
 
-## 17. 资源释放与生命周期
+## 资源释放与生命周期
 
-### `releaseChannel()`
+### releaseChannel\(\)
 
-```swift
+```Plain Text
 public func releaseChannel()
 ```
 
 说明：
 
 - 释放当前翻译通道与当前会话相关资源。
+
 - 会停止并释放当前通道引擎，取消未完成建房请求，异步关闭当前在线房间，并清理离线模型下载管理器等会话状态。
-- 不会清空 `sdkInit` 的全局配置，也不会清空鉴权状态。
+
+- 不会清空 sdkInit 的全局配置，也不会清空鉴权状态。
+
 - 释放后可以重新创建新通道。
-- 在线模式下，如果当前通道绑定了已创建的房间，SDK 会 fire-and-forget 调用关房流程；业务侧不需要再对同一房间重复调用 `closeRoom(...)`。
 
-### `destroy()`
+- 在线模式下，如果当前通道绑定了已创建的房间，SDK 会 fire\-and\-forget 调用关房流程；业务侧不需要再对同一房间重复调用 closeRoom\(\.\.\.\)。
 
-```swift
+### destroy\(\)
+
+```Plain Text
 public func destroy()
 ```
 
 说明：
 
 - 释放全局资源。
+
 - 会释放当前通道、清空鉴权状态、清空全局配置、关闭诊断与网络监听。
-- 调用后如果要继续使用 SDK，必须重新执行 `sdkInit(_:)`。
+
+- 调用后如果要继续使用 SDK，必须重新执行 sdkInit\(\_:\)。
 
 建议：
 
-- 页面级退出当前翻译会话时，优先使用 `releaseChannel()`。
-- 应用彻底退出 SDK 使用场景时，再调用 `destroy()`。
+- 页面级退出当前翻译会话时，优先使用 releaseChannel\(\)。
+
+- 应用彻底退出 SDK 使用场景时，再调用 destroy\(\)。
 
 ---
 
-## 18. 最小接入示例
+## 最小接入示例
 
-### 18.1 在线收听最小示例
+### 18\.1 在线收听最小示例
 
-```swift
+```Plain Text
 import TmkTranslationSDK
 
 final class OnlineListenHandler: TmkTranslationListener {
@@ -2323,11 +2627,13 @@ TmkTranslationSDK.shared.verifyAuth { result in
         print(error.message)
     }
 }
+//关闭引擎
+TmkTranslationSDK.releaseChannel()
 ```
 
-### 18.2 离线收听最小示例
+### 18\.2 离线收听最小示例
 
-```swift
+```Plain Text
 import TmkTranslationSDK
 
 let modelRootDirectory = "/path/to/offline_models"
@@ -2374,101 +2680,111 @@ TmkTranslationSDK.shared.verifyAuth { result in
         print(error.message)
     }
 }
+//关闭引擎
+TmkTranslationSDK.releaseChannel()
 ```
 
-### 18.3 一对一模式与收听模式的区别
+### 18\.3 一对一模式与收听模式的区别
 
-| 项目 | 收听模式 | 一对一模式 |
-| --- | --- | --- |
-| `Scenario` | `.listen` | `.oneToOne` |
-| `pcmChannels` | `1` | `2` |
-| 在线是否建房 | 是 | 是 |
-| 离线是否建房 | 否 | 否 |
+|项目|收听模式|一对一模式|
+|---|---|---|
+|Scenario|\.listen|\.oneToOne|
+|pcmChannels|1|2|
+|在线是否建房|是|是|
+|离线是否建房|否|否|
 
 ---
 
-## 19. 常见问题
+## 常见问题
 
-### 19.1 为什么在线能力需要先调用 `verifyAuth(_:)`？
+### 19\.1 为什么在线能力需要先调用 verifyAuth\(\_:\)？
 
-在线翻译、在线建房与在线建通道都依赖鉴权成功后得到的业务 token。在线语言列表是例外：完成 `sdkInit(_:)` 后即可请求，不依赖 `verifyAuth(_:)`。
+在线翻译、在线建房与在线建通道都依赖鉴权成功后得到的业务 token。在线语言列表是例外：完成 sdkInit\(\_:\) 后即可请求，不依赖 verifyAuth\(\_:\)。
 
-### 19.2 为什么离线翻译也建议先调用 `verifyAuth(_:)`？
+### 19\.2 为什么离线翻译也建议先调用 verifyAuth\(\_:\)？
 
-离线翻译并不是零前置条件直接可用。SDK 在 `verifyAuth(_:)` 中会先完成在线鉴权，并在在线鉴权成功后继续尝试离线鉴权，用于确认当前账号是否开通离线翻译能力，并获取离线能力所需的鉴权信息。
+离线翻译并不是零前置条件直接可用。SDK 在 verifyAuth\(\_:\) 中会先完成在线鉴权，并在在线鉴权成功后继续尝试离线鉴权，用于确认当前账号是否开通离线翻译能力，并获取离线能力所需的鉴权信息。
 
-### 19.3 为什么离线模型下载成功过，之后又可能不能使用？
+### 19\.3 为什么离线模型下载成功过，之后又可能不能使用？
 
 常见原因包括：
 
 - 当前账号已不具备离线能力
+
 - 本地模型目录被删除或不完整
+
 - 模型根目录变更
+
 - 本次创建通道时所需语言对或场景与已下载模型不匹配
 
-建议在创建离线通道前先调用 `isOfflineModelReady(...)` 检查。
+建议在创建离线通道前先调用 isOfflineModelReady\(\.\.\.\) 检查。
 
-### 19.4 为什么在线和离线的语言 code 不完全一样？
+### 19\.4 为什么在线和离线的语言 code 不完全一样？
 
-在线语言通常使用更完整的 locale 代码，例如 `zh-CN`、`en-US`；离线语言通常使用短码，例如 `zh`、`en`。接入时请始终使用对应语言列表接口返回的实际 code。
+在线语言通常使用更完整的 locale 代码，例如 zh\-CN、en\-US；离线语言通常使用短码，例如 zh、en。接入时请始终使用对应语言列表接口返回的实际 code。
 
-### 19.5 为什么当前建议使用 `16000` 采样率？
+### 19\.5 为什么当前建议使用 16000 采样率？
 
-当前 SDK、Demo 和自动化测试主流程都以 `16000 Hz` 为准。其他采样率暂未完成完整兼容性验证，正式接入建议优先使用 `16000`。
+当前 SDK、Demo 和自动化测试主流程都以 16000 Hz 为准。其他采样率暂未完成完整兼容性验证，正式接入建议优先使用 16000。
 
-### 19.6 为什么离线一对一模式需要双声道输入？
+### 19\.6 为什么离线一对一模式需要双声道输入？
 
 一对一模式会把左右声道视为两路独立输入：
 
 - 左声道：一侧说话人
+
 - 右声道：另一侧说话人
 
-因此一对一模式应设置 `pcmChannels = 2`，并输入正确的双声道 PCM。
+因此一对一模式应设置 pcmChannels = 2，并输入正确的双声道 PCM。
 
-### 19.7 为什么 `onRecognized(...)` 和 `onTranslate(...)` 会多次回调？
+### 19\.7 为什么 onRecognized\(\.\.\.\) 和 onTranslate\(\.\.\.\) 会多次回调？
 
 这两个回调都支持增量结果：
 
-- `isFinal == false`：中间过程结果
-- `isFinal == true`：本段最终结果
+- isFinal == false：中间过程结果
 
-业务方应以 `isFinal` 或 `result.isLast` 判断当前结果是否结束。
+- isFinal == true：本段最终结果
 
-### 19.8 `releaseChannel()` 和 `destroy()` 有什么区别？
+业务方应以 isFinal 或 result\.isLast 判断当前结果是否结束。
 
-- `releaseChannel()`：释放当前翻译会话相关资源，包含当前通道、未完成建房请求、在线房间关闭和离线模型下载管理器等会话状态。下次创建通道前建议先调用。
-- `destroy()`：释放 SDK 全局资源。调用后若要继续使用，必须重新 `sdkInit(_:)`，并根据业务重新鉴权。
+### 19\.8 releaseChannel\(\) 和 destroy\(\) 有什么区别？
 
-### 19.9 `auto` / `mix` 可以直接用于生产吗？
+- releaseChannel\(\)：释放当前翻译会话相关资源，包含当前通道、未完成建房请求、在线房间关闭和离线模型下载管理器等会话状态。下次创建通道前建议先调用。
 
-当前可以传入，但实际仍会落到在线引擎执行。如果你需要明确行为，建议直接使用 `.online` 或 `.offline`。
+- destroy\(\)：释放 SDK 全局资源。调用后若要继续使用，必须重新 sdkInit\(\_:\)，并根据业务重新鉴权。
 
-### 19.10 `TmkTranslationMessageTunnel` 离线可以用吗？
+### 19\.9 auto / mix 可以直接用于生产吗？
 
-不可以。`TmkTranslationMessageTunnel` 仅在线翻译使用，离线翻译会忽略该配置。
+当前可以传入，但实际仍会落到在线引擎执行。如果你需要明确行为，建议直接使用 \.online 或 \.offline。
 
-### 19.11 `isOfflineTranslationSupported()` 返回 `false` 怎么办？
+### 19\.10 TmkTranslationMessageTunnel 离线可以用吗？
 
-说明当前账号或当前鉴权上下文不支持离线翻译。即使 `verifyAuth(_:)` 已成功，只要离线鉴权未成功，当前接口仍可能返回 `false`。此时不能创建可用的离线翻译通道。请先确认：
+不可以。TmkTranslationMessageTunnel 仅在线翻译使用，离线翻译会忽略该配置。
 
-- 已成功调用 `verifyAuth(_:)`
+### 19\.11 isOfflineTranslationSupported\(\) 返回 false 怎么办？
+
+说明当前账号或当前鉴权上下文不支持离线翻译。即使 verifyAuth\(\_:\) 已成功，只要离线鉴权未成功，当前接口仍可能返回 false。此时不能创建可用的离线翻译通道。请先确认：
+
+- 已成功调用 verifyAuth\(\_:\)
+
 - 当前环境配置正确
+
 - 账号已开通离线能力
 
-### 19.12 为什么切换新房间或新通道前建议先释放旧资源？
+### 19\.12 为什么切换新房间或新通道前建议先释放旧资源？
 
-当前 SDK 使用时建议遵循单房间、单通道模型。创建新的翻译会话前，建议先调用 `TmkTranslationSDK.shared.releaseChannel()` 释放旧会话，避免旧资源仍占用网络、音频、房间或状态机上下文。
+当前 SDK 使用时建议遵循单房间、单通道模型。创建新的翻译会话前，建议先调用 TmkTranslationSDK\.shared\.releaseChannel\(\) 释放旧会话，避免旧资源仍占用网络、音频、房间或状态机上下文。
 
-### 19.13 离线 License 解密或解析失败怎么办？
+### 19\.13 离线 License 解密或解析失败怎么办？
 
-如果本地 License 因密钥变更、历史版本兼容、设备绑定变化等原因解密或解析失败，SDK 会清理本地离线授权状态并尝试重新请求 License。若当前无网络或后台签发失败，在线 `verifyAuth(_:)` 仍以在线鉴权结果为准；离线能力会保持不可用，业务侧应提示用户联网后重试离线能力。不要删除 Keychain 中的设备密钥，也不要在 Release 版本调用调试清理接口。
+如果本地 License 因密钥变更、历史版本兼容、设备绑定变化等原因解密或解析失败，SDK 会清理本地离线授权状态并尝试重新请求 License。若当前无网络或后台签发失败，在线 verifyAuth\(\_:\) 仍以在线鉴权结果为准；离线能力会保持不可用，业务侧应提示用户联网后重试离线能力。不要删除 Keychain 中的设备密钥，也不要在 Release 版本调用调试清理接口。
 
-### 19.14 `clientSecret` 变更后离线 License 还能用吗？
+### 19\.14 clientSecret 变更后离线 License 还能用吗？
 
-旧 License 可能无法继续解密。SDK 会自动走重新签发流程，联网成功后即可恢复；离线无网络时无法重新签发，业务侧应提示用户联网重新鉴权。`clientSecret` 不应写入日志、诊断附件或用户可见错误信息。
+旧 License 可能无法继续解密。SDK 会自动走重新签发流程，联网成功后即可恢复；离线无网络时无法重新签发，业务侧应提示用户联网重新鉴权。clientSecret 不应写入日志、诊断附件或用户可见错误信息。
 
 ---
 
-## 20. 版本信息
+## 版本信息
 
-当前文档适配 `TmkTranslationSDK iOS v1.2.0`。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
+当前文档适配 TmkTranslationSDK iOS v1\.3\.1。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
