@@ -560,11 +560,11 @@ public enum TmkRoomScenario {
 
 ### TmkOnlineTranslateEngine
 
-```Plain Text
-public enum TmkOnlineTranslateEngine: String {
-    case automatic = ""
-    case fast = "g_001"
-    case accurate = "o_001"
+```Swift
+public enum TmkOnlineTranslateEngine: Equatable, Sendable, CaseIterable {
+    case automatic
+    case fast
+    case accurate
 }
 ```
 
@@ -593,29 +593,29 @@ TmkTranslateDeliveryMode
 
 ### TmkOnlineRecognizeEngine
 
-```Plain Text
-public enum TmkOnlineRecognizeEngine: String, Equatable, Sendable, CaseIterable {
-    case `default` = ""       // 不传，由服务端决定识别链路
-    case endToEnd = "d_004"   // 端到端引擎：语音同时到识别和翻译（E2E / CLASI 内部翻译）
-    case threeStage = "m_001" // 三段式引擎：识别、翻译到 TTS
+```Swift
+public enum TmkOnlineRecognizeEngine: Equatable, Sendable, CaseIterable {
+    case `default`    // 不指定，由服务端决定识别链路
+    case endToEnd     // 端到端引擎：语音同时到识别和翻译
+    case threeStage   // 三段式引擎：识别、翻译到 TTS
 }
 ```
 
 含义：
 
 - `default`：不指定识别引擎，由服务端决定（默认值）。
-- `endToEnd`（d_004）：端到端链路，语音直接完成识别+翻译（CLASI 内部翻译），此时 `translateEngine` 不参与。
-- `threeStage`（m_001）：三段式链路，还需配合 `translateEngine` 决定翻译方式。
+- `endToEnd`：端到端链路，语音直接完成识别和翻译，此时 `translateEngine` 不参与。
+- `threeStage`：三段式链路，还需配合 `translateEngine` 决定翻译方式。
 
 `recognizeEngine` 与 `translateEngine` 的组合关系：
 
 | 识别链路 | 翻译方式 | recognizeEngine | translateEngine |
 |---|---|---|---|
-| E2E 端到端 | CLASI 内部翻译 | `.endToEnd`（d_004）| 忽略 |
-| 三段式 | 普通 MT | `.threeStage`（m_001）| `.fast`（g_001）|
-| 三段式 | LLM | `.threeStage`（m_001）| `.accurate`（o_001）|
+| E2E 端到端 | 内部翻译 | `.endToEnd` | 忽略 |
+| 三段式 | 普通 MT | `.threeStage` | `.fast` |
+| 三段式 | LLM | `.threeStage` | `.accurate` |
 
-> 注：选择 `.endToEnd`（d_004）时房间采用端到端链路，`updateTranslateEngine(_:)` 调用不会生效；选择 `.threeStage`（m_001）时需同时设置 `translateEngine` 才能确定使用普通 MT 还是 LLM。
+> 注：选择 `.endToEnd` 时房间采用端到端链路，`updateTranslateEngine(_:)` 调用不会生效；选择 `.threeStage` 时需同时设置 `translateEngine` 才能确定使用普通 MT 还是 LLM。
 
 ### TmkTranslationRoomDialogResponse
 
@@ -726,8 +726,9 @@ public struct TmkTranslationRoomConfig {
     public var speakers: [TmkSpeaker]?
     public var translateEngine: TmkOnlineTranslateEngine
     public var recognizeEngine: TmkOnlineRecognizeEngine
-    public var translateModel: TmkTranslateDeliveryMode
+    public var translateMode: TmkTranslateDeliveryMode
     public var dialogConversationAudioMode: TmkDialogConversationAudioMode
+    public var enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption?
 }
 
 public func createTmkTranslationRoom(
@@ -743,6 +744,15 @@ TmkDialogConversationAudioMode 用于在线一对一对话音频模式：
 |standard|标准一对一对话音频模式|
 |lowLatency|低延迟一对一对话音频模式，适合双方长时间连续说话、翻译和播报|
 
+TmkSensitiveWordRedactionOption 用于控制客户端可见文本的敏感词脱敏，实际语种和词库由 Vocat 配置决定：
+
+|枚举|请求值|
+|---|---|
+|enabled|true|
+|disabled|false|
+
+默认值为 `.enabled` 并下发 `true`；显式设置为 `nil` 时不下发字段，保持服务端默认行为。该字段同时用于 `room/dialog` 和 `room/mono-dialog`。
+
 兼容旧参数重载（已标记废弃 @available\(\*, deprecated\)，新接入请改用上面的 config: 重载）：
 
 ```Plain Text
@@ -755,7 +765,7 @@ public func createTmkTranslationRoom(
     messageTunnel: TmkTranslationMessageTunnel = .rtm,
     speakers: [TmkSpeaker]? = nil,
     translateEngine: TmkOnlineTranslateEngine = .automatic,
-    translateModel: TmkTranslateDeliveryMode = .default,
+    translateMode: TmkTranslateDeliveryMode = .default,
     _ callback: @escaping CreateRoomCallback
 )
 ```
