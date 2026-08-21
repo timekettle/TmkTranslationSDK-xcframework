@@ -425,7 +425,7 @@ public final class Builder {
 
 - 作用于鉴权、建房、建通道、语言列表、音色更新等所有网络请求，以及对应的 watchdog 超时。
 
-- 小于等于 0 时忽略，回退默认 15 秒。
+- 小于等于 0、`NaN` 或无穷大时忽略，回退默认 15 秒；配置在下一次 `sdkInit(_:)` 时生效。
 
 #### build\(\)
 
@@ -560,11 +560,11 @@ public enum TmkRoomScenario {
 
 ### TmkOnlineTranslateEngine
 
-```Swift
-public enum TmkOnlineTranslateEngine: Equatable, Sendable, CaseIterable {
-    case automatic
-    case fast
-    case accurate
+```Plain Text
+public enum TmkOnlineTranslateEngine: String {
+    case automatic = ""
+    case fast = "g_001"
+    case accurate = "o_001"
 }
 ```
 
@@ -593,29 +593,29 @@ TmkTranslateDeliveryMode
 
 ### TmkOnlineRecognizeEngine
 
-```Swift
-public enum TmkOnlineRecognizeEngine: Equatable, Sendable, CaseIterable {
-    case `default`    // 不指定，由服务端决定识别链路
-    case endToEnd     // 端到端引擎：语音同时到识别和翻译
-    case threeStage   // 三段式引擎：识别、翻译到 TTS
+```Plain Text
+public enum TmkOnlineRecognizeEngine: String, Equatable, Sendable, CaseIterable {
+    case `default` = ""       // 不传，由服务端决定识别链路
+    case endToEnd = "d_004"   // 端到端引擎：语音同时到识别和翻译（E2E / CLASI 内部翻译）
+    case threeStage = "m_001" // 三段式引擎：识别、翻译到 TTS
 }
 ```
 
 含义：
 
 - `default`：不指定识别引擎，由服务端决定（默认值）。
-- `endToEnd`：端到端链路，语音直接完成识别和翻译，此时 `translateEngine` 不参与。
-- `threeStage`：三段式链路，还需配合 `translateEngine` 决定翻译方式。
+- `endToEnd`（d_004）：端到端链路，语音直接完成识别+翻译（CLASI 内部翻译），此时 `translateEngine` 不参与。
+- `threeStage`（m_001）：三段式链路，还需配合 `translateEngine` 决定翻译方式。
 
 `recognizeEngine` 与 `translateEngine` 的组合关系：
 
 | 识别链路 | 翻译方式 | recognizeEngine | translateEngine |
 |---|---|---|---|
-| E2E 端到端 | 内部翻译 | `.endToEnd` | 忽略 |
-| 三段式 | 普通 MT | `.threeStage` | `.fast` |
-| 三段式 | LLM | `.threeStage` | `.accurate` |
+| E2E 端到端 | CLASI 内部翻译 | `.endToEnd`（d_004）| 忽略 |
+| 三段式 | 普通 MT | `.threeStage`（m_001）| `.fast`（g_001）|
+| 三段式 | LLM | `.threeStage`（m_001）| `.accurate`（o_001）|
 
-> 注：选择 `.endToEnd` 时房间采用端到端链路，`updateTranslateEngine(_:)` 调用不会生效；选择 `.threeStage` 时需同时设置 `translateEngine` 才能确定使用普通 MT 还是 LLM。
+> 注：选择 `.endToEnd`（d_004）时房间采用端到端链路，`updateTranslateEngine(_:)` 调用不会生效；选择 `.threeStage`（m_001）时需同时设置 `translateEngine` 才能确定使用普通 MT 还是 LLM。
 
 ### TmkTranslationRoomDialogResponse
 
@@ -705,7 +705,7 @@ public func updateScenario(_ scenario: TmkRoomScenario,
 
 - 只在在线翻译中使用。
 
-- updateRoomLocale\(\.\.\.\) 用于运行中更新在线房间语言，在不重建房间的前提下生效。语言切换只影响切换后新建的气泡：正在进行的旧气泡会保留其创建时锁定的源/目标语言（旧气泡译文文本仍是旧语言，标签也应保持旧语言）；一对一场景下，sourceLocales 固定对应左声道、targetLocales 固定对应右声道，左右两侧气泡的源/目标语言方向各自正确。该接口的参数直接表示服务端左右路，不使用 TmkTranslationRoomConfig 的 sourceLang/targetLang 业务字段映射。业务侧无需为旧气泡手动纠正语言标签。
+- updateRoomLocale\(\.\.\.\) 用于运行中更新在线房间语言，在不重建房间的前提下生效。语言切换只影响切换后新建的气泡：正在进行的旧气泡会保留其创建时锁定的源/目标语言（旧气泡译文文本仍是旧语言，标签也应保持旧语言）；一对一场景下，sourceLocales 固定对应左声道、targetLocales 固定对应右声道，左右两侧气泡的源/目标语言方向各自正确。业务侧无需为旧气泡手动纠正语言标签。
 
 - updateTranslateEngine\(\.\.\.\) 用于运行中切换在线翻译引擎策略，回调在主线程触发；切换成功后通常对后续服务端处理生效。
 
@@ -726,18 +726,15 @@ public struct TmkTranslationRoomConfig {
     public var speakers: [TmkSpeaker]?
     public var translateEngine: TmkOnlineTranslateEngine
     public var recognizeEngine: TmkOnlineRecognizeEngine
-    public var translateMode: TmkTranslateDeliveryMode
+    public var translateModel: TmkTranslateDeliveryMode
     public var dialogConversationAudioMode: TmkDialogConversationAudioMode
-    public var enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption?
 }
 
 public func createTmkTranslationRoom(
     config: TmkTranslationRoomConfig,
     _ callback: @escaping CreateRoomCallback
-) -> TmkSDKCancellable?
+)
 ```
-
-当 `channelScenario` 为 `.oneToOne` 时，配置中的 `sourceLang` 表示右路/对方语言，`targetLang` 表示左路/本机语言；SDK 建房时映射为 `left = targetLang`、`right = sourceLang`。双声道 PCM 的左路应对应 `targetLang`，右路应对应 `sourceLang`，业务侧无需手动交换字段。
 
 TmkDialogConversationAudioMode 用于在线一对一对话音频模式：
 
@@ -745,15 +742,6 @@ TmkDialogConversationAudioMode 用于在线一对一对话音频模式：
 |---|---|
 |standard|标准一对一对话音频模式|
 |lowLatency|低延迟一对一对话音频模式，适合双方长时间连续说话、翻译和播报|
-
-TmkSensitiveWordRedactionOption 用于控制客户端可见文本的敏感词脱敏，实际语种和词库由 Vocat 配置决定：
-
-|枚举|请求值|
-|---|---|
-|enabled|true|
-|disabled|false|
-
-默认值为 `.enabled` 并下发 `true`；显式设置为 `nil` 时不下发字段，保持服务端默认行为。该字段同时用于 `room/dialog` 和 `room/mono-dialog`。
 
 兼容旧参数重载（已标记废弃 @available\(\*, deprecated\)，新接入请改用上面的 config: 重载）：
 
@@ -767,7 +755,7 @@ public func createTmkTranslationRoom(
     messageTunnel: TmkTranslationMessageTunnel = .rtm,
     speakers: [TmkSpeaker]? = nil,
     translateEngine: TmkOnlineTranslateEngine = .automatic,
-    translateMode: TmkTranslateDeliveryMode = .default,
+    translateModel: TmkTranslateDeliveryMode = .default,
     _ callback: @escaping CreateRoomCallback
 )
 ```
@@ -776,11 +764,11 @@ public func createTmkTranslationRoom(
 
 - sourceLang
 
-    - 源语言代码，例如 zh\-CN。在 `.oneToOne` 场景中表示右路/对方语言。
+    - 源语言代码，例如 zh\-CN。
 
 - targetLang
 
-    - 目标语言代码，例如 en\-US。在 `.oneToOne` 场景中表示左路/本机语言。
+    - 目标语言代码，例如 en\-US。
 
 - scenario
 
@@ -1171,13 +1159,13 @@ public enum TmkOfflineAudioChannelMode {
 public func createTranslationChannel(
     _ config: TmkTranslationChannelConfig,
     callback: @escaping CreateChannelCallback
-) -> TmkSDKCancellable?
+)
 
 public func createTranslationChannel(
     _ config: TmkTranslationChannelConfig,
     listener: TmkTranslationListener?,
     callback: @escaping CreateChannelCallback
-) -> TmkSDKCancellable?
+)
 ```
 
 参数说明：
@@ -1196,7 +1184,7 @@ public func createTranslationChannel(
 
 返回值：
 
-- 返回 `TmkSDKCancellable?`。业务方可以忽略返回值；需要取消尚未完成的创建时调用 `cancel()`。
+- 无返回值。
 
 - 创建成功后，通过 callback\(\.success\(TmkTranslationChannel\)\) 返回通道对象。
 
@@ -1211,10 +1199,6 @@ public func createTranslationChannel(
     - mode = \.offline：离线引擎
 
 - SDK 会在创建成功后自动启动通道。
-
-- 创建新通道前会先释放当前旧通道；若新通道创建失败或被取消，旧通道不会恢复。
-
-- 取消只阻止尚未完成的后续动作和回调，并释放已经构造的新通道；已经完成的创建结果不会被撤销。
 
 ### 8\.8 在线通道创建示例
 
@@ -1625,7 +1609,7 @@ public func updateLanguages(
 public func updateTranslateMode(
     _ mode: TmkTranslateDeliveryMode,
     completion: @escaping (Result<Void, TmkTranslationError>) -> Void
-) -> TmkSDKCancellable?
+)
 
 @discardableResult
 public func updateScenario(
@@ -1662,8 +1646,6 @@ public func updateSpeaker(
 
     - 仅离线通道支持：切换近乎瞬时，不重建 pipeline；切到 stable 会立即停发中间态，切到 partial 下一段起生效。
 
-    - 离线底层不具备中途取消能力，返回 `nil`；调用方仍通过 completion 获取最终结果。
-
     - 在线通道：回调 \.failure\(\.engineNotSupported\)。
 
 - updateScenario\(\_:completion:\)
@@ -1673,8 +1655,6 @@ public func updateSpeaker(
     - 在线场景：向服务端发送 updateScenario 指令，有超时；返回真句柄，可取消。
 
     - 离线场景：升档前校验目标档位所需模型是否就绪（未就绪回 offlineModelNotReady），就绪则按需补建 MT/TTS；降档立即释放不再需要的 MT/TTS；ASR 全程常驻不打断流。成功后写回 config 的 capabilityTier，供 stop→start 重启时沿用。
-
-    - 离线场景返回 `nil`，表示底层操作不可取消；不影响 completion 的成功或失败回调。
 
 - updateSpeaker\(speakers:callback:\)
 
@@ -1791,10 +1771,6 @@ public protocol TmkTranslationListener: AnyObject {
 |bubble\_id|String|文本气泡 ID；离线由 SDK 独立生成|离线|
 |chunk\_id|String|文本分片 ID；离线由 SDK 生成|离线|
 |channel|String|1（离线收听）或 left/right（离线一对一）|离线|
-|audio\_route|TmkTranslatedAudioRoute|一对一低延迟单声道 TTS 所属翻译通道（left/right）；双声道 TTS 为 stereo|在线/离线|
-|speaker\_channel|String|在线一对一低延迟 TTS 的原始说话侧；用于诊断或关联来源，不用于决定本机播放哪一路翻译音频|在线|
-
-在线一对一低延迟模式应使用 `audio_route` 选择本机播放的翻译通道；`speaker_channel` 不应替代或反转该选择。`audio_route` 为 `stereo` 时，PCM 同时包含左右两路，应按业务选择拆分后播放。
 
 ### onError\(\_:\)
 
@@ -2215,177 +2191,61 @@ func onError(_ error: TmkTranslationError) {
 
 ### 12\.3 统一错误码表
 
-以下公共错误码、HTTP 状态细分码和后台业务码适用于 iOS SDK；iOS 专属组件码仅用于平台内的处理和脱敏诊断。业务 UI 主要消费 `error.code`；`actualErrorCode` / `actualErrorMessage` 只用于脱敏后的诊断排障。
+以下表格合并 SDK 统一错误码、离线组件诊断码和离线 License 鉴权组件码。业务 UI 主要消费 error\.code；actualErrorCode / actualErrorMessage 只用于脱敏后的诊断排障。
 
-#### 公共错误码
-
-##### 统一错误码表
-
-|code|constantName|分类|说明|处理契约|恢复策略|
-|---|---|---|---|---|---|
-|2001101|`SDK_NOT_INITIALIZED`|state|SDK 未初始化，调用方在未执行 `sdkInit` 前就使用了 SDK 能力。|App 停止当前流程并提示用户"SDK 未初始化，请重新进入页面"。|提示用户操作|
-|2001102|`AUTHENTICATION_FAILED`|caller|在线鉴权失败（token 校验失败/授权头格式非法/token 非法），或离线 License 鉴权不通过（过期/签名无效/scope 未授权等）。|在线：App 弹窗提示"鉴权失败，请重新鉴权"；离线：引导用户联网重试或检查账号权限。|提示用户操作|
-|2001103|`ROOM_CREATION_FAILED`|network|在线房间（dialog/mono-dialog）创建流程失败。|App 弹窗提示"房间创建失败，是否重试？"；连续失败 3 次后弹窗提示离开，记录诊断日志。|提示用户重试|
-|2001104|`CHANNEL_CREATION_FAILED`|rtcRtm|在线通道创建失败，或离线通道组装失败。|在线：App 弹窗提示"通道创建失败，是否重新创建？"；离线：提示"通道初始化失败，是否重新初始化？"并检查模型资源。|提示用户重试|
-|2001105|`ENGINE_NOT_SUPPORTED`|rtcRtm|当前 SDK、账号或配置不支持该引擎能力。|App 弹窗提示"当前引擎能力不支持"，停止当前流程。|不可恢复|
-|2001106|`INVALID_CONFIGURATION`|caller|配置非法，包括语言、声道、音色、`appId`、`channel` 等参数不合法。|App 弹窗提示具体配置错误项，引导用户修正后重试；不要用旧配置自动重复重试。|提示用户操作|
-|2001107|`NETWORK_UNAVAILABLE`|network|网络不可用；也可能出现在模型下载、鉴权、语言列表等网络请求失败场景。|启动期：App 提示"网络不可用，请检查网络"并提供重试按钮；运行期：App 仅通过 `onStateChanged(reconnecting)` 显示"网络恢复中…"横幅，不弹窗，SDK 自动重连。|App 自动重试（SDK 自动重连）|
-|2001108|`AUDIO_PROCESSING_ERROR`|audio|音频采集、播放、PCM 推流或音频会话异常。|App 停止录音/播放，弹窗提示"音频处理异常，请重新创建对话（在线）或重新初始化（离线）"。|提示用户重试|
-|2001109|`TTS_SYNTHESIS_ERROR`|rtcRtm|在线或离线 TTS 合成异常。|单句失败：App 做 Toast 提示"语音合成失败"，不弹窗、不中断通道；连续 3 句失败或通道级：App 弹窗提示"语音合成异常，是否重建通道？"。|单句：App 自动重试；通道级：提示用户重试|
-|2001110|`TRANSLATION_ERROR`|rtcRtm|在线翻译引擎异常，或离线 ASR 识别/MT 翻译阶段失败。|单句失败：App 做 Toast 提示"翻译失败"，不弹窗；通道级失败：App 弹窗提示"翻译异常，是否重建（在线）或重新初始化（离线）？"。|单句：App 自动重试；通道级：提示用户重试|
-|2001111|`SESSION_EXPIRED`|network|在线会话或 RTC/RTM token 已过期。|App 停止当前会话，弹窗提示"会话已过期，请重新创建对话"；不可复用旧 token。|提示用户操作|
-|2001112|`QUOTA_EXCEEDED`|network|账号或应用服务配额不足。|App 弹窗提示"配额不足"，停止当前流程；引导用户联系客服或升级套餐。|不可恢复（需联系客服）|
-|2001113|`INVALID_LANGUAGE_CODE`|caller|传入的语言代码不被当前模式支持。|App 弹窗提示"当前语言不支持，请重新选择"；在线重新创建对话，离线确认对应语种模型已下载后重新初始化。|提示用户操作|
-|2001114|`ENGINE_INITIALIZATION_FAILED`|rtcRtm|引擎初始化失败；离线 creation failed、load timeout 或模型加载超时。|App 弹窗提示"引擎初始化失败，是否重试？"；连续失败 3 次后提示用户检查 SDK 资源和离线模型完整性。|提示用户重试|
-|2001115|`BUFFER_OVERFLOW`|audio|音频输入或输出缓冲超过处理能力。|App 自动降低推流频率或重启采集；严重时弹窗提示"音频缓冲溢出，请重建通道"。|App 自动重试（降低频率）|
-|2001116|`THREAD_INTERRUPTED`|internal|工作线程被中断。|App 自动重试当前操作；若持续出现则弹窗提示"内部异常，请重新创建对话"并记录诊断日志。|App 自动重试|
-|2001117|`OFFLINE_MODEL_NOT_READY`|model|模型缺失、校验失败、下载失败、离线鉴权未通过或账号未开通离线能力。|App 引导用户下载/更新模型或重新鉴权；在模型就绪前不要直接启动离线通道。|提示用户操作|
-|2001999|`UNKNOWN_ERROR`|internal|未知错误或底层错误无法映射。|App 弹窗提示"发生未知错误，是否重新创建（在线）或重新初始化（离线）？"；记录诊断日志。|提示用户重试|
-|2002001|`NETWORK_INVALID_URL`|caller|网络 URL、模型下载 URL 或后台地址配置错误。|App 弹窗提示"网络地址配置错误"，停止当前流程，不重试。|不可恢复（需修复配置）|
-|2002002|`NETWORK_TRANSPORT_ERROR`|network|网络传输失败，包括 DNS、TLS、超时或模型下载失败。|App 弹窗提示"网络连接失败，是否重试？"；模型下载场景保留续传/重试入口。|提示用户重试|
-|2002003|`NETWORK_HTTP_STATUS_ERROR`|network|已被 HTTP 状态细分码取代，仅作为兼容兜底保留。|按下方 HTTP 状态细分码表处理；新代码不应依赖此码。|视 HTTP 状态码而定|
-|2002004|`NETWORK_RESPONSE_DECODING_ERROR`|network|响应、manifest 或语言列表解析失败。|App 弹窗提示"服务响应异常"，记录诊断日志。|不可恢复|
-|2002005|`NETWORK_BUSINESS_ERROR`|network|已被后台业务码细分码取代，仅作为兼容兜底保留。|按下方后台业务码细分表处理；新代码不应依赖此码。|视业务码而定|
-|2002006|`REQUEST_CANCELLED`|network|用户取消、页面退出、主动停止或音色设置被取消。|App 不弹错误框，仅恢复 UI 到已取消/已停止状态。|无需恢复|
-|2003002|`INVALID_STATE`|state|当前状态不允许操作；例如通道释放后继续调用。|重复停止可忽略；关键路径失败时 App 弹窗提示"状态异常，请重新创建（在线）或重新初始化（离线）"。|提示用户重试|
-|2003003|`DEPENDENCY_UNAVAILABLE`|rtcRtm|必要依赖、离线库或模型能力不可用。|App 弹窗提示"SDK 依赖异常，请检查资源完整性"，停止当前流程并记录诊断。|不可恢复|
-|2003004|`RTC_OPERATION_FAILED`|rtcRtm|RTC/RTM 入会、订阅、消息收发等实时链路操作失败（通用兜底）；封禁、加入失败、服务端拒绝和被踢已使用下方细分码。|App 弹窗提示"实时链路异常，是否重新创建或离开？"；未命中细分码时记录 `actualErrorCode` 排障。|提示用户重试|
-|2003005|`MESSAGE_DECODING_FAILED`|rtcRtm|在线/离线消息解析失败。|App 仅记录日志，不弹窗、不关闭通道。|App 自动重试（日志记录）|
-|2003006|`AUDIO_CHANNEL_CREATION_FAILED`|audio|音频通道创建失败。|App 停止采集，弹窗提示"音频通道创建失败，是否重建（在线）或重新初始化（离线）？"。|提示用户重试|
-|2003007|`TRACK_EVENT_NOT_CONFIGURED`|internal|埋点未配置。|不影响翻译主流程，App 可忽略或记录日志。|无需恢复|
-|2003008|`TRACK_EVENT_INVALID_EVENT_NAME`|caller|埋点事件名为空或非法。|不影响翻译主流程，App 可忽略或修正埋点配置。|无需恢复|
-|2003103|`RTC_BANNED_BY_SERVER`|rtcRtm|被服务端封禁（声网 connection reason 3）；状态原因仍为 `bannedByServer`。|App 弹窗提示"当前对话已被封禁，请离开"。|不可恢复|
-|2003104|`RTC_JOIN_FAILED`|rtcRtm|加入实时频道失败（声网 connection reason 4）；状态原因仍为 `serviceRejected`。|App 弹窗提示"加入频道失败，是否重试或检查网络？"。|提示用户重试|
-|2003110|`RTC_REJECTED_BY_SERVER`|rtcRtm|被服务端拒绝（声网 connection reason 10）；状态原因仍为 `serviceRejected`。|App 弹窗提示"服务端拒绝连接，是否重新创建或离开？"。|不可恢复|
-|2003123|`RTC_USER_BANNED`|rtcRtm|用户被踢出频道（声网 error code 123）。|App 弹窗提示"您已被移出对话，请离开"。|不可恢复|
-
-
-##### HTTP 状态细分码
-
-HTTP 非成功状态使用 `2002000 + HTTP 状态码` 映射为 SDK 错误码，原始状态码保留在 `actualErrorCode`，`actualErrorDomain` 为 `http`。
-
-|code|constantName|说明|处理契约|恢复策略|
+|code|constantName|适用范围/分类|说明|处理契约|
 |---|---|---|---|---|
-|2002400|`NETWORK_HTTP_BAD_REQUEST`|HTTP 400，请求参数错误。|App 不重试；检查请求参数是否正确。|不可恢复（需修复参数）|
-|2002401|`NETWORK_HTTP_UNAUTHORIZED`|HTTP 401，未授权。|App 重新发起鉴权流程，获取新 token 后重试原请求。|App 自动重试（重新鉴权后）|
-|2002403|`NETWORK_HTTP_FORBIDDEN`|HTTP 403，禁止访问。|App 不重试；提示用户"无访问权限，请联系客服"。|不可恢复（需联系客服）|
-|2002404|`NETWORK_HTTP_NOT_FOUND`|HTTP 404，资源不存在。|App 不重试；检查请求 URL 和资源标识。|不可恢复（需修复地址）|
-|2002408|`NETWORK_HTTP_REQUEST_TIMEOUT`|HTTP 408，请求超时。|App 自动重试原请求（最多 3 次），失败后提示用户"请求超时，请检查网络"。|App 自动重试|
-|2002429|`NETWORK_HTTP_TOO_MANY_REQUESTS`|HTTP 429，请求过于频繁。|App 按指数退避自动重试（初始 1s，最大 30s），失败后提示"请求过于频繁，请稍后重试"。|App 自动重试（退避后）|
-|2002500|`NETWORK_HTTP_SERVER_ERROR`|HTTP 500，服务端内部错误。|App 自动重试原请求（最多 3 次），失败后提示"服务异常，请稍后重试"。|App 自动重试|
-|2002502|`NETWORK_HTTP_BAD_GATEWAY`|HTTP 502，网关错误。|App 自动重试原请求（最多 3 次），失败后提示"网关异常，请稍后重试"。|App 自动重试|
-|2002503|`NETWORK_HTTP_SERVICE_UNAVAILABLE`|HTTP 503，服务不可用。|App 按指数退避自动重试（初始 1s，最大 30s），失败后提示"服务暂时不可用，请稍后重试"。|App 自动重试（退避后）|
-|2002504|`NETWORK_HTTP_GATEWAY_TIMEOUT`|HTTP 504，网关超时。|App 自动重试原请求（最多 3 次），失败后提示"网关超时，请检查网络"。|App 自动重试|
-|`2002xxx`|`HTTP_<status>`|未列出的 HTTP 状态码。|按状态码语义处理：4xx 不重试检查参数，5xx 自动重试；从 `actualErrorCode` 读取原始状态码。|视 HTTP 状态码而定|
-
-
-##### 后台业务码细分
-
-后台业务错误使用 `2004000 + 后台码` 映射为 SDK 错误码；未知后台码统一返回 `2007999`。原始后台码保留在 `actualErrorCode`，`actualErrorDomain` 为 `backend`。
-
-|后台码|SDK 错误码|constantName|说明|处理契约|恢复策略|
-|---|---|---|---|---|---|
-|1001|2005001|`BIZ_TOKEN_PARAM_LOST`|token 参数缺失。|App 提示"token 参数缺失，请检查鉴权参数"。|提示用户操作|
-|1002 / 1003 / 1005|2001102|`AUTHENTICATION_FAILED`|授权头格式非法、token 校验失败或 token 非法。|App 弹窗提示"鉴权失败，请重新鉴权"。|提示用户操作|
-|1004|2001111|`SESSION_EXPIRED`|token 已过期。|App 停止当前会话，弹窗提示"会话已过期，请重新创建对话"。|提示用户操作|
-|2000|2006000|`BIZ_PARAM_ERROR`|参数错误。|App 提示"请求参数错误，请检查配置"。|提示用户操作|
-|2001|2006001|`BIZ_PARAM_LOST`|参数缺失。|App 提示"请求参数缺失，请检查配置"。|提示用户操作|
-|2002|2006002|`BIZ_SERVER_BUSY`|服务端繁忙。|App 自动重试（最多 3 次）；失败后提示"服务繁忙，请稍后重试"。|App 自动重试|
-|2003|2006003|`BIZ_ILLEGAL_OPERATION`|非法操作。|App 提示"非法操作"并停止当前流程。|不可恢复|
-|2004|2006004|`BIZ_ROOM_STATUS_UNAVAILABLE`|房间状态不可用。|App 提示"房间状态不可用，请重新创建"。|提示用户重试|
-|2006|2006006|`BIZ_USER_NOT_EXISTS`|用户不存在。|App 提示"用户不存在，请检查账号"。|提示用户操作|
-|2007|2006007|`BIZ_ROOM_DATA_NOT_EXISTS`|房间数据不存在。|App 提示"房间数据不存在，请重新创建"。|提示用户重试|
-|2008|2006008|`BIZ_REGION_INVALID`|region 非法。|App 提示"region 非法，请检查区域配置"。|提示用户操作|
-|2011|2006011|`BIZ_NO_PERMISSION_OPERATE_ROOM`|无房间操作权限。|App 提示"无房间操作权限"。|不可恢复|
-|2014|2006014|`BIZ_ENGINE_PARAMS_INVALID`|引擎参数非法。|App 提示"引擎参数非法，请检查配置"。|提示用户操作|
-|2017|2006017|`BIZ_PERMISSION_DENIED`|权限不足。|App 提示"权限不足"并停止当前流程。|不可恢复|
-|3000|2007000|`BIZ_USER_IDENTITY_INVALID`|用户身份非法。|App 提示"用户身份非法"。|不可恢复|
-|3001|2007001|`BIZ_ROOM_NOT_EXIST`|房间不存在。|App 提示"房间不存在，请重新创建"。|提示用户重试|
-|其它|2007999|`BACKEND_BIZ_UNKNOWN`|未知后台业务码。|App 提示"服务端返回未知错误"，记录 `actualErrorCode` 排障后重试。|提示用户重试|
-
-补充说明：
-
-- 离线翻译在底层失败时，会按阶段映射为统一错误码：`tts` → `2001109` / `TTS_SYNTHESIS_ERROR`，`translation`/`asr` → `2001110` / `TRANSLATION_ERROR`。底层组件码保留在 `actualErrorCode` 中。
-- RTC 细分码保留原有的 `onStateChanged` 原因：`2003103` 对应 `bannedByServer`，`2003104` 与 `2003110` 对应 `serviceRejected`。未列出的 RTC 错误仍使用 `2003004`。
-
-**凭据安全：** License 签发响应可能返回 `license_id` 或 `licenseId`。SDK 仅可将脱敏后的 `licenseId` 用于诊断关联，不应输出原始 License、`clientSecret` 或设备私钥。
-
-
-#### iOS 专有错误码
-
-##### iOS 离线组件诊断码
-
-以下错误码为 iOS 离线组件 `TmkOfflineErrorCode` 的定义值。SDK 内部通过 `TmkTranslationError.from(_:)` 将其**映射为上方通用错误码**后回调 App；原始码保留在 `error.actualErrorCode` 中，仅用于诊断排障。
-
-|code|constantName|说明|上层映射码|处理契约|恢复策略|
-|---|---|---|---|---|---|
-|2004001|`OFFLINE_INVALID_ARGUMENT`|离线组件参数无效（modelDirectory/text 等为空或非法）。|2001106|作为 actualErrorCode 排障；App 检查配置参数，修正后重新初始化。|提示用户操作|
-|2004002|`OFFLINE_CREATION_FAILED`|离线引擎创建失败（ASR/MT/TTS Session 初始化失败）。|2001114|作为 actualErrorCode 排障；App 检查模型文件完整性，重新初始化离线通道。|提示用户操作|
-|2004003|`OFFLINE_OPERATION_FAILED`|离线引擎运行时操作失败（翻译/合成等执行异常）。|2001110 / 2001109|作为 actualErrorCode 排障；按 stage 判断：TTS 阶段→2001109，ASR/MT 阶段→2001110。|App 自动重试|
-|2004004|`OFFLINE_ENGINE_RELEASED`|离线引擎已释放后继续调用。|2003002|作为 actualErrorCode 排障；忽略退出后的回调或重新创建通道。|App 自动重试（日志记录）|
-|2004005|`OFFLINE_LOAD_TIMEOUT`|离线模型加载超时。|2001114|作为 actualErrorCode 排障；检查模型完整性并重新加载。|提示用户操作|
-
-
-##### iOS 离线 License 组件码
-
-离线 License 鉴权失败不会导致在线 `verifyAuth(_:)` 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 `error.code` 统一映射为 `2001102` / `AUTHENTICATION_FAILED`。组件码写入 `error.actualErrorCode`，native LicenseCore 返回码写入 `error.actualErrorMessage`。
-
-|code|constantName|native 返回码|说明|处理契约|恢复策略|
-|---|---|---|---|---|---|
-|2004101|`OFFLINE_AUTH_EMPTY_CONTENT`|1001|License 内容为空。|App 提示"离线 License 内容为空"，引导用户重新联网鉴权获取 License；不要继续启动离线通道。|提示用户操作|
-|2004102|`OFFLINE_AUTH_DECRYPT_OR_PARSE_FAILED`|1002|License 解密或解析失败。|App 提示"离线 License 解析失败"，引导用户重新联网鉴权；不要删除设备密钥，不上传原始 License。|提示用户操作|
-|2004103|`OFFLINE_AUTH_SIGNATURE_INVALID`|1003|License 签名无效。|App 提示"离线 License 签名无效"，引导用户重新联网鉴权；若仍失败，提示检查后台签发配置。|提示用户操作|
-|2004104|`OFFLINE_AUTH_CLIENT_PACKAGE_OR_DEVICE_MISMATCH`|1004|client、包名或设备绑定不匹配。|App 提示"设备绑定不匹配"，引导用户检查包名、账号和设备绑定后重新鉴权。|提示用户操作|
-|2004105|`OFFLINE_AUTH_MODEL_KEY_EMPTY`|1005|模型密钥为空。|App 提示"离线模型密钥为空"，引导用户检查账号离线授权范围后重新鉴权。|提示用户操作|
-|2004106|`OFFLINE_AUTH_EXPIRED_OR_NOT_YET_VALID`|1006|License 已过期或尚未生效。|App 提示"离线 License 已过期或未生效"，引导用户联网重新签发 License 后再使用离线能力。|提示用户操作|
-|2004107|`OFFLINE_AUTH_UNSUPPORTED`|1007|License 版本或算法不支持。|App 提示"离线 License 版本不支持"，引导用户升级 SDK 或联系后台确认签发格式。|提示用户操作|
-|2004108|`OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL`|1008|当前 scope 或模型未授权。|App 提示"离线授权范围不足"，引导用户检查账号授权范围，重新鉴权或联系后台开通。|提示用户操作|
-|2004199|`OFFLINE_AUTH_INTERNAL_ERROR`|1099/unknown|内部错误或未知 native 返回码。|App 提示"离线鉴权内部错误"，引导用户联网重试；持续失败时记录脱敏日志提交排查。|提示用户重试|
-
-
-##### iOS 设备密钥错误
-
-iOS 独有的 Security.framework Keychain 操作错误，仅适用于 iOS 平台。
-
-|code|constantName|说明|处理契约|恢复策略|
-|---|---|---|---|---|
-|2001201|`DEVICE_KEY_READ_FAILED`|设备密钥读取失败，且 Security.framework 错误未能进一步分类。|检查设备 Keychain 状态并重试；结合 actualErrorCode 排查。|提示用户操作|
-|2001202|`DEVICE_KEY_CREATION_FAILED`|设备密钥创建失败。|检查系统 Security.framework 能力并重试；不要删除已有 License 绑定密钥。|提示用户操作|
-|2001203|`DEVICE_KEY_INVALID`|设备密钥或 Security.framework 参数无效。|检查 SDK、系统版本和密钥参数；修复后重新鉴权。|提示用户操作|
-|2001204|`DEVICE_KEY_ACCESS_DENIED`|设备密钥访问被系统拒绝。|检查 Keychain 访问条件、设备锁定状态和应用签名配置。|提示用户操作|
-|2001205|`DEVICE_KEY_UNAVAILABLE`|设备密钥服务或所需交互条件暂不可用。|稍后重试，并检查设备是否允许 Keychain 交互。|提示用户操作|
-|2001206|`DEVICE_KEY_STORAGE_FAILED`|设备密钥所在 Keychain 存储操作失败。|检查 Keychain 存储状态和系统空间，必要时提交脱敏诊断信息。|提示用户操作|
-|2001299|`DEVICE_KEY_OPERATION_FAILED`|设备密钥操作失败，无法进一步分类。|保留并上报 actualErrorCode、actualErrorDomain、actualErrorMessage。|提示用户操作|
-
-完整英文说明和 Apple OSStatus 对照见 [Apple Security Framework Result Codes](https://developer.apple.com/documentation/security/security-framework-result-codes)。SDK 不自动删除或重建已有设备密钥。
-
-### 12\.4 iOS 设备密钥错误的英文说明与系统码
-
-设备密钥错误的稳定英文说明来自 `error.englishDescription`；Apple Security.framework 的具体系统解释来自 `error.actualErrorMessage`。两者都不包含密钥内容、Keychain tag 或公钥。
-
-|SDK code|constantName|English description|典型 Apple OSStatus|actual 字段|
-|---:|---|---|---|---|
-|2001201|`DEVICE_KEY_READ_FAILED`|The device key could not be read. Check the device Keychain state and retry.|未分类的读取错误|`actualErrorCode` 为原始 OSStatus，`actualErrorDomain` 为 `NSOSStatusErrorDomain`。|
-|2001202|`DEVICE_KEY_CREATION_FAILED`|The device key could not be created. Check the Security.framework availability and retry.|创建失败且无法细分|同上。|
-|2001203|`DEVICE_KEY_INVALID`|The device key or a Security.framework parameter is invalid.|`errSecParam`、`errSecBadReq`、`errSecInvalidItemRef`、`errSecInvalidKeyFormat`、`errSecKeySizeNotAllowed`、`errSecInvalidKeyRef`、`errSecDecode`|同上。|
-|2001204|`DEVICE_KEY_ACCESS_DENIED`|Access to the device key was denied by the system. Check the Keychain access conditions.|`errSecAuthFailed`、`errSecInteractionNotAllowed`、`errSecUserCanceled`、`errSecMissingEntitlement`|同上。|
-|2001205|`DEVICE_KEY_UNAVAILABLE`|The device key service is currently unavailable. Retry later.|`errSecNotAvailable`、`errSecDataNotAvailable`、`errSecInteractionRequired`|同上。|
-|2001206|`DEVICE_KEY_STORAGE_FAILED`|The Keychain storage operation for the device key failed.|`errSecIO`、`errSecAllocate`、`errSecNoSuchKeychain`、`errSecInvalidKeychain`、`errSecDataNotModifiable`|同上。|
-|2001299|`DEVICE_KEY_OPERATION_FAILED`|The device key operation failed. Use the original system error code for diagnosis.|未列出的导出或其他操作错误|同上。|
-
-完整 OSStatus 列表和系统解释以 Apple [Security Framework Result Codes](https://developer.apple.com/documentation/security/security-framework-result-codes) 为准。SDK 对未列出的系统码保留原始值，不用有限的本地映射表替代 Apple 权威文档。
+|2001101|SDK\_NOT\_INITIALIZED|common/state|SDK 未初始化。|提示初始化失败，先完成 sdkInit，不要继续建房或建通道。|
+|2001102|AUTHENTICATION\_FAILED|common/caller|在线鉴权失败，或离线能力接口/离线通道因 License 鉴权失败而无法继续。|在线鉴权失败时提示重新鉴权；离线能力失败时引导联网重试或检查账号权限。|
+|2001103|ROOM\_CREATION\_FAILED|online/network|在线房间创建失败。|允许用户重试创建；连续失败时离开当前对话并记录诊断。|
+|2001104|CHANNEL\_CREATION\_FAILED|common/rtcRtm|在线通道创建失败，或离线通道组装失败。|在线重新创建对话；离线重新初始化通道并检查模型资源。|
+|2001105|ENGINE\_NOT\_SUPPORTED|common/rtcRtm|当前 SDK、账号或配置不支持该引擎能力。|提示能力不支持，停止当前流程。|
+|2001106|INVALID\_CONFIGURATION|common/caller|配置非法，包括语言、声道、音色、appId、channel 等参数不合法。|修正配置后再创建；不要用旧配置重复重试。|
+|2001107|NETWORK\_UNAVAILABLE|common/network|网络不可用；也可能出现在模型下载、鉴权、语言列表等网络请求失败场景。|reconnecting 时提示恢复中；下载或请求失败时提供重试入口。|
+|2001108|AUDIO\_PROCESSING\_ERROR|common/audio|采集、播放、推 PCM 或音频会话异常。|停止录音/播放，在线重建对话，离线重新初始化。|
+|2001109|TTS\_SYNTHESIS\_ERROR|common/rtcRtm|在线或离线 TTS 合成异常；离线 stage == tts 优先映射到该错误。|单句失败可弱提示；连续失败或通道失败时重建/重新初始化。|
+|2001110|TRANSLATION\_ERROR|common/rtcRtm|在线翻译异常；离线 ASR/MT 阶段失败。|单句失败可弱提示；通道失败时在线重建，离线重新初始化。|
+|2001111|SESSION\_EXPIRED|online/network|在线会话或 RTC/RTM token 已过期。|停止当前会话，提示用户重新创建对话。|
+|2001112|QUOTA\_EXCEEDED|common/network|账号或应用服务配额不足。|提示配额不足并停止当前流程。|
+|2001113|INVALID\_LANGUAGE\_CODE|common/caller|语言代码非法或当前模式不支持；离线会归一 zh\-CN、zh\-HK 等到 zh，当前离线主要支持 zh / en。|引导重新选择支持语言；在线重新创建对话，离线重新初始化通道。|
+|2001114|ENGINE\_INITIALIZATION\_FAILED|common/rtcRtm|引擎初始化失败；离线 creation failed、load timeout 或模型加载超时。|允许重试；多次失败时提示检查 SDK 资源和离线模型完整性。|
+|2001115|BUFFER\_OVERFLOW|common/audio|音频输入或输出缓冲超过处理能力。|降低推流频率或重启采集；严重时重建通道。|
+|2001116|THREAD\_INTERRUPTED|common/internal|工作线程被中断。|允许重试；若持续出现，记录诊断并重建流程。|
+|2001117|OFFLINE\_MODEL\_NOT\_READY|offline/model|模型缺失、校验失败、下载失败、离线鉴权未通过或账号未开通离线能力。|引导下载、更新模型或重新鉴权；不要直接启动离线通道。|
+|2001999|UNKNOWN\_ERROR|common/internal|未知错误或底层错误无法映射。|记录诊断，在线重建对话，离线重新初始化。|
+|2002001|NETWORK\_INVALID\_URL|common/caller|网络 URL、模型下载 URL 或后台地址配置错误。|提示配置错误，停止当前流程。|
+|2002002|NETWORK\_TRANSPORT\_ERROR|common/network|网络传输失败，包括 DNS、TLS、超时或模型下载失败。|提供重试；模型下载场景保留续传/重试入口。|
+|2002003|NETWORK\_HTTP\_STATUS\_ERROR|common/network|HTTP 非成功状态。|401/403 优先重新鉴权，5xx 可重试，其他状态按服务端文案处理。|
+|2002004|NETWORK\_RESPONSE\_DECODING\_ERROR|common/network|响应、manifest 或语言列表解析失败。|提示服务响应异常，记录诊断。|
+|2002005|NETWORK\_BUSINESS\_ERROR|common/network|服务端业务错误。|展示服务端错误文案；必要时重新鉴权或离开当前流程。|
+|2002006|REQUEST\_CANCELLED|common/network|用户取消、页面退出、主动停止或音色设置被取消。|不弹错误框，仅恢复 UI 到已取消/已停止状态。|
+|2003002|INVALID\_STATE|common/state|当前状态不允许操作；例如通道释放后继续调用。|重复停止可忽略；关键路径失败时重建或重新初始化。|
+|2003003|DEPENDENCY\_UNAVAILABLE|common/rtcRtm|必要依赖、离线库或模型能力不可用。|提示 SDK/资源异常，停止当前流程并记录诊断。|
+|2003004|RTC\_OPERATION\_FAILED|online/rtcRtm|实时链路操作失败，包括 RTC/RTM 启动失败、发消息失败、服务端订阅 uid 离线或底层 RTC 错误。|提示重新创建或离开；online\_remote\_user\_offline 且 is\_expected\_service\_uid=true 时当前对话不可继续。|
+|2003005|MESSAGE\_DECODING\_FAILED|common/rtcRtm|在线/离线消息解析失败。|仅记录日志，不直接关闭通道。|
+|2003006|AUDIO\_CHANNEL\_CREATION\_FAILED|common/audio|音频通道创建失败。|停止采集并提示重建/重新初始化。|
+|2003007|TRACK\_EVENT\_NOT\_CONFIGURED|common/internal|埋点未配置。|不影响翻译主流程，可忽略或记录日志。|
+|2003008|TRACK\_EVENT\_INVALID\_EVENT\_NAME|common/caller|埋点事件名为空或非法。|不影响翻译主流程，可忽略或修正埋点配置。|
+|2004001|OFFLINE\_INVALID\_ARGUMENT|offline/diagnostic|离线翻译组件参数无效。|作为 actualErrorCode 排障；修正语言、声道、模型路径或开关配置后重新初始化。|
+|2004002|OFFLINE\_CREATION\_FAILED|offline/diagnostic|离线引擎创建失败。|作为 actualErrorCode 排障；检查模型文件和依赖资源，重新初始化离线通道。|
+|2004003|OFFLINE\_OPERATION\_FAILED|offline/diagnostic|离线引擎操作失败。|作为 actualErrorCode 排障；停止当前 pipeline 后重新初始化。|
+|2004004|OFFLINE\_ENGINE\_RELEASED|offline/diagnostic|离线引擎已释放后继续调用。|作为 actualErrorCode 排障；忽略退出后的回调或重新创建通道。|
+|2004005|OFFLINE\_LOAD\_TIMEOUT|offline/diagnostic|离线模型加载超时。|作为 actualErrorCode 排障；检查模型完整性并重新加载。|
+|2004101|OFFLINE\_AUTH\_EMPTY\_CONTENT|offline/license|License 内容为空；native 返回码 1001。|重新联网鉴权并获取 License；不要继续启动离线通道。|
+|2004102|OFFLINE\_AUTH\_DECRYPT\_OR\_PARSE\_FAILED|offline/license|License 解密或解析失败；native 返回码 1002。|重新联网鉴权；不要删除设备密钥，不上传原始 License。|
+|2004103|OFFLINE\_AUTH\_SIGNATURE\_INVALID|offline/license|License 签名无效；native 返回码 1003。|重新联网鉴权；若仍失败，检查后台签发配置。|
+|2004104|OFFLINE\_AUTH\_CLIENT\_PACKAGE\_OR\_DEVICE\_MISMATCH|offline/license|client、包名或设备绑定不匹配；native 返回码 1004。|检查包名、账号和设备绑定，重新鉴权。|
+|2004105|OFFLINE\_AUTH\_MODEL\_KEY\_EMPTY|offline/license|模型密钥为空；native 返回码 1005。|检查账号离线授权范围，重新鉴权。|
+|2004106|OFFLINE\_AUTH\_EXPIRED\_OR\_NOT\_YET\_VALID|offline/license|License 已过期或尚未生效；native 返回码 1006。|联网重新签发 License 后再使用离线能力。|
+|2004107|OFFLINE\_AUTH\_UNSUPPORTED|offline/license|License 版本或算法不支持；native 返回码 1007。|升级 SDK 或联系后台确认签发格式。|
+|2004108|OFFLINE\_AUTH\_UNAUTHORIZED\_SCOPE\_OR\_MODEL|offline/license|当前 scope 或模型未授权；native 返回码 1008。|检查账号授权范围，重新鉴权或联系后台开通。|
+|2004199|OFFLINE\_AUTH\_INTERNAL\_ERROR|offline/license|离线 License 鉴权内部错误或未知 native 返回码。|记录诊断，联网重试；持续失败时提交脱敏日志排查。|
 
 补充说明：
 
 - 离线翻译在底层失败时，会按阶段映射为统一错误码：tts \-\> 2001109 / TTS\_SYNTHESIS\_ERROR，translation/asr \-\> 2001110 / TRANSLATION\_ERROR。底层组件码保留在 actualErrorCode 中。
 
-- 离线 License 鉴权失败不会导致在线 verifyAuth\(\_:\) 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 error\.code 统一映射为 2001102 / AUTHENTICATION\_FAILED，offlineLib 组件码写入 error\.actualErrorCode，native LicenseCore 返回码写入 error\.actualErrorMessage。该规则不覆盖 iOS 设备密钥自身的 Security.framework 错误。
-
-- iOS 设备密钥读取、创建或导出失败不再统一映射为 2001102。SDK 根据 Security.framework 的原始 OSStatus 映射到 2001201-2001206 或 2001299；原始系统码写入 error\.actualErrorCode，域为 `NSOSStatusErrorDomain`，系统解释写入 error\.actualErrorMessage。`error\.chineseDescription` 与 `error\.englishDescription` 分别提供双语稳定说明。
-
-- 常见 Security.framework 映射：参数/状态/密钥格式错误（`errSecParam`、`errSecBadReq`、`errSecInvalidKeyFormat`、`errSecDecode`）→ 2001203；访问拒绝或缺少 entitlement（`errSecAuthFailed`、`errSecInteractionNotAllowed`、`errSecMissingEntitlement`）→ 2001204；服务不可用（`errSecNotAvailable`、`errSecDataNotAvailable`、`errSecInteractionRequired`）→ 2001205；I/O、分配或 Keychain 存储错误（`errSecIO`、`errSecAllocate`、`errSecNoSuchKeychain`、`errSecInvalidKeychain`、`errSecDataNotModifiable`）→ 2001206。未列出的 OSStatus 保留原值，并按读取/创建/导出操作分别回退到 2001201、2001202、2001299。
-
-- 完整系统错误码和官方解释以 Apple [Security Framework Result Codes](https://developer.apple.com/documentation/security/security-framework-result-codes) 为准；SDK 不复制有限的系统码列表替代 Apple 文档。设备密钥异常不会自动删除或重建已有密钥，以避免破坏离线 License 设备绑定。
+- 离线 License 鉴权失败不会导致在线 verifyAuth\(\_:\) 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 error\.code 统一映射为 2001102 / AUTHENTICATION\_FAILED，offlineLib 组件码写入 error\.actualErrorCode，native LicenseCore 返回码写入 error\.actualErrorMessage。
 
 - License 签发响应可能返回 license\_id 或 licenseId。SDK 仅可将脱敏后的 licenseId 用于诊断关联，不应输出原始 License、clientSecret 或设备私钥。
 
