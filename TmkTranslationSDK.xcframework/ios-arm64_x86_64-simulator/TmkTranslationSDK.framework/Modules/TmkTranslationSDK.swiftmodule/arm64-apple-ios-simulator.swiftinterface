@@ -3,6 +3,7 @@
 // swift-module-flags: -target arm64-apple-ios15.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -enable-experimental-feature DebugDescriptionMacro -enable-bare-slash-regex -module-name TmkTranslationSDK
 // swift-module-flags-ignorable: -no-verify-emitted-module-interface -formal-cxx-interoperability-mode=off -interface-compiler-version 6.2.4
 import CryptoKit
+import Darwin
 import Foundation
 import Security
 import Swift
@@ -10,6 +11,7 @@ import UIKit
 import _Concurrency
 import _StringProcessing
 import _SwiftConcurrencyShims
+import dnssd
 public enum TmkTranslationChannelState : Swift.String, Swift.Equatable, Swift.Sendable {
   case idle
   case starting
