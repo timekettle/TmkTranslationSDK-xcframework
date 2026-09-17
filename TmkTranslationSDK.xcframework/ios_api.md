@@ -6,18 +6,24 @@
 
 |项目|说明|
 |---|---|
-|当前文档适配版本|v1\.3\.1|
-|最近更新日期|2026\-07\-21|
+|当前文档适配版本|v1\.3\.2|
+|最近更新日期|2026\-09\-09|
 
 ## 本次更新
 
 当前版本更新内容：
 
-- 新增网络请求统一超时配置 setNetworkTimeout\(\_:\)，作用于鉴权、建房、建通道、语言列表等所有网络请求，不设置时默认 15 秒；超时由 watchdog 联动，与网络请求超时保持一致。
+- 在线和离线均统一为“创建 Room 后创建 Channel”；离线 Room 仅在本地创建，不会发起在线建房请求。
+
+- `sessionID: String` 为两端统一只读结果字段；Room、Channel 和全局配置分别提供 `roomScenario`、`onlineTranslateEngine`、`onlineRecognizeEngine`、`setSampleRate`、`setChannelNum`、`setRoomScenario` 和 `setDiagnosisConsoleEnabled`。
+
+- 新接入使用配置式建房和带 listener 的建通道接口。
+
+- `setNetworkTimeout(_:)` 统一设置鉴权、建房、建通道和语言列表等网络请求超时；未设置时默认 15 秒。
 
 - 新增通道配置 setTranslateMode\(\_:\)，用于离线通道设置翻译下发模式（partial 中间态下发 / stable 断句后下发），在线引擎忽略此配置。
 
-- 新增通道配置 setCapabilityTier\(\_:\)，用于离线通道设置能力档位（\.recognize 仅 ASR / \.toText ASR\+MT / \.toSpeech 完整链路），控制离线引擎按需加载模型。
+- `setRoomScenario\(\_:\)` 用于设置离线通道能力档位（\.recognize 仅 ASR / \.toText ASR\+MT / \.toSpeech 完整链路）。
 
 - 新增 channel\.updateLanguages\(sourceLang:targetLang:completion:\) 带回调重载：在线为真句柄（有超时、可取消），离线为流式切换（不打断流、不销毁重建 pipeline、不可取消）。
 
@@ -103,7 +109,7 @@ TmkTranslationSDK 用于将业务侧采集的 PCM 音频接入翻译能力，并
 #### 2\.3\.1 推荐使用 CocoaPods
 
 ```Plain Text
-pod 'TmkTranslationSDK', '1.2.0'
+pod 'TmkTranslationSDK', '1.3.2'
 ```
 
 使用pod install \-\-repo\-update安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
@@ -150,7 +156,9 @@ pod 'TmkTranslationSDK', '1.2.0'
 
 5. isOfflineModelReady 或 downloadOfflineModels
 
-6. createTranslationChannel（config\.mode = \.offline）
+6. createTmkTranslationRoom（config.mode = .offline）
+
+7. createTranslationChannel（Channel config 绑定上一步 Room）
 
 7. pushStreamAudioData
 
@@ -183,7 +191,7 @@ SDK 对外的大多数异步回调都会切回主线程后再回调业务方，�
 |项目|在线翻译|离线翻译|
 |---|---|---|
 |是否依赖 verifyAuth|是|建议先鉴权，用于确认离线能力|
-|是否需要房间|需要|不需要|
+|是否需要房间|需要|需要（仅本地创建，不发起在线建房）|
 |是否需要离线模型|不需要|需要|
 |通道创建接口|createTranslationChannel|createTranslationChannel|
 
@@ -212,7 +220,7 @@ public static let sdkVersion: String
 示例：
 
 ```Plain Text
-let version = TmkTranslationSDK.sdkVersion // "1.2.0"
+let version = TmkTranslationSDK.sdkVersion // "1.3.2"
 ```
 
 ### 4\.2 sdkInit\(\_:\)
@@ -251,7 +259,7 @@ let globalConfig = TmkTranslationGlobalConfig.Builder()
         externalUserId: "your_external_user_id",
         installId: "your_install_id"
     )
-    .setLogEnabled(true)
+    .setDiagnosisConsoleEnabled(true)
     .setDiagnosisConfig(.init(enabled: false))
     .setNetworkEnvironment(.test)
     .build()
@@ -265,6 +273,7 @@ TmkTranslationSDK.shared.sdkInit(globalConfig)
 
 ```Plain Text
 public func verifyAuth(_ callback: @escaping AuthCallback)
+public func verifyAuth(_ mode: TmkAuthVerifyMode, _ callback: @escaping AuthCallback)
 ```
 
 参数说明：
@@ -281,15 +290,36 @@ public func verifyAuth(_ callback: @escaping AuthCallback)
 
 - 无返回值。
 
+鉴权模式对比：
+
+|模式|是否执行在线鉴权|离线 License 处理|回调成功条件|失败影响|推荐场景|
+|---|---|---|---|---|---|
+|`.default`|始终执行|检查本地 License；有效时直接复用，需要更新时才申请并执行离线鉴权|在线鉴权成功即 `.success(())`|在线失败返回 `.failure`；离线失败仅使离线能力不可用|旧版兼容、通用初始化流程|
+|`.online`|始终执行|不检查、不申请|在线鉴权成功|在线失败返回 `.failure`；不改变已有离线鉴权结果|仅使用在线翻译|
+|`.offline`|仅在本地 License 缺失、过期或需要更新时执行|优先复用有效本地 License；无有效 License 时，复用或获取 token 后申请 License|离线 License 鉴权成功|获取 token、申请 License 或离线鉴权任一失败均返回 `.failure`|仅使用离线翻译|
+|`.all`|始终执行|在线成功后检查本地 License；有效时直接复用，否则申请并执行离线鉴权|在线和离线鉴权都成功|任一阶段失败均返回 `.failure`|在线与离线能力并存，且启动前必须确认两者均可用|
+
+> `verifyAuth(callback)` 等同于 `verifyAuth(.default, callback)`。`.default` 成功不代表离线鉴权成功，仍需通过 `isOfflineTranslationSupported()` 确认；`.offline` 或 `.all` 成功时，本次离线鉴权已成功。
+
+SDK Demo 的示例策略为：在线收听使用 `.default`、在线一对一使用 `.online`、离线收听使用 `.default`、离线一对一使用 `.offline`、在线与离线并行使用 `.all`。Demo 设置页仅展示当前选择的鉴权方式，方便排查，不是宿主接入的额外步骤。
+
 行为说明：
 
 - 首次调用时会懒初始化网络监听、诊断和鉴权基础设施。
 
 - 在线翻译必须先鉴权成功。
 
-- verifyAuth\(\_:\) 内部会先执行在线鉴权；在线鉴权成功后，如果服务端开启离线能力，会继续尝试 License 获取和离线鉴权，用于记录离线支持状态。
+- `verifyAuth(_:)` 使用 `.default` 模式：在线鉴权成功后先检查本地 License；有效 License 直接复用，仅在需要更新且账号已开通离线能力时申请新 License。
 
-- verifyAuth\(\_:\) 的回调成功/失败只由在线鉴权结果决定；离线开关关闭、License 获取失败或离线鉴权失败都不会导致本次 verifyAuth\(\_:\) 回调失败。
+- `TmkAuthVerifyMode.default`（也是旧重载的行为）的回调成功/失败只由在线鉴权结果决定；离线开关关闭、License 获取失败或离线鉴权失败都不会导致本次回调失败。
+
+- `TmkAuthVerifyMode.online` 只执行在线鉴权；`TmkAuthVerifyMode.offline` 要求离线 License 鉴权成功；`TmkAuthVerifyMode.all` 则要求在线鉴权和离线 License 鉴权都成功。后两者任一步失败都会以现有 `Result.failure(TmkTranslationError)` 返回失败。
+
+- License 重新签发会复用与建房相同的业务 token 过期/刷新机制：优先使用有效缓存，服务端报告 token 校验失败时刷新 token 并重试 License 请求。
+
+- 若后台在 License 请求中返回 1007（当前 token 与设备授权上下文不匹配），SDK 会清理本次缓存的 token、强制刷新一次后重试一次 License 请求；第二次仍失败时回调原始错误信息。App 只需提示用户检查网络后重新鉴权，不要自行删除设备密钥或处理 token。
+
+- 各模式都会复用已保存的在线鉴权数据和 License。鉴权超时只重置本次运行时鉴权状态，不删除持久化 token 和 License。
 
 - 离线翻译建议先鉴权，再通过 isOfflineTranslationSupported\(\) 判断当前账号是否支持离线能力。
 
@@ -352,6 +382,8 @@ public enum TmkTranslationNetworkEnvironment: String {
 
 ### 5\.2 TmkTranslationGlobalConfig\.Builder
 
+构建后的 `TmkTranslationGlobalConfig` 可通过只读 `diagnosisConsoleEnabled` 获取控制台诊断日志开关。
+
 ```Plain Text
 public final class Builder {
     public init()
@@ -359,9 +391,7 @@ public final class Builder {
     public func setOnlineAuthContext(tenantId: String? = nil,
                                      externalUserId: String? = nil,
                                      installId: String? = nil) -> Builder
-    public func setLogEnabled(_ isEnabled: Bool) -> Builder
-    @available(*, deprecated, message: "请使用 setDiagnosisConfig(_:) 设置诊断配置。")
-    public func setDiagnosisEnabled(_ isEnabled: Bool) -> Builder
+    public func setDiagnosisConsoleEnabled(_ isEnabled: Bool) -> Builder
     public func setDiagnosisConfig(_ config: TmkDiagnosisConfig) -> Builder
     public func setNetworkEnvironment(_ environment: TmkTranslationNetworkEnvironment) -> Builder
     public func setNetworkBaseURL(_ url: URL) -> Builder
@@ -403,17 +433,11 @@ public final class Builder {
 
     - 可选，设备/安装实例 ID。
 
-#### setLogEnabled\(\_:\)
+#### setDiagnosisConsoleEnabled\(\_:\)
 
 - true：输出 SDK 控制台日志。
 
 - false：关闭控制台日志。
-
-#### setDiagnosisEnabled\(\_:\)（已废弃）
-
-- 请使用 setDiagnosisConfig\(_:\) 设置诊断配置。
-
-- 仅需保持旧开关语义时，使用 TmkDiagnosisConfig\(enabled: true/false\)。
 
 #### setDiagnosisConfig\(\_:\)
 
@@ -622,18 +646,18 @@ public enum TmkOnlineRecognizeEngine: Equatable, Sendable, CaseIterable {
 含义：
 
 - `default`：不指定识别引擎，由服务端决定（默认值）。
-- `endToEnd`：端到端链路，语音直接完成识别和翻译，此时 `translateEngine` 不参与。
-- `threeStage`：三段式链路，还需配合 `translateEngine` 决定翻译方式。
+- `endToEnd`：端到端链路，语音直接完成识别和翻译，此时 `onlineTranslateEngine` 不参与。
+- `threeStage`：三段式链路，还需配合 `onlineTranslateEngine` 决定翻译方式。
 
-`recognizeEngine` 与 `translateEngine` 的组合关系：
+`onlineRecognizeEngine` 与 `onlineTranslateEngine` 的组合关系：
 
-| 识别链路 | 翻译方式 | recognizeEngine | translateEngine |
+| 识别链路 | 翻译方式 | onlineRecognizeEngine | onlineTranslateEngine |
 |---|---|---|---|
 | E2E 端到端 | 内部翻译 | `.endToEnd` | 忽略 |
 | 三段式 | 普通 MT | `.threeStage` | `.fast` |
 | 三段式 | LLM | `.threeStage` | `.accurate` |
 
-> 注：选择 `.endToEnd` 时房间采用端到端链路，`updateTranslateEngine(_:)` 调用不会生效；选择 `.threeStage` 时需同时设置 `translateEngine` 才能确定使用普通 MT 还是 LLM。
+> 注：选择 `.endToEnd` 时房间采用端到端链路，`channel.updateTranslateEngine(_:)` 调用不会生效；选择 `.threeStage` 时需同时设置 `onlineTranslateEngine` 才能确定使用普通 MT 还是 LLM。
 
 ### TmkTranslationRoomDialogResponse
 
@@ -688,7 +712,7 @@ public struct TmkTranslationRoomDialogResponse: Equatable, Sendable {
 
 ### TmkTranslationRoom
 
-TmkTranslationRoom 是在线翻译的房间容器。
+TmkTranslationRoom 是通道绑定的房间容器。在线 Room 包含服务端准备的 dialog 数据；离线 Room 只在本地创建，`channelDialogResponse` 为 `nil`。
 
 公开属性：
 
@@ -700,7 +724,7 @@ TmkTranslationRoom 是在线翻译的房间容器。
 
     - 当前房间业务场景。
 
-- messageTunnel: TmkTranslationMessageTunnel
+- messageTunnel: TmkTranslationMessageTunnel（iOS 专有配置；Android 暂未提供对应接口）
 
     - 当前文本消息通道。
 
@@ -731,22 +755,40 @@ public func updateScenario(_ scenario: TmkRoomScenario,
 
 ### 7\.2 createTmkTranslationRoom\(\.\.\.\)
 
-推荐使用配置对象创建在线房间：
+在线和离线均使用配置对象创建 Room：
 
 ```Plain Text
 public struct TmkTranslationRoomConfig {
+    public var mode: TranslationMode
     public var sourceLang: String
     public var targetLang: String
-    public var scenario: TmkRoomScenario
+    public var roomScenario: TmkRoomScenario
     public var roomId: String?
     public var channelScenario: Scenario
+    // iOS 专有配置；Android 暂未提供对应接口。
     public var messageTunnel: TmkTranslationMessageTunnel
     public var speakers: [TmkSpeaker]?
-    public var translateEngine: TmkOnlineTranslateEngine
-    public var recognizeEngine: TmkOnlineRecognizeEngine
+    public var onlineTranslateEngine: TmkOnlineTranslateEngine
+    public var onlineRecognizeEngine: TmkOnlineRecognizeEngine
     public var translateMode: TmkTranslateDeliveryMode
     public var dialogConversationAudioMode: TmkDialogConversationAudioMode
     public var enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption?
+
+    public init(
+    mode: TranslationMode,
+    sourceLang: String = "en-US",
+    targetLang: String = "zh-CN",
+    roomScenario: TmkRoomScenario = .toSpeech,
+    roomId: String? = nil,
+    channelScenario: Scenario = .listen,
+    messageTunnel: TmkTranslationMessageTunnel = .rtm,
+    speakers: [TmkSpeaker]? = nil,
+    onlineTranslateEngine: TmkOnlineTranslateEngine = .automatic,
+    onlineRecognizeEngine: TmkOnlineRecognizeEngine = .default,
+    translateMode: TmkTranslateDeliveryMode = .default,
+    dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard,
+    enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled
+    )
 }
 
 public func createTmkTranslationRoom(
@@ -756,6 +798,8 @@ public func createTmkTranslationRoom(
 ```
 
 当 `channelScenario` 为 `.oneToOne` 时，配置中的 `sourceLang` 表示右路/对方语言，`targetLang` 表示左路/本机语言；SDK 建房时映射为 `left = targetLang`、`right = sourceLang`。双声道 PCM 的左路应对应 `targetLang`，右路应对应 `sourceLang`，业务侧无需手动交换字段。
+
+`mode = .online` 时 SDK 创建在线 Room；`mode = .offline` 时 SDK 仅创建供离线 Channel 绑定的本地 Room，不请求在线建房。`messageTunnel` 是 iOS 专有的在线配置，离线模式忽略它。
 
 TmkDialogConversationAudioMode 用于在线一对一对话音频模式：
 
@@ -773,23 +817,6 @@ TmkSensitiveWordRedactionOption 用于控制客户端可见文本的敏感词脱
 
 默认值为 `.enabled` 并下发 `true`；显式设置为 `nil` 时不下发字段，保持服务端默认行为。该字段同时用于 `room/dialog` 和 `room/mono-dialog`。
 
-兼容旧参数重载（已标记废弃 @available\(\*, deprecated\)，新接入请改用上面的 config: 重载）：
-
-```Plain Text
-public func createTmkTranslationRoom(
-    sourceLang: String = "en-US",
-    targetLang: String = "zh-CN",
-    scenario: TmkRoomScenario = .toSpeech,
-    roomId: String? = nil,
-    channelScenario: Scenario = .listen,
-    messageTunnel: TmkTranslationMessageTunnel = .rtm,
-    speakers: [TmkSpeaker]? = nil,
-    translateEngine: TmkOnlineTranslateEngine = .automatic,
-    translateMode: TmkTranslateDeliveryMode = .default,
-    _ callback: @escaping CreateRoomCallback
-)
-```
-
 参数说明：
 
 - sourceLang
@@ -800,7 +827,7 @@ public func createTmkTranslationRoom(
 
     - 目标语言代码，例如 en\-US。在 `.oneToOne` 场景中表示左路/本机语言。
 
-- scenario
+- roomScenario
 
     - 房间业务场景，通常使用 \.toSpeech。
 
@@ -826,7 +853,7 @@ public func createTmkTranslationRoom(
 
     - 传 nil 时使用服务端默认音色策略。
 
-- translateEngine
+- onlineTranslateEngine
 
     - 在线翻译引擎策略。
 
@@ -850,9 +877,9 @@ public func createTmkTranslationRoom(
 
 - 在线翻译必须先建房，再创建通道。
 
-- 建房时 scenario 决定初始在线房间能力：\.recognize 为单 ASR，\.toText 为 ASR\+MT 文本输出，\.toSpeech 为 ASR\+MT\+TTS 语音输出。
+- 建房时 `roomScenario` 决定初始在线房间能力：\.recognize 为单 ASR，\.toText 为 ASR\+MT 文本输出，\.toSpeech 为 ASR\+MT\+TTS 语音输出。
 
-- 建房时 translateEngine 决定初始在线翻译引擎策略；运行中可通过 room\.updateTranslateEngine\(\.\.\.\) 切换。
+- 建房时 `onlineTranslateEngine` 决定初始在线翻译引擎策略；运行中通过 `channel.updateTranslateEngine(...)` 切换。
 
 - 在线一对一的通道音频模式来自 TmkTranslationRoomConfig\.dialogConversationAudioMode；离线一对一的通道音频模式来自 TmkTranslationChannelConfig\.Builder\.setChannelAudioMode\(\.\.\.\)。
 
@@ -866,9 +893,10 @@ public func createTmkTranslationRoom(
 
 ```Plain Text
 let roomConfig = TmkTranslationRoomConfig(
+    mode: .online,
     sourceLang: "zh-CN",
     targetLang: "en-US",
-    scenario: .toSpeech,
+    roomScenario: .toSpeech,
     channelScenario: .listen
 )
 
@@ -1003,8 +1031,8 @@ public final class Builder {
     public func setScenario(_ scenario: Scenario) -> Builder
     public func setSourceLang(_ langCode: String) -> Builder
     public func setTargetLang(_ langCode: String) -> Builder
-    public func setPCMSampleRate(_ sampleRate: Int) -> Builder
-    public func setPCMChannels(_ channels: Int) -> Builder
+    public func setSampleRate(_ sampleRate: Int) -> Builder
+    public func setChannelNum(_ channels: Int) -> Builder
     public func setPlaybackAudioDataMode(_ mode: TmkTranslationPlaybackAudioDataMode) -> Builder
     public func setPlaybackAudioPullConfig(_ config: TmkTranslationPlaybackAudioPullConfig) -> Builder
     public func setTTSAudioCallbackThread(_ thread: TmkTTSAudioCallbackThread) -> Builder
@@ -1012,9 +1040,8 @@ public final class Builder {
     public func setModelRootDirectory(_ directory: String) -> Builder
     public func setSpeakers(_ speakers: [TmkSpeaker]) -> Builder
     public func setChannelAudioMode(_ mode: TmkChannelAudioMode) -> Builder
-    public func setOfflineAudioChannelMode(_ mode: TmkOfflineAudioChannelMode) -> Builder
     public func setTranslateMode(_ mode: TmkTranslateDeliveryMode) -> Builder
-    public func setCapabilityTier(_ tier: TmkRoomScenario) -> Builder
+    public func setRoomScenario(_ roomScenario: TmkRoomScenario) -> Builder
     public func build() -> TmkTranslationChannelConfig
 }
 ```
@@ -1025,7 +1052,7 @@ public final class Builder {
 
 - 在线翻译必填。
 
-- 离线翻译不需要设置房间。
+- 离线翻译也必须设置由 `createTmkTranslationRoom(config:)` 返回的本地 Room。
 
 #### setMode\(\_:\)
 
@@ -1047,7 +1074,7 @@ public final class Builder {
 
 - 离线通常使用短码，例如 zh、en。
 
-#### setPCMSampleRate\(\_:\)
+#### setSampleRate\(\_:\)
 
 - 设置输入 PCM 采样率。
 
@@ -1055,7 +1082,7 @@ public final class Builder {
 
 - 其他采样率暂未完成完整兼容性验证，正式接入建议优先使用 16000。
 
-#### setPCMChannels\(\_:\)
+#### setChannelNum\(\_:\)
 
 - 设置输入 PCM 通道数。
 
@@ -1122,23 +1149,15 @@ let speakers = [
 ]
 ```
 
-#### setOfflineAudioChannelMode\(\_:\)
-
-- 旧兼容接口，建议新接入使用 setChannelAudioMode\(\_:\)。
-
-- \.stereo：默认值，左右声道混成立体声输出。
-
-- \.mono：按单声道输出，适合业务侧自行管理播放声道的场景。
-
-- 离线收听模式固定按单声道输出。
-
 #### setChannelAudioMode\(\_:\)
 
 - 设置离线一对一通道音频模式。
 
-- \.standard：标准模式。
+- \.standard：默认值，左右声道混成立体声输出。
 
-- \.lowLatency：低延迟模式。
+- \.lowLatency：按单声道输出，适合业务侧自行管理播放声道的场景。
+
+- 离线收听模式固定按单声道输出。
 
 - 在线一对一通道音频模式以创建房间时的 TmkTranslationRoomConfig\.dialogConversationAudioMode 为准。
 
@@ -1154,7 +1173,7 @@ let speakers = [
 
 - 运行时可通过 channel\.updateTranslateMode\(\_:completion:\) 切换。
 
-#### setCapabilityTier\(\_:\)
+#### setRoomScenario\(\_:\)
 
 - 设置离线能力档位，控制离线引擎按需加载哪些模型：
 
@@ -1167,6 +1186,8 @@ let speakers = [
 - 仅离线引擎消费；在线引擎忽略（在线由建房/updateScenario 服务端裁剪）。
 
 - 运行时可通过 channel\.updateScenario\(\_:completion:\) 切换。
+
+构建后的 `TmkTranslationChannelConfig` 使用只读 `sampleRate`、`channelNum`、`roomScenario` 获取对应配置。
 
 #### build\(\)
 
@@ -1193,23 +1214,9 @@ public struct TmkSpeaker {
 }
 ```
 
-#### TmkOfflineAudioChannelMode
-
-```Plain Text
-public enum TmkOfflineAudioChannelMode {
-    case mono
-    case stereo
-}
-```
-
 ### 8\.7 创建通道接口（在线/离线统一入口）
 
 ```Plain Text
-public func createTranslationChannel(
-    _ config: TmkTranslationChannelConfig,
-    callback: @escaping CreateChannelCallback
-) -> TmkSDKCancellable?
-
 public func createTranslationChannel(
     _ config: TmkTranslationChannelConfig,
     listener: TmkTranslationListener?,
@@ -1225,7 +1232,7 @@ public func createTranslationChannel(
 
 - listener
 
-    - 可选，启动前预绑定的监听器。
+    - 创建前传入的监听器。
 
 - callback
 
@@ -1247,7 +1254,7 @@ public func createTranslationChannel(
 
     - mode = \.offline：离线引擎
 
-- SDK 会在创建成功后自动启动通道。
+- 创建时传入 `listener`；SDK 会在创建成功后自动启动通道。
 
 - 创建新通道前会先释放当前旧通道；若新通道创建失败或被取消，旧通道不会恢复。
 
@@ -1264,8 +1271,8 @@ let config = TmkTranslationChannelConfig.Builder()
     .setMode(.online)
     .setSourceLang("zh-CN")
     .setTargetLang("en-US")
-    .setPCMSampleRate(16_000)
-    .setPCMChannels(1)
+    .setSampleRate(16_000)
+    .setChannelNum(1)
     .build()
 
 TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { result in
@@ -1291,14 +1298,13 @@ let config = TmkTranslationChannelConfig.Builder()
         TmkSpeaker(channel: .left, gender: .female),
         TmkSpeaker(channel: .right, gender: .male)
     ])
-    .setPCMSampleRate(16_000)
-    .setPCMChannels(2)
+    .setSampleRate(16_000)
+    .setChannelNum(2)
     .build()
 
-TmkTranslationSDK.shared.createTranslationChannel(config) { result in
+TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { result in
     switch result {
     case .success(let channel):
-        channel.setTranslationListener(self)
         self.channel = channel
     case .failure(let error):
         print(error.message)
@@ -1453,6 +1459,10 @@ public func checkOfflineModelReadyAsync(
 
     - 推荐在页面初始化或 UI 交互链路中优先使用，避免同步目录扫描导致主线程卡顿。
 
+    - App 在 SDK 外部下载、替换或解压模型文件后，应优先调用该接口；它会重新检查当前文件系统并刷新后续同步查询使用的就绪状态缓存。
+
+    - isOfflineModelReady\(\.\.\.\) 是当前能力快照，不应用作外部落盘后即时结果的唯一依据。
+
 - 其余接口用于单项模型检查。
 
 ### 9\.6 离线场景所需模型说明
@@ -1492,22 +1502,28 @@ public func checkOfflineModelReadyAsync(
 #### 离线收听
 
 ```Plain Text
-let config = TmkTranslationChannelConfig.Builder()
-    .setMode(.offline)
-    .setScenario(.listen)
-    .setSourceLang("zh")
-    .setTargetLang("en")
-    .setPCMSampleRate(16_000)
-    .setPCMChannels(1)
-    .setModelRootDirectory(modelRootDirectory)
-    .build()
-
-TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { result in
-    switch result {
-    case .success(let channel):
-        self.channel = channel
-    case .failure(let error):
-        print(error.message)
+let roomConfig = TmkTranslationRoomConfig(
+    mode: .offline,
+    sourceLang: "zh",
+    targetLang: "en",
+    roomScenario: .toSpeech,
+    channelScenario: .listen
+)
+TmkTranslationSDK.shared.createTmkTranslationRoom(config: roomConfig) { result in
+    guard case let .success(room) = result else { return }
+    let config = TmkTranslationChannelConfig.Builder()
+        .setRoom(room)
+        .setMode(.offline)
+        .setScenario(.listen)
+        .setSourceLang("zh")
+        .setTargetLang("en")
+        .setSampleRate(16_000)
+        .setChannelNum(1)
+        .setRoomScenario(.toSpeech)
+        .setModelRootDirectory(modelRootDirectory)
+        .build()
+    TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { result in
+        if case let .success(channel) = result { self.channel = channel }
     }
 }
 ```
@@ -1515,27 +1531,33 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
 #### 离线一对一
 
 ```Plain Text
-let config = TmkTranslationChannelConfig.Builder()
-    .setMode(.offline)
-    .setScenario(.oneToOne)
-    .setSourceLang("zh")
-    .setTargetLang("en")
-    .setSpeakers([
-        TmkSpeaker(channel: .left, gender: .female),
-        TmkSpeaker(channel: .right, gender: .male)
-    ])
-    .setOfflineAudioChannelMode(.stereo)
-    .setPCMSampleRate(16_000)
-    .setPCMChannels(2)
-    .setModelRootDirectory(modelRootDirectory)
-    .build()
-
-TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { result in
-    switch result {
-    case .success(let channel):
-        self.channel = channel
-    case .failure(let error):
-        print(error.message)
+let roomConfig = TmkTranslationRoomConfig(
+    mode: .offline,
+    sourceLang: "zh",
+    targetLang: "en",
+    roomScenario: .toSpeech,
+    channelScenario: .oneToOne
+)
+TmkTranslationSDK.shared.createTmkTranslationRoom(config: roomConfig) { result in
+    guard case let .success(room) = result else { return }
+    let config = TmkTranslationChannelConfig.Builder()
+        .setRoom(room)
+        .setMode(.offline)
+        .setScenario(.oneToOne)
+        .setSourceLang("zh")
+        .setTargetLang("en")
+        .setSpeakers([
+            TmkSpeaker(channel: .left, gender: .female),
+            TmkSpeaker(channel: .right, gender: .male)
+        ])
+        .setChannelAudioMode(.standard)
+        .setSampleRate(16_000)
+        .setChannelNum(2)
+        .setRoomScenario(.toSpeech)
+        .setModelRootDirectory(modelRootDirectory)
+        .build()
+    TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { result in
+        if case let .success(channel) = result { self.channel = channel }
     }
 }
 ```
@@ -1544,9 +1566,9 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
 
 - \.setSpeakers\(\.\.\.\) 只覆盖传入声道的音色；不传时使用 SDK 默认音色。
 
-- \.setOfflineAudioChannelMode\(\.stereo\) 是离线一对一默认行为，适合直接播放立体声 TTS。
+- `setChannelAudioMode(.standard)` 是离线一对一默认的标准输出模式，适合直接播放立体声 TTS。
 
-- 如业务侧希望自行合成播放声道，可设置 \.setOfflineAudioChannelMode\(\.mono\) 后按 Result\.extraData\["channel"\] 管理音频来源。
+- 如业务侧希望自行合成播放声道，可设置 \.setChannelAudioMode\(\.lowLatency\) 后按 Result\.extraData\["channel"\] 管理音频来源。
 
 ---
 
@@ -1593,27 +1615,16 @@ public func pushStreamAudioData(_ data: Data, speakerChannel: TmkSpeakerChannel,
 ### 10\.2 生命周期方法
 
 ```Plain Text
-public func createTranslationChannel()
 public func release()
 ```
 
 说明：
 
-- createTranslationChannel\(\)
-
-    - 创建通道资源。
-
-    - 创建后可销毁。
-
-    - 创建翻译引擎时使用
-
-    
-
 - release\(\)
 
     - 释放通道资源。
 
-    - 释放后需要通过createTranslationChannel再次启动。
+    - 如需再次使用，按“创建 Room → 创建 Channel”流程重新创建。
 
     - 页面退出、切换房间或切换语言对时，优先通过 TmkTranslationSDK\.shared\.releaseChannel\(\) 释放当前会话，避免只释放通道而遗漏房间关闭。
 
@@ -1661,8 +1672,21 @@ public func updateLanguages(
     completion: @escaping (Result<Void, TmkTranslationError>) -> Void
 ) -> TmkSDKCancellable?
 
+@discardableResult
+public func updateRoomLocale(
+    sourceLocales: [String],
+    targetLocales: [String],
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+
 public func updateTranslateMode(
     _ mode: TmkTranslateDeliveryMode,
+    completion: @escaping (Result<Void, TmkTranslationError>) -> Void
+) -> TmkSDKCancellable?
+
+@discardableResult
+public func updateTranslateEngine(
+    _ translateEngine: TmkOnlineTranslateEngine = .automatic,
     completion: @escaping (Result<Void, TmkTranslationError>) -> Void
 ) -> TmkSDKCancellable?
 
@@ -1695,6 +1719,12 @@ public func updateSpeaker(
 
     - 切换成功后写回内部语言字段；失败时不写回，避免 UI 与底层状态不一致。
 
+- updateRoomLocale\(sourceLocales:targetLocales:completion:\)
+
+    - 更新通道的语言集合。在线通道将集合提交给服务端；离线通道每侧仅支持一个语言编码。
+
+    - 收听等单语言切换场景优先使用 `updateLanguages(sourceLang:targetLang:completion:)`，与两端 Demo 的调用方式一致。
+
 - updateTranslateMode\(\_:completion:\)
 
     - 运行时切换翻译下发模式（partial/stable）。
@@ -1704,6 +1734,12 @@ public func updateSpeaker(
     - 离线底层不具备中途取消能力，返回 `nil`；调用方仍通过 completion 获取最终结果。
 
     - 在线通道：回调 \.failure\(\.engineNotSupported\)。
+
+- updateTranslateEngine\(\_:completion:\)
+
+    - 运行时切换在线翻译引擎；离线通道回调 `engineNotSupported`。
+
+    - 成功后对后续服务端处理生效。返回值可取消尚未完成的网络请求；已经生效的服务端动作不会回滚。
 
 - updateScenario\(\_:completion:\)
 
@@ -1977,7 +2013,7 @@ final class TranslationHandler: TmkTranslationListener {
 
 ```Plain Text
 public struct TmkResult<T> {
-    public let sessionId: Int
+    public var sessionID: String { get }
     public let bubbleId: String
     public let data: T
     public let srcCode: String
@@ -1989,9 +2025,9 @@ public struct TmkResult<T> {
 
 字段说明：
 
-- sessionId
+- sessionID
 
-    - 会话 ID。
+    - 会话 ID；跨端统一为只读 String。
 
     - 在线场景下一般对应 Agora uid 或会话维度标识。
 
@@ -2003,7 +2039,7 @@ public struct TmkResult<T> {
 
     - 在线场景优先来自服务端 bubble\_id。
 
-    - 离线场景由 SDK 按与 sessionId 相同的毫秒级时间戳\+序号规则独立生成，不等同于 sessionId。
+    - 离线场景由 SDK 按毫秒级时间戳\+序号规则独立生成，不等同于 sessionID。
 
 - data
 
@@ -2381,6 +2417,10 @@ HTTP 非成功状态使用 `2002000 + HTTP 状态码` 映射为 SDK 错误码，
 |2004107|`OFFLINE_AUTH_UNSUPPORTED`|1007|License 版本或算法不支持。|App 提示"离线 License 版本不支持"，引导用户升级 SDK 或联系后台确认签发格式。|提示用户操作|
 |2004108|`OFFLINE_AUTH_UNAUTHORIZED_SCOPE_OR_MODEL`|1008|当前 scope 或模型未授权。|App 提示"离线授权范围不足"，引导用户检查账号授权范围，重新鉴权或联系后台开通。|提示用户操作|
 |2004199|`OFFLINE_AUTH_INTERNAL_ERROR`|1099/unknown|内部错误或未知 native 返回码。|App 提示"离线鉴权内部错误"，引导用户联网重试；持续失败时记录脱敏日志提交排查。|提示用户重试|
+
+##### 后端 License 获取错误码
+
+后端返回的 `1007` 与上表 native LicenseCore 的 `1007 / OFFLINE_AUTH_UNSUPPORTED` 同码但语义不同。若 License 请求在单次自动刷新和重试后仍失败，SDK 对外回调 `error.code = 2001102 / AUTHENTICATION_FAILED`，同时保留 `error.actualErrorCode = 1007`、`error.actualErrorDomain = "backend"`，表示当前业务 token 与设备授权上下文（含 thumbprint）不匹配。App 只需提示联网重新鉴权；不要自行删除设备密钥、Keychain 数据或处理 token。
 
 
 ##### iOS 设备密钥错误
@@ -2840,9 +2880,10 @@ TmkTranslationSDK.shared.verifyAuth { result in
     case .success:
         TmkTranslationSDK.shared.createTmkTranslationRoom(
             config: TmkTranslationRoomConfig(
+                mode: .online,
                 sourceLang: "zh-CN",
                 targetLang: "en-US",
-                scenario: .toSpeech,
+                roomScenario: .toSpeech,
                 channelScenario: .listen
             )
         ) { result in
@@ -2854,8 +2895,8 @@ TmkTranslationSDK.shared.verifyAuth { result in
                     .setMode(.online)
                     .setSourceLang("zh-CN")
                     .setTargetLang("en-US")
-                    .setPCMSampleRate(16_000)
-                    .setPCMChannels(1)
+                    .setSampleRate(16_000)
+                    .setChannelNum(1)
                     .build()
 
                 TmkTranslationSDK.shared.createTranslationChannel(channelConfig, listener: handler) { result in
@@ -2906,22 +2947,30 @@ TmkTranslationSDK.shared.verifyAuth { result in
             return
         }
 
-        let channelConfig = TmkTranslationChannelConfig.Builder()
-            .setMode(.offline)
-            .setScenario(.listen)
-            .setSourceLang("zh")
-            .setTargetLang("en")
-            .setPCMSampleRate(16_000)
-            .setPCMChannels(1)
-            .setModelRootDirectory(modelRootDirectory)
-            .build()
-
-        TmkTranslationSDK.shared.createTranslationChannel(channelConfig, listener: handler) { result in
-            switch result {
-            case .success(let channel):
-                channel.pushStreamAudioData(pcmData, channelCount: 1)
-            case .failure(let error):
-                print(error.message)
+        let roomConfig = TmkTranslationRoomConfig(
+            mode: .offline,
+            sourceLang: "zh",
+            targetLang: "en",
+            roomScenario: .toSpeech,
+            channelScenario: .listen
+        )
+        TmkTranslationSDK.shared.createTmkTranslationRoom(config: roomConfig) { roomResult in
+            guard case let .success(room) = roomResult else { return }
+            let channelConfig = TmkTranslationChannelConfig.Builder()
+                .setRoom(room)
+                .setMode(.offline)
+                .setScenario(.listen)
+                .setSourceLang("zh")
+                .setTargetLang("en")
+                .setSampleRate(16_000)
+                .setChannelNum(1)
+                .setRoomScenario(.toSpeech)
+                .setModelRootDirectory(modelRootDirectory)
+                .build()
+            TmkTranslationSDK.shared.createTranslationChannel(channelConfig, listener: handler) { result in
+                if case let .success(channel) = result {
+                    channel.pushStreamAudioData(pcmData, channelCount: 1)
+                }
             }
         }
     case .failure(let error):
@@ -3035,4 +3084,19 @@ TmkTranslationSDK.releaseChannel()
 
 ## 版本信息
 
-当前文档适配 TmkTranslationSDK iOS v1\.3\.1。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
+当前文档适配 TmkTranslationSDK iOS v1\.3\.2。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
+
+## 兼容与废弃 API
+
+以下接口仅用于已有 App 的迁移兼容；新的接入和示例均不应调用。
+
+|范围|废弃接口或属性|替代方式|
+|---|---|---|
+|全局配置|`setLogEnabled(_:)`|`setDiagnosisConsoleEnabled(_:)`|
+|全局配置|`setDiagnosisEnabled(_:)`|`setDiagnosisConfig(_:)`|
+|Room 配置|`scenario`、`translateEngine`、`recognizeEngine` 及不含 `mode` 的 `TmkTranslationRoomConfig(...)` 初始化器|`roomScenario`、`onlineTranslateEngine`、`onlineRecognizeEngine` 和 `init(mode:...)`|
+|创建 Room|参数式 `createTmkTranslationRoom(...)` 重载|`createTmkTranslationRoom(config:_:)`|
+|Channel 配置|`pcmSampleRate`、`pcmChannels`、`capabilityTier` 及 `setPCMSampleRate(_:)`、`setPCMChannels(_:)`、`setCapabilityTier(_:)`|`sampleRate`、`channelNum`、`roomScenario` 及对应 `setSampleRate(_:)`、`setChannelNum(_:)`、`setRoomScenario(_:)`|
+|Channel 音频配置|`offlineAudioChannelMode`、`setOfflineAudioChannelMode(_:)` 和 `TmkOfflineAudioChannelMode`|`channelAudioMode`、`setChannelAudioMode(_:)` 和 `TmkChannelAudioMode`|
+|创建 Channel|不带 `listener` 的 `createTranslationChannel(_:callback:)` 重载|`createTranslationChannel(_:listener:callback:)`|
+|结果模型|只读 `sessionId: Int`|只读 `sessionID: String`|
