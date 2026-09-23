@@ -109,7 +109,7 @@ TmkTranslationSDK 用于将业务侧采集的 PCM 音频接入翻译能力，并
 #### 2\.3\.1 推荐使用 CocoaPods
 
 ```Plain Text
-pod 'TmkTranslationSDK', '1.3.2'
+pod 'TmkTranslationSDK', '1.3.3'
 ```
 
 使用pod install \-\-repo\-update安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
@@ -130,7 +130,7 @@ pod 'TmkTranslationSDK', '1.3.2'
 
 2. getOnlineSupportedLanguages\(version:\_:\)
 
-3. verifyAuth
+3. verifyAuth(.online, callback)
 
 4. createTmkTranslationRoom
 
@@ -150,7 +150,7 @@ pod 'TmkTranslationSDK', '1.3.2'
 
 2. getOfflineSupportedLanguages\(version:\_:\)
 
-3. verifyAuth
+3. verifyAuth(.offline, callback)
 
 4. isOfflineTranslationSupported
 
@@ -190,7 +190,7 @@ SDK 对外的大多数异步回调都会切回主线程后再回调业务方，�
 
 |项目|在线翻译|离线翻译|
 |---|---|---|
-|是否依赖 verifyAuth|是|建议先鉴权，用于确认离线能力|
+|鉴权调用|verifyAuth(.online, callback)|verifyAuth(.offline, callback)|
 |是否需要房间|需要|需要（仅本地创建，不发起在线建房）|
 |是否需要离线模型|不需要|需要|
 |通道创建接口|createTranslationChannel|createTranslationChannel|
@@ -220,7 +220,7 @@ public static let sdkVersion: String
 示例：
 
 ```Plain Text
-let version = TmkTranslationSDK.sdkVersion // "1.3.2"
+let version = TmkTranslationSDK.sdkVersion // "1.3.3"
 ```
 
 ### 4\.2 sdkInit\(\_:\)
@@ -267,13 +267,13 @@ let globalConfig = TmkTranslationGlobalConfig.Builder()
 TmkTranslationSDK.shared.sdkInit(globalConfig)
 ```
 
-### 4\.3 verifyAuth\(\_:\)
+### 4\.3 verifyAuth
 
-执行在线/离线鉴权。
+按翻译模式执行鉴权。在线翻译固定使用 `.online`，离线翻译固定使用 `.offline`；新接入不使用无模式重载。
 
 ```Plain Text
-public func verifyAuth(_ callback: @escaping AuthCallback)
 public func verifyAuth(_ mode: TmkAuthVerifyMode, _ callback: @escaping AuthCallback)
+public func verifyAuth(_ callback: @escaping AuthCallback)
 ```
 
 参数说明：
@@ -294,14 +294,14 @@ public func verifyAuth(_ mode: TmkAuthVerifyMode, _ callback: @escaping AuthCall
 
 |模式|是否执行在线鉴权|离线 License 处理|回调成功条件|失败影响|推荐场景|
 |---|---|---|---|---|---|
-|`.default`|始终执行|检查本地 License；有效时直接复用，需要更新时才申请并执行离线鉴权|在线鉴权成功即 `.success(())`|在线失败返回 `.failure`；离线失败仅使离线能力不可用|旧版兼容、通用初始化流程|
+|`.default`|始终执行|检查本地 License；有效时直接复用，需要更新时才申请并执行离线鉴权|在线鉴权成功即 `.success(())`|在线失败返回 `.failure`；离线失败仅使离线能力不可用|历史兼容调用|
 |`.online`|始终执行|不检查、不申请|在线鉴权成功|在线失败返回 `.failure`；不改变已有离线鉴权结果|仅使用在线翻译|
 |`.offline`|仅在本地 License 缺失、过期或需要更新时执行|优先复用有效本地 License；无有效 License 时，复用或获取 token 后申请 License|离线 License 鉴权成功|获取 token、申请 License 或离线鉴权任一失败均返回 `.failure`|仅使用离线翻译|
-|`.all`|始终执行|在线成功后检查本地 License；有效时直接复用，否则申请并执行离线鉴权|在线和离线鉴权都成功|任一阶段失败均返回 `.failure`|在线与离线能力并存，且启动前必须确认两者均可用|
+|`.all`|始终执行|在线成功后检查本地 License；有效时直接复用，否则申请并执行离线鉴权|在线和离线鉴权都成功|任一阶段失败均返回 `.failure`|业务需要在同一回调中确认两类鉴权均已成功|
 
-> `verifyAuth(callback)` 等同于 `verifyAuth(.default, callback)`。`.default` 成功不代表离线鉴权成功，仍需通过 `isOfflineTranslationSupported()` 确认；`.offline` 或 `.all` 成功时，本次离线鉴权已成功。
+`verifyAuth(callback)` 等同于 `verifyAuth(.default, callback)`：该兼容重载仍是公开接口，但新接入示例不使用它，因为 `.default` 成功不代表离线鉴权成功。
 
-SDK Demo 的示例策略为：在线收听使用 `.default`、在线一对一使用 `.online`、离线收听使用 `.default`、离线一对一使用 `.offline`、在线与离线并行使用 `.all`。Demo 设置页仅展示当前选择的鉴权方式，方便排查，不是宿主接入的额外步骤。
+在线收听、在线一对一均使用 `.online`；离线收听、离线一对一均使用 `.offline`。若 App 同时提供两类入口，应在各入口按对应模式分别调用，不以一次无模式鉴权替代两条业务路径；确需在同一回调中确认两类鉴权均成功时使用 `.all`。
 
 行为说明：
 
@@ -309,11 +309,11 @@ SDK Demo 的示例策略为：在线收听使用 `.default`、在线一对一使
 
 - 在线翻译必须先鉴权成功。
 
-- `verifyAuth(_:)` 使用 `.default` 模式：在线鉴权成功后先检查本地 License；有效 License 直接复用，仅在需要更新且账号已开通离线能力时申请新 License。
+- `TmkAuthVerifyMode.online` 只执行在线鉴权；`TmkAuthVerifyMode.offline` 要求离线 License 鉴权成功。任一所选阶段失败都会以 `Result.failure(TmkTranslationError)` 返回失败。
 
-- `TmkAuthVerifyMode.default`（也是旧重载的行为）的回调成功/失败只由在线鉴权结果决定；离线开关关闭、License 获取失败或离线鉴权失败都不会导致本次回调失败。
+- `TmkAuthVerifyMode.default` 保留历史“在线成功即可完成回调”的语义：SDK 仍会检查/刷新离线 License，但离线失败只更新离线能力状态，不会使本次回调失败。
 
-- `TmkAuthVerifyMode.online` 只执行在线鉴权；`TmkAuthVerifyMode.offline` 要求离线 License 鉴权成功；`TmkAuthVerifyMode.all` 则要求在线鉴权和离线 License 鉴权都成功。后两者任一步失败都会以现有 `Result.failure(TmkTranslationError)` 返回失败。
+- `TmkAuthVerifyMode.all` 要求在线鉴权和离线 License 鉴权都成功；任一阶段失败都会返回 `.failure`。
 
 - License 重新签发会复用与建房相同的业务 token 过期/刷新机制：优先使用有效缓存，服务端报告 token 校验失败时刷新 token 并重试 License 请求。
 
@@ -321,14 +321,14 @@ SDK Demo 的示例策略为：在线收听使用 `.default`、在线一对一使
 
 - 各模式都会复用已保存的在线鉴权数据和 License。鉴权超时只重置本次运行时鉴权状态，不删除持久化 token 和 License。
 
-- 离线翻译建议先鉴权，再通过 isOfflineTranslationSupported\(\) 判断当前账号是否支持离线能力。
+- 离线翻译先完成 `verifyAuth(.offline, callback)`，再通过 isOfflineTranslationSupported\(\) 判断当前账号是否支持离线能力。
 
 - 离线翻译并不是完全零前置条件可直接使用：至少需要先成功鉴权一次、离线能力开关已开启、且相关离线模型曾下载成功。
 
 示例：
 
 ```Plain Text
-TmkTranslationSDK.shared.verifyAuth { result in
+TmkTranslationSDK.shared.verifyAuth(.online) { result in
     switch result {
     case .success:
         print("鉴权成功")
@@ -354,9 +354,9 @@ public func isOfflineTranslationSupported() -> Bool
 
 注意：
 
-- 建议在 verifyAuth\(\_:\) 成功后再调用。
+- 建议在 `verifyAuth(.offline, callback)` 成功后再调用。
 
-- verifyAuth\(\_:\) 成功仅表示在线鉴权成功；如果离线鉴权未成功，当前接口仍可能返回 false。
+- `verifyAuth(.offline, callback)` 成功表示离线 License 鉴权已成功；若账号未开通离线能力或 License 无效，会通过鉴权回调返回失败。
 
 ---
 
@@ -1318,7 +1318,7 @@ TmkTranslationSDK.shared.createTranslationChannel(config, listener: self) { resu
 
 离线翻译并不是“零前置条件即可直接使用”。在正式使用离线翻译前，至少需要满足以下条件：
 
-1. 至少成功调用过一次 verifyAuth\(\_:\)。
+1. 已成功调用 `verifyAuth(.offline, callback)`。
 
 2. 当前账号已开通离线翻译能力，即 isOfflineTranslationSupported\(\) 返回 true。
 
@@ -2404,7 +2404,7 @@ HTTP 非成功状态使用 `2002000 + HTTP 状态码` 映射为 SDK 错误码，
 
 ##### iOS 离线 License 组件码
 
-离线 License 鉴权失败不会导致在线 `verifyAuth(_:)` 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 `error.code` 统一映射为 `2001102` / `AUTHENTICATION_FAILED`。组件码写入 `error.actualErrorCode`，native LicenseCore 返回码写入 `error.actualErrorMessage`。
+`.default` 模式下，离线 License 鉴权失败不会使在线鉴权回调失败；推荐的离线 `verifyAuth(.offline, callback)` 则会直接通过回调返回 `TmkTranslationError`。离线能力接口或创建离线通道随后暴露的鉴权错误统一映射为 `2001102` / `AUTHENTICATION_FAILED`。组件码写入 `error.actualErrorCode`，native LicenseCore 返回码写入 `error.actualErrorMessage`。
 
 |code|constantName|native 返回码|说明|处理契约|恢复策略|
 |---|---|---|---|---|---|
@@ -2459,7 +2459,7 @@ iOS 独有的 Security.framework Keychain 操作错误，仅适用于 iOS 平台
 
 - 离线翻译在底层失败时，会按阶段映射为统一错误码：tts \-\> 2001109 / TTS\_SYNTHESIS\_ERROR，translation/asr \-\> 2001110 / TRANSLATION\_ERROR。底层组件码保留在 actualErrorCode 中。
 
-- 离线 License 鉴权失败不会导致在线 verifyAuth\(\_:\) 回调失败；当业务继续调用离线能力接口或创建离线通道时，对外 error\.code 统一映射为 2001102 / AUTHENTICATION\_FAILED，offlineLib 组件码写入 error\.actualErrorCode，native LicenseCore 返回码写入 error\.actualErrorMessage。该规则不覆盖 iOS 设备密钥自身的 Security.framework 错误。
+- `.default` 模式下离线 License 失败只更新离线能力状态；推荐的 `verifyAuth(.offline, callback)` 失败会直接回调错误。离线能力接口或创建离线通道随后暴露的鉴权错误统一映射为 2001102 / AUTHENTICATION\_FAILED，offlineLib 组件码写入 error\.actualErrorCode，native LicenseCore 返回码写入 error\.actualErrorMessage。该规则不覆盖 iOS 设备密钥自身的 Security.framework 错误。
 
 - iOS 设备密钥读取、创建或导出失败不再统一映射为 2001102。SDK 根据 Security.framework 的原始 OSStatus 映射到 2001201-2001206 或 2001299；原始系统码写入 error\.actualErrorCode，域为 `NSOSStatusErrorDomain`，系统解释写入 error\.actualErrorMessage。`error\.chineseDescription` 与 `error\.englishDescription` 分别提供双语稳定说明。
 
@@ -2721,7 +2721,7 @@ python3 tools/diagnosis/decrypt_diagnosis.py \
 
 - appId / clientSecret 是业务鉴权凭据，建议通过独立配置或 CI 注入，避免写入公开仓库。
 
-- clientSecret 会参与本地 License 加密/解密，变更后旧 License 可能无法继续解密。SDK 会尝试重新请求 License；如果设备处于离线状态，业务侧应提示用户联网后重新调用 verifyAuth\(\_:\)。
+- clientSecret 会参与本地 License 加密/解密，变更后旧 License 可能无法继续解密。SDK 会尝试重新请求 License；如果设备处于离线状态，业务侧应提示用户联网后重新调用 `verifyAuth(.offline, callback)`。
 
 - 设备密钥由 tmk\-offline 组件维护，密钥 tag 通过组件接口获取。业务侧不应硬编码 tag，也不应在 Release 版本调用调试清理能力。
 
@@ -2875,7 +2875,7 @@ let config = TmkTranslationGlobalConfig.Builder()
     .build()
 
 TmkTranslationSDK.shared.sdkInit(config)
-TmkTranslationSDK.shared.verifyAuth { result in
+TmkTranslationSDK.shared.verifyAuth(.online) { result in
     switch result {
     case .success:
         TmkTranslationSDK.shared.createTmkTranslationRoom(
@@ -2927,7 +2927,7 @@ import TmkTranslationSDK
 
 let modelRootDirectory = "/path/to/offline_models"
 
-TmkTranslationSDK.shared.verifyAuth { result in
+TmkTranslationSDK.shared.verifyAuth(.offline) { result in
     switch result {
     case .success:
         guard TmkTranslationSDK.shared.isOfflineTranslationSupported() else {
@@ -2994,13 +2994,13 @@ TmkTranslationSDK.releaseChannel()
 
 ## 常见问题
 
-### 19\.1 为什么在线能力需要先调用 verifyAuth\(\_:\)？
+### 19\.1 为什么在线能力需要先调用 `verifyAuth(.online, callback)`？
 
-在线翻译、在线建房与在线建通道都依赖鉴权成功后得到的业务 token。在线语言列表是例外：完成 sdkInit\(\_:\) 后即可请求，不依赖 verifyAuth\(\_:\)。
+在线翻译、在线建房与在线建通道都依赖 `verifyAuth(.online, callback)` 成功后得到的业务 token。在线语言列表是例外：完成 sdkInit\(\_:\) 后即可请求，不依赖鉴权。
 
-### 19\.2 为什么离线翻译也建议先调用 verifyAuth\(\_:\)？
+### 19\.2 为什么离线翻译需要先调用 `verifyAuth(.offline, callback)`？
 
-离线翻译并不是零前置条件直接可用。SDK 在 verifyAuth\(\_:\) 中会先完成在线鉴权，并在在线鉴权成功后继续尝试离线鉴权，用于确认当前账号是否开通离线翻译能力，并获取离线能力所需的鉴权信息。
+离线翻译并不是零前置条件直接可用。`verifyAuth(.offline, callback)` 会复用有效本地 License；需要更新时获取有效 token、申请 License 并完成离线鉴权。只有该调用成功后，才能继续检查离线能力和模型状态。
 
 ### 19\.3 为什么离线模型下载成功过，之后又可能不能使用？
 
@@ -3060,9 +3060,9 @@ TmkTranslationSDK.releaseChannel()
 
 ### 19\.11 isOfflineTranslationSupported\(\) 返回 false 怎么办？
 
-说明当前账号或当前鉴权上下文不支持离线翻译。即使 verifyAuth\(\_:\) 已成功，只要离线鉴权未成功，当前接口仍可能返回 false。此时不能创建可用的离线翻译通道。请先确认：
+说明当前账号或当前鉴权上下文不支持离线翻译。此时不能创建可用的离线翻译通道。请先确认：
 
-- 已成功调用 verifyAuth\(\_:\)
+- 已成功调用 `verifyAuth(.offline, callback)`
 
 - 当前环境配置正确
 
@@ -3074,7 +3074,7 @@ TmkTranslationSDK.releaseChannel()
 
 ### 19\.13 离线 License 解密或解析失败怎么办？
 
-如果本地 License 因密钥变更、历史版本兼容、设备绑定变化等原因解密或解析失败，SDK 会清理本地离线授权状态并尝试重新请求 License。若当前无网络或后台签发失败，在线 verifyAuth\(\_:\) 仍以在线鉴权结果为准；离线能力会保持不可用，业务侧应提示用户联网后重试离线能力。不要删除 Keychain 中的设备密钥，也不要在 Release 版本调用调试清理接口。
+如果本地 License 因密钥变更、历史版本兼容、设备绑定变化等原因解密或解析失败，SDK 会清理本地离线授权状态并尝试重新请求 License。若当前无网络或后台签发失败，`verifyAuth(.offline, callback)` 会返回失败；业务侧应提示用户联网后重试离线鉴权。不要删除 Keychain 中的设备密钥，也不要在 Release 版本调用调试清理接口。
 
 ### 19\.14 clientSecret 变更后离线 License 还能用吗？
 
@@ -3085,18 +3085,3 @@ TmkTranslationSDK.releaseChannel()
 ## 版本信息
 
 当前文档适配 TmkTranslationSDK iOS v1\.3\.2。如果 SDK 版本、发布产物或后台能力发生变化，应同步更新本文档、Android 文档和共享运行状态错误事件契约。
-
-## 兼容与废弃 API
-
-以下接口仅用于已有 App 的迁移兼容；新的接入和示例均不应调用。
-
-|范围|废弃接口或属性|替代方式|
-|---|---|---|
-|全局配置|`setLogEnabled(_:)`|`setDiagnosisConsoleEnabled(_:)`|
-|全局配置|`setDiagnosisEnabled(_:)`|`setDiagnosisConfig(_:)`|
-|Room 配置|`scenario`、`translateEngine`、`recognizeEngine` 及不含 `mode` 的 `TmkTranslationRoomConfig(...)` 初始化器|`roomScenario`、`onlineTranslateEngine`、`onlineRecognizeEngine` 和 `init(mode:...)`|
-|创建 Room|参数式 `createTmkTranslationRoom(...)` 重载|`createTmkTranslationRoom(config:_:)`|
-|Channel 配置|`pcmSampleRate`、`pcmChannels`、`capabilityTier` 及 `setPCMSampleRate(_:)`、`setPCMChannels(_:)`、`setCapabilityTier(_:)`|`sampleRate`、`channelNum`、`roomScenario` 及对应 `setSampleRate(_:)`、`setChannelNum(_:)`、`setRoomScenario(_:)`|
-|Channel 音频配置|`offlineAudioChannelMode`、`setOfflineAudioChannelMode(_:)` 和 `TmkOfflineAudioChannelMode`|`channelAudioMode`、`setChannelAudioMode(_:)` 和 `TmkChannelAudioMode`|
-|创建 Channel|不带 `listener` 的 `createTranslationChannel(_:callback:)` 重载|`createTranslationChannel(_:listener:callback:)`|
-|结果模型|只读 `sessionId: Int`|只读 `sessionID: String`|
