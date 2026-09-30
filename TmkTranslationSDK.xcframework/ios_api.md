@@ -109,7 +109,7 @@ TmkTranslationSDK 用于将业务侧采集的 PCM 音频接入翻译能力，并
 #### 2\.3\.1 推荐使用 CocoaPods
 
 ```Plain Text
-pod 'TmkTranslationSDK', '1.3.3'
+pod 'TmkTranslationSDK', '1.3.4'
 ```
 
 使用pod install \-\-repo\-update安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
@@ -220,7 +220,7 @@ public static let sdkVersion: String
 示例：
 
 ```Plain Text
-let version = TmkTranslationSDK.sdkVersion // "1.3.3"
+let version = TmkTranslationSDK.sdkVersion // "1.3.4"
 ```
 
 ### 4\.2 sdkInit\(\_:\)
@@ -1790,13 +1790,13 @@ public protocol TmkTranslationListener: AnyObject {
 
 - 识别结果回调。
 
-- result\.data：识别文本。
+- result\.data：识别文本。iOS 离线模式下为当前句的文本：`isFinal=false` 时是尚未确认的尾部，`isFinal=true` 时是本次确认的句子。确认后的前文不再包含在后续结果中；使用 `bubble_id` 聚合多句、`chunk_id` 定位当前句。
 
 - isFinal 可能取值：
 
     - false：增量识别结果，后续还可能继续回调。
 
-    - true：本段识别最终结果。
+    - true：iOS 离线模式下表示当前句已确认；整段结束由 `offline_bubble_end` 表示。
 
 - result\.isLast：当前结果对象中的结束标记，通常与 isFinal 含义保持一致。
 
