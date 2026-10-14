@@ -828,6 +828,8 @@ public struct TmkTranslationRoomConfig {
   public var translateMode: TmkTranslateDeliveryMode
   public var dialogConversationAudioMode: TmkDialogConversationAudioMode
   public var enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption?
+  public var offlineBubbleLengthSplitEnabled: Swift.Bool
+  public var offlineBubbleLengthSplitThreshold: Swift.Int
   public var roomScenario: TmkRoomScenario {
     get
     set
@@ -841,11 +843,11 @@ public struct TmkTranslationRoomConfig {
     set
   }
   #if compiler(>=5.3) && $NonescapableTypes
-  public init(mode: TranslationMode, sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", roomScenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, onlineTranslateEngine: TmkOnlineTranslateEngine = .automatic, onlineRecognizeEngine: TmkOnlineRecognizeEngine = .default, translateMode: TmkTranslateDeliveryMode = .default, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard, enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled)
+  public init(mode: TranslationMode, sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", roomScenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, onlineTranslateEngine: TmkOnlineTranslateEngine = .automatic, onlineRecognizeEngine: TmkOnlineRecognizeEngine = .default, translateMode: TmkTranslateDeliveryMode = .default, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard, enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled, offlineBubbleLengthSplitEnabled: Swift.Bool = false, offlineBubbleLengthSplitThreshold: Swift.Int = 60)
   #endif
   #if compiler(>=5.3) && $NonescapableTypes
   @available(*, deprecated, message: "Use init(mode:sourceLang:targetLang:roomScenario:roomId:channelScenario:messageTunnel:speakers:onlineTranslateEngine:onlineRecognizeEngine:translateMode:dialogConversationAudioMode:enableSensitiveWordRedaction:) instead.")
-  public init(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, translateEngine: TmkOnlineTranslateEngine = .automatic, recognizeEngine: TmkOnlineRecognizeEngine = .default, translateMode: TmkTranslateDeliveryMode = .default, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard, enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled)
+  public init(sourceLang: Swift.String = "en-US", targetLang: Swift.String = "zh-CN", scenario: TmkRoomScenario = .toSpeech, roomId: Swift.String? = nil, channelScenario: Scenario = .listen, messageTunnel: TmkTranslationMessageTunnel = .rtm, speakers: [TmkSpeaker]? = nil, translateEngine: TmkOnlineTranslateEngine = .automatic, recognizeEngine: TmkOnlineRecognizeEngine = .default, translateMode: TmkTranslateDeliveryMode = .default, dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard, enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled, offlineBubbleLengthSplitEnabled: Swift.Bool = false, offlineBubbleLengthSplitThreshold: Swift.Int = 60)
   #endif
 }
 public struct TmkLocaleListResponse : Swift.Equatable, Swift.Codable {

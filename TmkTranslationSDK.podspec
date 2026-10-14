@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
-  version = '1.3.4'
-  tag = 'v1.3.4'
+  version = '1.3.5'
+  tag = 'v1.3.5'
 
   s.name             = 'TmkTranslationSDK'
   s.version          = version

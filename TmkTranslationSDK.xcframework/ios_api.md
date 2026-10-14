@@ -23,6 +23,8 @@
 
 - 新增通道配置 setTranslateMode\(\_:\)，用于离线通道设置翻译下发模式（partial 中间态下发 / stable 断句后下发），在线引擎忽略此配置。
 
+- TmkTranslationRoomConfig 支持设置离线分泡语种计量阈值，默认 `60`；SDK 原样保存显式整数，任意正阈值按原值比较，非正值不触发长度分泡。开关默认关闭；开启后长度严格超过阈值时，在已确认的稳定断句边界分泡。`10...500` 仅为 Demo 滑块范围。
+
 - `setRoomScenario\(\_:\)` 用于设置离线通道能力档位（\.recognize 仅 ASR / \.toText ASR\+MT / \.toSpeech 完整链路）。
 
 - 新增 channel\.updateLanguages\(sourceLang:targetLang:completion:\) 带回调重载：在线为真句柄（有超时、可取消），离线为流式切换（不打断流、不销毁重建 pipeline、不可取消）。
@@ -109,7 +111,7 @@ TmkTranslationSDK 用于将业务侧采集的 PCM 音频接入翻译能力，并
 #### 2\.3\.1 推荐使用 CocoaPods
 
 ```Plain Text
-pod 'TmkTranslationSDK', '1.3.4'
+pod 'TmkTranslationSDK', '1.3.5'
 ```
 
 使用pod install \-\-repo\-update安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
@@ -220,7 +222,7 @@ public static let sdkVersion: String
 示例：
 
 ```Plain Text
-let version = TmkTranslationSDK.sdkVersion // "1.3.4"
+let version = TmkTranslationSDK.sdkVersion // "1.3.5"
 ```
 
 ### 4\.2 sdkInit\(\_:\)
@@ -773,6 +775,8 @@ public struct TmkTranslationRoomConfig {
     public var translateMode: TmkTranslateDeliveryMode
     public var dialogConversationAudioMode: TmkDialogConversationAudioMode
     public var enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption?
+    public var offlineBubbleLengthSplitEnabled: Bool // 默认 false
+    public var offlineBubbleLengthSplitThreshold: Int // 默认 60；原值保留，非正值不触发长度分泡
 
     public init(
     mode: TranslationMode,
@@ -787,7 +791,9 @@ public struct TmkTranslationRoomConfig {
     onlineRecognizeEngine: TmkOnlineRecognizeEngine = .default,
     translateMode: TmkTranslateDeliveryMode = .default,
     dialogConversationAudioMode: TmkDialogConversationAudioMode = .standard,
-    enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled
+    enableSensitiveWordRedaction: TmkSensitiveWordRedactionOption? = .enabled,
+    offlineBubbleLengthSplitEnabled: Bool = false,
+    offlineBubbleLengthSplitThreshold: Int = 60
     )
 }
 
@@ -800,6 +806,8 @@ public func createTmkTranslationRoom(
 当 `channelScenario` 为 `.oneToOne` 时，配置中的 `sourceLang` 表示右路/对方语言，`targetLang` 表示左路/本机语言；SDK 建房时映射为 `left = targetLang`、`right = sourceLang`。双声道 PCM 的左路应对应 `targetLang`，右路应对应 `sourceLang`，业务侧无需手动交换字段。
 
 `mode = .online` 时 SDK 创建在线 Room；`mode = .offline` 时 SDK 仅创建供离线 Channel 绑定的本地 Room，不请求在线建房。`messageTunnel` 是 iOS 专有的在线配置，离线模式忽略它。
+
+`offlineBubbleLengthSplitEnabled` 与 `offlineBubbleLengthSplitThreshold` 仅用于离线收听和一对一。默认关闭，阈值默认 `60`；SDK 原样保存显式整数，任意正值按原值比较，`<= 0` 不触发长度分泡。`10...500` 仅为 Demo 滑块范围。开启后长度严格超过阈值，在 SDK 已确认的稳定断句边界分泡，不按任意字符位置截断。创建离线通道时需通过 `setRoom(room)` 传入配置后的本地 Room；修改配置后需重新创建房间和通道。关闭开关不影响识别结束、停止等既有收尾条件。
 
 TmkDialogConversationAudioMode 用于在线一对一对话音频模式：
 
@@ -2031,7 +2039,7 @@ public struct TmkResult<T> {
 
     - 在线场景下一般对应 Agora uid 或会话维度标识。
 
-    - 离线场景由 SDK 生成，规则为毫秒级时间戳追加同毫秒内递增序号，降低同一时刻左右声道同时产出时的冲突概率。
+    - 离线场景由 SDK 按毫秒级时间戳\+序号规则生成，同一进程内共用分配序列。新一轮有效识别创建新 sessionID；稳定一个翻译片段不会更换 sessionID。
 
 - bubbleId
 
@@ -2040,6 +2048,8 @@ public struct TmkResult<T> {
     - 在线场景优先来自服务端 bubble\_id。
 
     - 离线场景由 SDK 按毫秒级时间戳\+序号规则独立生成，不等同于 sessionID。
+
+    - 一个离线 bubbleId 可以包含多轮识别的 sessionID；新一轮开始时决定复用或切换气泡，一对一左右声道独立管理。
 
 - data
 
@@ -2063,7 +2073,7 @@ public struct TmkResult<T> {
 
     - 附加信息字典。
 
-    - chunk\_id 在线场景来自服务端；离线场景由 SDK 按毫秒级时间戳\+序号规则生成，并与同一段 ASR/MT/TTS 结果保持一致。
+    - chunk\_id 在线场景来自服务端；离线场景由 SDK 按毫秒级时间戳\+序号规则生成。同一轮 sessionID 内多个翻译片段各有 chunk\_id；同片段的 ASR/MT/TTS 复用对应身份，partial 更新与 stable 确认保持同一 chunk\_id。
 
 注意：
 
