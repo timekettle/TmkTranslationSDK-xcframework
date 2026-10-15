@@ -111,7 +111,7 @@ TmkTranslationSDK 用于将业务侧采集的 PCM 音频接入翻译能力，并
 #### 2\.3\.1 推荐使用 CocoaPods
 
 ```Plain Text
-pod 'TmkTranslationSDK', '1.3.5'
+pod 'TmkTranslationSDK', '1.3.6'
 ```
 
 使用pod install \-\-repo\-update安装SDK，并且需要在**Build Setting**中设置 **User Script sandboxing** 为 **NO**；
@@ -222,7 +222,7 @@ public static let sdkVersion: String
 示例：
 
 ```Plain Text
-let version = TmkTranslationSDK.sdkVersion // "1.3.5"
+let version = TmkTranslationSDK.sdkVersion // "1.3.6"
 ```
 
 ### 4\.2 sdkInit\(\_:\)
